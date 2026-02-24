@@ -517,6 +517,39 @@ p { color: #c8b99a; }
 .spice-label { color: var(--text-muted); font-size: 0.75rem; margin-left: 0.2rem; }
 .chilli-icon { font-size: 0.8rem; }
 
+.menu-card-allergens-wrap { margin-bottom: 0.5rem; }
+.allergen-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.72rem;
+    color: #8a7060;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    transition: color 0.15s;
+}
+.allergen-toggle:hover { color: #c08040; }
+.allergen-toggle i { color: #c08040; }
+.allergen-chevron { transition: transform 0.2s; font-size: 0.6rem; }
+.allergen-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.35rem;
+}
+.allergen-chip {
+    background: rgba(192, 100, 0, 0.12);
+    border: 1px solid rgba(192, 100, 0, 0.28);
+    color: #c8a060;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
 .menu-card-allergens {
     font-size: 0.72rem;
     color: #8a7060;

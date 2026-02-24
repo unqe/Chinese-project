@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n menu_extras %}
 
 {% block title %}{% trans "Menu" %} | Despair Chinese{% endblock %}
 {% block meta_description %}Browse our full menu of authentic Chinese dishes. Starters, mains, noodles, rice dishes, sides and drinks. Order online for delivery or collection in Hackney.{% endblock %}
@@ -111,7 +111,19 @@
                                 {% endif %}
                                 <!-- Allergens -->
                                 {% if item.allergens %}
-                                    <p class="menu-card-allergens"><i class="fas fa-exclamation-triangle me-1"></i>{{ item.allergens }}</p>
+                                <div class="menu-card-allergens-wrap">
+                                    <button class="allergen-toggle" type="button"
+                                            aria-expanded="false"
+                                            data-target="allergens-{{ item.pk }}">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Allergens
+                                        <i class="fas fa-chevron-down allergen-chevron ms-1"></i>
+                                    </button>
+                                    <div class="allergen-chips" id="allergens-{{ item.pk }}" hidden>
+                                        {% for a in item.allergens|split_allergens %}
+                                            <span class="allergen-chip">{{ a }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                                 {% endif %}
                                 <div class="menu-card-footer">
                                     <span class="menu-card-price">£{{ item.price }}</span>
@@ -348,6 +360,19 @@
             }
             return;
         }
+    });
+
+    // ---- Allergen toggle ----
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.allergen-toggle');
+        if (!btn) return;
+        const targetId = btn.dataset.target;
+        const panel = document.getElementById(targetId);
+        if (!panel) return;
+        const open = !panel.hidden;
+        panel.hidden = open;
+        btn.setAttribute('aria-expanded', String(!open));
+        btn.querySelector('.allergen-chevron').style.transform = open ? '' : 'rotate(180deg)';
     });
 </script>
 {% endblock %}
