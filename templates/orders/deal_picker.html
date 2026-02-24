@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ deal.name }} | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-custom">
+                <li class="breadcrumb-item"><a href="{% url 'menu:menu' %}">{% trans "Menu" %}</a></li>
+                <li class="breadcrumb-item active">{{ deal.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+
+            <div class="checkout-section">
+                <!-- Deal header -->
+                <div class="d-flex align-items-start gap-4 mb-4">
+                    {% if deal.image %}
+                        <img src="{{ deal.image.url }}" alt="{{ deal.name }}"
+                             class="rounded-3" style="width:90px;height:90px;object-fit:cover;flex-shrink:0;">
+                    {% endif %}
+                    <div>
+                        <h2 class="detail-title mb-1">{{ deal.name }}</h2>
+                        <div class="detail-price mb-1">£{{ deal.price }}</div>
+                        {% if deal.description %}
+                            <p class="text-muted mb-0" style="font-size:0.9rem;">{{ deal.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <h5 class="checkout-section-title mb-3">
+                    <i class="fas fa-utensils me-2"></i>{% trans "Choose Your Items" %}
+                </h5>
+
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="alert alert-{{ msg.tags|default:'warning' }} py-2 px-3 mb-3" style="font-size:0.88rem;">
+                            {{ msg }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" id="deal-picker-form">
+                    {% csrf_token %}
+
+                    {% for slot, choices in slot_choices %}
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" for="slot_{{ slot.pk }}">
+                            {{ slot.label }}
+                        </label>
+                        <select name="slot_{{ slot.pk }}" id="slot_{{ slot.pk }}"
+                                class="form-select deal-slot-select" required>
+                            <option value="">— {% trans "Please select" %} —</option>
+                            {% regroup choices by category as grouped_choices %}
+                            {% for group in grouped_choices %}
+                                <optgroup label="{{ group.grouper }}">
+                                    {% for item in group.list %}
+                                        <option value="{{ item.pk }}">{{ item.name }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="{% url 'menu:menu' %}" class="btn btn-outline-secondary flex-grow-0 px-4">
+                            <i class="fas fa-arrow-left me-2"></i>{% trans "Back" %}
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 btn-lg">
+                            <i class="fas fa-shopping-bag me-2"></i>{% trans "Add to Basket" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
