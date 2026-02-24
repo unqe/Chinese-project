@@ -38,6 +38,12 @@
                     <a href="{% url 'orders:order_detail' order.reference %}" class="btn btn-sm btn-outline-secondary">
                         {% trans "View Details" %}
                     </a>
+                    <form action="{% url 'orders:reorder' order.reference %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary-custom">
+                            <i class="fas fa-redo me-1"></i>{% trans "Reorder" %}
+                        </button>
+                    </form>
                     {% if order.status == 'completed' %}
                         {% if order.review %}
                             <a href="{% url 'reviews:edit' order.review.pk %}" class="btn btn-sm btn-outline-primary">

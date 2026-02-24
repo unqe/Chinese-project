@@ -204,3 +204,21 @@ def order_detail(request, reference):
     order = get_object_or_404(Order, reference=reference, user=request.user)
     return render(request, "orders/order_detail.html", {"order": order})
 
+
+@login_required
+@require_POST
+def reorder(request, reference):
+    """Re-adds all items from a previous order into the basket, then redirects to basket."""
+    order = get_object_or_404(Order, reference=reference, user=request.user)
+    basket = Basket(request)
+    added = 0
+    for item in order.items.all():
+        if item.menu_item and item.menu_item.is_available:
+            basket.add(item.menu_item, quantity=item.quantity)
+            added += 1
+    if added:
+        messages.success(request, f"{added} item{'s' if added != 1 else ''} from order #{reference} added to your basket.")
+    else:
+        messages.warning(request, "None of the items from that order are currently available.")
+    return redirect("orders:basket")
+

@@ -17,4 +17,5 @@ urlpatterns = [
     path("confirmation/<str:reference>/", views.order_confirmation, name="confirmation"),
     path("history/", views.order_history, name="history"),
     path("detail/<str:reference>/", views.order_detail, name="order_detail"),
+    path("reorder/<str:reference>/", views.reorder, name="reorder"),
 ]

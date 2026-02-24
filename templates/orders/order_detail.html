@@ -44,6 +44,12 @@
                             <a href="{% url 'orders:history' %}" class="btn btn-outline-secondary btn-sm">
                                 <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Back" %}
                             </a>
+                            <form action="{% url 'orders:reorder' order.reference %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-primary-custom btn-sm">
+                                    <i class="fas fa-redo me-1"></i>{% trans "Reorder" %}
+                                </button>
+                            </form>
                             {% if order.status == 'completed' and not order.review %}
                             <a href="{% url 'reviews:add_review' order.pk %}" class="btn btn-primary-custom btn-sm">
                                 <i class="fa-solid fa-star me-1"></i>{% trans "Leave Review" %}
