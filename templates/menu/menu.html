@@ -261,6 +261,7 @@
                 const addUrl = btn.dataset.addUrl;
                 const updateUrl = btn.dataset.updateUrl;
                 const removeUrl = btn.dataset.removeUrl;
+                wrapper.dataset.addUrl = addUrl;
                 wrapper.innerHTML = getQtyHtml(itemId, initialQtys[itemId], addUrl, updateUrl, removeUrl);
             }
         }
@@ -280,6 +281,7 @@
                 if (data.success) {
                     const wrapper = document.getElementById('qty-wrap-' + itemId);
                     if (wrapper) {
+                        wrapper.dataset.addUrl = addUrl;
                         wrapper.innerHTML = getQtyHtml(itemId, data.item_quantity, addUrl, updateUrl, removeUrl);
                     }
                     updateNavBasket(data.basket_count, data.basket_subtotal);
@@ -330,11 +332,8 @@
                 // Remove item — show Add button again
                 postAjax(removeUrl, {}, function(data) {
                     if (data.success && wrapper) {
-                        // Re-query the btn data from what we stored
-                        const origBtn = wrapper.querySelector('.qty-btn-card');
-                        wrapper.innerHTML = getAddHtml(itemId,
-                            updateUrl.replace('basket-update', 'basket-add'),
-                            updateUrl, removeUrl);
+                        const restoredAddUrl = wrapper.dataset.addUrl || updateUrl.replace('/update/', '/add/');
+                        wrapper.innerHTML = getAddHtml(itemId, restoredAddUrl, updateUrl, removeUrl);
                         updateNavBasket(data.basket_count, data.basket_subtotal);
                     }
                 });
