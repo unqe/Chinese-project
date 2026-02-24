@@ -1,0 +1,791 @@
+# Despair Chinese — Simplified Chinese translations
+# Copyright (C) 2026 Despair Chinese
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: despair 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-24 12:29+0000\n"
+"PO-Revision-Date: 2026-02-24 12:09+0000\n"
+"Last-Translator: Despair Chinese <admin@despair.cc>\n"
+"Language-Team: Chinese Simplified\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: templates/account/login.html:4 templates/account/login.html:46
+#: templates/base.html:98
+msgid "Sign In"
+msgstr "登录"
+
+#: templates/account/login.html:14
+msgid "Welcome back"
+msgstr "欢迎回来"
+
+#: templates/account/login.html:15
+msgid "Sign in to order and track your food"
+msgstr "登录以下单并追踪您的订单"
+
+#: templates/account/login.html:23
+msgid "Invalid username/email or password. Please try again."
+msgstr "用户名、邮箱或密码错误，请重试。"
+
+#: templates/account/login.html:32
+msgid "Username or Email"
+msgstr "用户名或邮箱"
+
+#: templates/account/login.html:37 templates/account/signup.html:42
+msgid "Password"
+msgstr "密码"
+
+#: templates/account/login.html:38
+msgid "Forgot password?"
+msgstr "忘记密码？"
+
+#: templates/account/login.html:44
+msgid "Remember me"
+msgstr "记住我"
+
+#: templates/account/login.html:50
+msgid "Don't have an account?"
+msgstr "还没有账户？"
+
+#: templates/account/login.html:50
+msgid "Register here"
+msgstr "立即注册"
+
+#: templates/account/logout.html:4 templates/accounts/profile.html:35
+#: templates/base.html:94
+msgid "Sign Out"
+msgstr "退出登录"
+
+#: templates/account/logout.html:12
+msgid "Signing out?"
+msgstr "确认退出？"
+
+#: templates/account/logout.html:13
+msgid "Are you sure you want to sign out?"
+msgstr "您确定要退出登录吗？"
+
+#: templates/account/logout.html:16
+msgid "Yes, Sign Out"
+msgstr "是的，退出"
+
+#: templates/account/logout.html:17 templates/reviews/add_review.html:54
+#: templates/reviews/delete_review.html:22
+#: templates/reviews/edit_review.html:40
+msgid "Cancel"
+msgstr "取消"
+
+#: templates/account/signup.html:4 templates/account/signup.html:56
+msgid "Create Account"
+msgstr "创建账户"
+
+#: templates/account/signup.html:14
+msgid "Create an Account"
+msgstr "注册新账户"
+
+#: templates/account/signup.html:15
+msgid "Order faster and track your orders"
+msgstr "更快下单，轻松追踪"
+
+#: templates/account/signup.html:26
+msgid "Username"
+msgstr "用户名"
+
+#: templates/account/signup.html:34 templates/accounts/profile.html:61
+msgid "Email Address"
+msgstr "电子邮件"
+
+#: templates/account/signup.html:49
+msgid "Confirm Password"
+msgstr "确认密码"
+
+#: templates/account/signup.html:60
+msgid "Already have an account?"
+msgstr "已有账户？"
+
+#: templates/account/signup.html:60
+msgid "Sign in"
+msgstr "立即登录"
+
+#: templates/accounts/profile.html:4 templates/accounts/profile.html:9
+#: templates/base.html:91
+msgid "My Profile"
+msgstr "我的账户"
+
+#: templates/accounts/profile.html:26
+msgid "Profile"
+msgstr "个人资料"
+
+#: templates/accounts/profile.html:29 templates/orders/history.html:4
+msgid "Order History"
+msgstr "订单历史"
+
+#: templates/accounts/profile.html:32 templates/base.html:55
+#: templates/base.html:156 templates/reviews/reviews.html:4
+msgid "Reviews"
+msgstr "评价"
+
+#: templates/accounts/profile.html:49
+msgid "Personal Details"
+msgstr "个人信息"
+
+#: templates/accounts/profile.html:53
+msgid "First Name"
+msgstr "名字"
+
+#: templates/accounts/profile.html:57
+msgid "Last Name"
+msgstr "姓氏"
+
+#: templates/accounts/profile.html:70
+msgid "Default Delivery Address"
+msgstr "默认配送地址"
+
+#: templates/accounts/profile.html:74 templates/orders/checkout.html:42
+#: templates/orders/order_detail.html:122
+msgid "Phone"
+msgstr "电话"
+
+#: templates/accounts/profile.html:78 templates/orders/checkout.html:79
+msgid "Address Line 1"
+msgstr "地址第一行"
+
+#: templates/accounts/profile.html:82 templates/orders/checkout.html:84
+msgid "Address Line 2"
+msgstr "地址第二行"
+
+#: templates/accounts/profile.html:86 templates/orders/checkout.html:88
+msgid "City"
+msgstr "城市"
+
+#: templates/accounts/profile.html:90 templates/orders/checkout.html:93
+msgid "Postcode"
+msgstr "邮政编码"
+
+#: templates/accounts/profile.html:105 templates/reviews/edit_review.html:39
+msgid "Save Changes"
+msgstr "保存更改"
+
+#: templates/base.html:45 templates/base.html:154
+#: templates/menu/item_detail.html:11 templates/orders/order_detail.html:12
+msgid "Home"
+msgstr "首页"
+
+#: templates/base.html:50 templates/base.html:155
+#: templates/menu/item_detail.html:12 templates/menu/menu.html:4
+msgid "Menu"
+msgstr "菜单"
+
+#: templates/base.html:92 templates/orders/history.html:9
+msgid "My Orders"
+msgstr "我的订单"
+
+#: templates/base.html:99
+msgid "Register"
+msgstr "注册"
+
+#: templates/base.html:152
+msgid "Quick Links"
+msgstr "快捷链接"
+
+#: templates/base.html:157 templates/orders/checkout.html:12
+msgid "Basket"
+msgstr "购物篮"
+
+#: templates/base.html:162 templates/home.html:209
+msgid "Opening Hours"
+msgstr "营业时间"
+
+#: templates/base.html:164
+msgid "Monday"
+msgstr "周一"
+
+#: templates/base.html:164 templates/home.html:219
+msgid "Closed"
+msgstr "休息"
+
+#: templates/base.html:165
+msgid "Tue – Sun"
+msgstr "周二至周日"
+
+#: templates/base.html:170
+msgid "Find Us"
+msgstr "找到我们"
+
+#: templates/home.html:17
+msgid "Authentic Chinese Cuisine"
+msgstr "正宗中式美食"
+
+#: templates/home.html:19
+msgid "Taste The"
+msgstr "品味"
+
+#: templates/home.html:20
+msgid "Real China"
+msgstr "真正的中国"
+
+#: templates/home.html:21
+msgid "In Hackney"
+msgstr "在哈克尼"
+
+#: templates/home.html:24
+msgid ""
+"Freshly made to order. Free delivery over £20. Open Tuesday to Sunday, "
+"4:30pm–11pm."
+msgstr "现点现做，外卖满£20免配送费，周二至周日营业，下午4:30至晚上11点。"
+
+#: templates/home.html:31
+msgid "Open Now"
+msgstr "正在营业"
+
+#: templates/home.html:32
+msgid "Closes"
+msgstr "关闭时间"
+
+#: templates/home.html:36
+msgid "Currently Closed"
+msgstr "暂时休息"
+
+#: templates/home.html:37
+msgid "Opens"
+msgstr "开放时间"
+
+#: templates/home.html:44 templates/home.html:237
+msgid "Order Now"
+msgstr "立即下单"
+
+#: templates/home.html:47 templates/home.html:143
+msgid "View Full Menu"
+msgstr "查看完整菜单"
+
+#: templates/home.html:64
+msgid "Fast Delivery"
+msgstr "快速配送"
+
+#: templates/home.html:68 templates/orders/basket.html:86
+msgid "Free over £20"
+msgstr "满£20免配送费"
+
+#: templates/home.html:72
+msgid "Fresh Ingredients"
+msgstr "新鲜食材"
+
+#: templates/home.html:76
+msgid "Top Rated"
+msgstr "好评如潮"
+
+#: templates/home.html:89
+msgid "Chef's Selection"
+msgstr "厨师精选"
+
+#: templates/home.html:90
+msgid "Most Popular Dishes"
+msgstr "最受欢迎的菜肴"
+
+#: templates/home.html:91
+msgid "Our customers can't get enough of these"
+msgstr "深受顾客喜爱"
+
+#: templates/home.html:164
+msgid "Years Serving<br>Hackney"
+msgstr "服务哈克尼<br>年华"
+
+#: templates/home.html:169
+msgid "Our Story"
+msgstr "我们的故事"
+
+#: templates/home.html:170
+msgid "A Slice of China<br>in East London"
+msgstr "东伦敦的一片中国味道"
+
+#: templates/home.html:172
+msgid ""
+"Founded in 2010, Despair Chinese has been a Hackney institution for over 15 "
+"years. Every dish is prepared fresh using traditional recipes passed down "
+"through generations — from our crispy aromatic duck to our hand-rolled "
+"spring rolls."
+msgstr ""
+"Despair Chinese 成立于2010年，十五年来已成为哈克尼的一张名片。每道菜均以祖传"
+"秘方新鲜制作——从香脆片皮鸭到手工春卷，原汁原味，传承经典。"
+
+#: templates/home.html:175
+msgid ""
+"Our kitchen is run by chefs with decades of experience, committed to "
+"bringing you the most authentic flavours East London has to offer."
+msgstr ""
+"我们的厨师团队拥有数十年经验，致力于为您呈现东伦敦最正宗的中华美食风味。"
+
+#: templates/home.html:180
+msgid "Freshly cooked every order"
+msgstr "每单现做"
+
+#: templates/home.html:184
+msgid "Halal options available"
+msgstr "提供清真选项"
+
+#: templates/home.html:188
+msgid "Vegetarian & vegan dishes"
+msgstr "素食及纯素菜肴"
+
+#: templates/home.html:192
+msgid "Delivery or collection"
+msgstr "外卖或自取"
+
+#: templates/home.html:208
+msgid "We're Ready When You Are"
+msgstr "随时为您服务"
+
+#: templates/home.html:229
+msgid "Mon – Thu"
+msgstr "周一至周四"
+
+#: templates/home.html:230
+msgid "Friday"
+msgstr "周五"
+
+#: templates/home.html:231
+msgid "Saturday"
+msgstr "周六"
+
+#: templates/home.html:232
+msgid "Sunday"
+msgstr "周日"
+
+#: templates/menu/item_detail.html:40 templates/menu/menu.html:102
+msgid "Popular"
+msgstr "热门"
+
+#: templates/menu/item_detail.html:41
+msgid "Vegetarian"
+msgstr "素食"
+
+#: templates/menu/item_detail.html:42
+msgid "Vegan"
+msgstr "纯素"
+
+#: templates/menu/item_detail.html:57
+msgid "Allergens:"
+msgstr "过敏原："
+
+#: templates/menu/item_detail.html:71
+msgid "Add to Basket"
+msgstr "加入购物篮"
+
+#: templates/menu/item_detail.html:81
+msgid "More from"
+msgstr "更多来自"
+
+#: templates/menu/menu.html:21
+msgid "Our Menu"
+msgstr "我们的菜单"
+
+#: templates/menu/menu.html:22
+msgid "Everything freshly made to order"
+msgstr "所有菜肴均现点现做"
+
+#: templates/menu/menu.html:25
+msgid "Free delivery over £20"
+msgstr "满£20免配送费"
+
+#: templates/menu/menu.html:27
+msgid "30–45 min delivery"
+msgstr "30至45分钟送达"
+
+#: templates/menu/menu.html:29
+msgid "15 min collection"
+msgstr "15分钟自取"
+
+#: templates/menu/menu.html:42
+msgid "Categories"
+msgstr "菜品分类"
+
+#: templates/menu/menu.html:57 templates/orders/basket.html:4
+#: templates/orders/basket.html:9
+msgid "Your Basket"
+msgstr "您的购物篮"
+
+#: templates/menu/menu.html:61
+msgid "View Basket"
+msgstr "查看购物篮"
+
+#: templates/menu/menu.html:133 templates/orders/basket.html:97
+msgid "Add"
+msgstr "添加"
+
+#: templates/menu/menu.html:146
+msgid "Menu coming soon"
+msgstr "菜单即将上线"
+
+#: templates/menu/menu.html:147
+msgid "Check back later."
+msgstr "请稍后再来。"
+
+#: templates/orders/basket.html:21 templates/orders/order_detail.html:56
+msgid "Items"
+msgstr "商品"
+
+#: templates/orders/basket.html:23
+msgid "Add More"
+msgstr "继续添加"
+
+#: templates/orders/basket.html:40
+msgid "each"
+msgstr "每份"
+
+#: templates/orders/basket.html:66
+msgid "Continue Shopping"
+msgstr "继续选购"
+
+#: templates/orders/basket.html:73
+msgid "Order Summary"
+msgstr "订单摘要"
+
+#: templates/orders/basket.html:76 templates/orders/checkout.html:163
+#: templates/orders/confirmation.html:52 templates/orders/order_detail.html:71
+msgid "Subtotal"
+msgstr "小计"
+
+#: templates/orders/basket.html:80 templates/orders/checkout.html:57
+#: templates/orders/checkout.html:167 templates/orders/confirmation.html:56
+#: templates/orders/confirmation.html:79 templates/orders/order_detail.html:77
+msgid "Delivery"
+msgstr "配送"
+
+#: templates/orders/basket.html:83 templates/orders/checkout.html:68
+#: templates/orders/checkout.html:169 templates/orders/confirmation.html:59
+#: templates/orders/order_detail.html:84
+msgid "Free"
+msgstr "免费"
+
+#: templates/orders/basket.html:97
+msgid "more for free delivery"
+msgstr "再加即可享免费配送"
+
+#: templates/orders/basket.html:104 templates/orders/checkout.html:175
+#: templates/orders/order_detail.html:91
+msgid "Total"
+msgstr "总计"
+
+#: templates/orders/basket.html:110
+msgid "Proceed to Checkout"
+msgstr "前往结账"
+
+#: templates/orders/basket.html:114
+msgid "Sign In to Checkout"
+msgstr "登录后结账"
+
+#: templates/orders/basket.html:117
+msgid "New here?"
+msgstr "新用户？"
+
+#: templates/orders/basket.html:117
+msgid "Create an account"
+msgstr "立即创建账户"
+
+#: templates/orders/basket.html:134
+msgid "Your basket is empty"
+msgstr "您的购物篮还是空的"
+
+#: templates/orders/basket.html:135
+msgid ""
+"Looks like you haven't added anything yet. Browse our menu and pick your "
+"favourites!"
+msgstr "您还没有添加任何商品。浏览我们的菜单，挑选您的心头好！"
+
+#: templates/orders/basket.html:137 templates/orders/history.html:63
+msgid "Browse Menu"
+msgstr "浏览菜单"
+
+#: templates/orders/checkout.html:4 templates/orders/checkout.html:9
+msgid "Checkout"
+msgstr "结账"
+
+#: templates/orders/checkout.html:13
+msgid "Details"
+msgstr "填写信息"
+
+#: templates/orders/checkout.html:14
+msgid "Confirmation"
+msgstr "确认订单"
+
+#: templates/orders/checkout.html:29
+msgid "Contact Details"
+msgstr "联系方式"
+
+#: templates/orders/checkout.html:32
+msgid "Full Name"
+msgstr "全名"
+
+#: templates/orders/checkout.html:37 templates/orders/order_detail.html:118
+msgid "Email"
+msgstr "电子邮件"
+
+#: templates/orders/checkout.html:51
+msgid "Delivery or Collection?"
+msgstr "外卖还是自取？"
+
+#: templates/orders/checkout.html:58
+msgid "30–45 min"
+msgstr "30至45分钟"
+
+#: templates/orders/checkout.html:59
+msgid "£2.50 (free over £20)"
+msgstr "£2.50（满£20免费）"
+
+#: templates/orders/checkout.html:66 templates/orders/confirmation.html:81
+#: templates/orders/order_detail.html:79
+msgid "Collection"
+msgstr "自取"
+
+#: templates/orders/checkout.html:67
+msgid "~15 min"
+msgstr "约15分钟"
+
+#: templates/orders/checkout.html:76 templates/orders/confirmation.html:100
+#: templates/orders/order_detail.html:131
+msgid "Delivery Address"
+msgstr "配送地址"
+
+#: templates/orders/checkout.html:84 templates/orders/checkout.html:145
+msgid "optional"
+msgstr "可选"
+
+#: templates/orders/checkout.html:102
+msgid "Payment Method"
+msgstr "支付方式"
+
+#: templates/orders/checkout.html:126
+msgid "Card Number"
+msgstr "卡号"
+
+#: templates/orders/checkout.html:130
+msgid "Expiry"
+msgstr "有效期"
+
+#: templates/orders/checkout.html:138
+msgid "This is a demo — no real payment is taken."
+msgstr "这是演示版本——不会进行真实扣款。"
+
+#: templates/orders/checkout.html:145 templates/orders/confirmation.html:109
+#: templates/orders/order_detail.html:99
+msgid "Special Instructions"
+msgstr "特殊要求"
+
+#: templates/orders/checkout.html:154
+msgid "Your Order"
+msgstr "您的订单"
+
+#: templates/orders/checkout.html:180
+msgid "Place Order"
+msgstr "提交订单"
+
+#: templates/orders/checkout.html:183
+msgid "Your order is safe with us"
+msgstr "您的订单信息安全有保障"
+
+#: templates/orders/confirmation.html:4
+msgid "Order Confirmed"
+msgstr "订单已确认"
+
+#: templates/orders/confirmation.html:16
+msgid "Order Placed!"
+msgstr "下单成功！"
+
+#: templates/orders/confirmation.html:18
+msgid "Thanks"
+msgstr "谢谢您"
+
+#: templates/orders/confirmation.html:18
+msgid "Your order has been received and is being prepared."
+msgstr "您的订单已收到，正在准备中。"
+
+#: templates/orders/confirmation.html:21
+msgid "Order Reference"
+msgstr "订单编号"
+
+#: templates/orders/confirmation.html:29
+msgid "Your Receipt"
+msgstr "您的收据"
+
+#: templates/orders/confirmation.html:66
+msgid "Total Paid"
+msgstr "实付金额"
+
+#: templates/orders/confirmation.html:76
+msgid "Delivery Type"
+msgstr "配送方式"
+
+#: templates/orders/confirmation.html:86 templates/orders/order_detail.html:151
+msgid "Payment"
+msgstr "支付"
+
+#: templates/orders/confirmation.html:90
+msgid "Card ending"
+msgstr "卡号尾号"
+
+#: templates/orders/confirmation.html:92
+msgid "Cash on Delivery"
+msgstr "货到付款"
+
+#: templates/orders/confirmation.html:94
+msgid "Cash on Collection"
+msgstr "自取时付款"
+
+#: templates/orders/confirmation.html:119
+msgid "Order Again"
+msgstr "再次下单"
+
+#: templates/orders/confirmation.html:122
+msgid "View All Orders"
+msgstr "查看所有订单"
+
+#: templates/orders/confirmation.html:126 templates/orders/history.html:48
+msgid "Leave a Review"
+msgstr "撰写评价"
+
+#: templates/orders/history.html:21 templates/orders/order_detail.html:4
+msgid "Order"
+msgstr "订单"
+
+#: templates/orders/history.html:39
+msgid "View Details"
+msgstr "查看详情"
+
+#: templates/orders/history.html:44 templates/reviews/edit_review.html:4
+#: templates/reviews/edit_review.html:9
+msgid "Edit Review"
+msgstr "编辑评价"
+
+#: templates/orders/history.html:60
+msgid "No orders yet"
+msgstr "暂无订单"
+
+#: templates/orders/history.html:61
+msgid "Ready to place your first order?"
+msgstr "准备下您的第一单了吗？"
+
+#: templates/orders/order_detail.html:13
+msgid "Orders"
+msgstr "订单列表"
+
+#: templates/orders/order_detail.html:17
+msgid "Order Details"
+msgstr "订单详情"
+
+#: templates/orders/order_detail.html:19
+msgid "Placed on"
+msgstr "下单时间"
+
+#: templates/orders/order_detail.html:45
+msgid "Back"
+msgstr "返回"
+
+#: templates/orders/order_detail.html:49
+msgid "Leave Review"
+msgstr "撰写评价"
+
+#: templates/orders/order_detail.html:111
+msgid "Contact"
+msgstr "联系方式"
+
+#: templates/orders/order_detail.html:114
+msgid "Name"
+msgstr "姓名"
+
+#: templates/orders/order_detail.html:139
+msgid "Collection Address"
+msgstr "自取地址"
+
+#: templates/orders/order_detail.html:153
+msgid "Method"
+msgstr "方式"
+
+#: templates/orders/order_detail.html:158
+msgid "Card"
+msgstr "银行卡"
+
+#: templates/reviews/add_review.html:4 templates/reviews/add_review.html:9
+msgid "Write a Review"
+msgstr "撰写评价"
+
+#: templates/reviews/add_review.html:10
+msgid "Reviewing order"
+msgstr "评价订单"
+
+#: templates/reviews/add_review.html:23 templates/reviews/edit_review.html:19
+msgid "Your Rating"
+msgstr "您的评分"
+
+#: templates/reviews/add_review.html:39
+msgid "Review Title"
+msgstr "评价标题"
+
+#: templates/reviews/add_review.html:45
+msgid "Your Review"
+msgstr "您的评价"
+
+#: templates/reviews/add_review.html:52
+msgid "Submit Review"
+msgstr "提交评价"
+
+#: templates/reviews/delete_review.html:4
+msgid "Delete Review"
+msgstr "删除评价"
+
+#: templates/reviews/delete_review.html:12
+msgid "Delete this review?"
+msgstr "确定删除这条评价？"
+
+#: templates/reviews/delete_review.html:18
+msgid "This action cannot be undone."
+msgstr "此操作不可撤销。"
+
+#: templates/reviews/delete_review.html:21
+msgid "Yes, Delete"
+msgstr "确认删除"
+
+#: templates/reviews/edit_review.html:30
+msgid "Title"
+msgstr "标题"
+
+#: templates/reviews/edit_review.html:34
+msgid "Review"
+msgstr "评价内容"
+
+#: templates/reviews/edit_review.html:37
+msgid ""
+"Editing your review resets its approval status — it will be re-reviewed by "
+"our team."
+msgstr "编辑评价后，审核状态将重置——我们的团队会重新审核您的评价。"
+
+#: templates/reviews/reviews.html:9
+msgid "Customer Reviews"
+msgstr "顾客评价"
+
+#: templates/reviews/reviews.html:21
+msgid "reviews"
+msgstr "条评价"
+
+#: templates/reviews/reviews.html:52
+msgid "Edit"
+msgstr "编辑"
+
+#: templates/reviews/reviews.html:53
+msgid "Delete"
+msgstr "删除"
+
+#: templates/reviews/reviews.html:64
+msgid "No reviews yet"
+msgstr "暂无评价"
+
+#: templates/reviews/reviews.html:65
+msgid "Be the first to share your experience!"
+msgstr "成为第一个分享体验的人！"
+
+#: templates/reviews/reviews.html:67
+msgid "Review a Past Order"
+msgstr "评价历史订单"
