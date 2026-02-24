@@ -8,7 +8,10 @@ from decimal import Decimal
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.contrib import messages
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -18,6 +21,25 @@ from .basket import Basket, MIN_ORDER_DELIVERY
 from .forms import CheckoutForm
 from .models import Order, OrderItem, OpeningHours
 from menu.models import MenuItem, DealSlot
+
+
+def _log_admin_action(request, obj, action_flag, message=""):
+    """Create a Django admin LogEntry so the action shows in Recent Actions."""
+    User = get_user_model()
+    if request.user.is_authenticated:
+        actor_id = request.user.pk
+    else:
+        actor_id = User.objects.filter(is_superuser=True).values_list("pk", flat=True).first()
+    if actor_id is None:
+        return
+    LogEntry.objects.log_action(
+        user_id=actor_id,
+        content_type_id=ContentType.objects.get_for_model(obj).pk,
+        object_id=obj.pk,
+        object_repr=str(obj),
+        action_flag=action_flag,
+        change_message=message,
+    )
 
 LONDON_TZ = ZoneInfo("Europe/London")
 
@@ -264,6 +286,9 @@ def checkout(request):
                 order.card_last_four = raw_card[-4:] if raw_card else ""
 
             order.save()
+
+            # Log to admin Recent Actions
+            _log_admin_action(request, order, ADDITION, "Order placed via website")
 
             for item_data in basket:
                 OrderItem.objects.create(

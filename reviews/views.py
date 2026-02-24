@@ -6,11 +6,33 @@ guests who provide their order receipt number + email.
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.contrib import messages
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
 
 from .models import Review
 from .forms import ReviewForm, ReceiptLookupForm
 from orders.models import Order
+
+
+def _log_admin_action(request, obj, action_flag, message=""):
+    """Create a Django admin LogEntry so the action shows in Recent Actions."""
+    User = get_user_model()
+    if request.user.is_authenticated:
+        actor_id = request.user.pk
+    else:
+        actor_id = User.objects.filter(is_superuser=True).values_list("pk", flat=True).first()
+    if actor_id is None:
+        return
+    LogEntry.objects.log_action(
+        user_id=actor_id,
+        content_type_id=ContentType.objects.get_for_model(obj).pk,
+        object_id=obj.pk,
+        object_repr=str(obj),
+        action_flag=action_flag,
+        change_message=message,
+    )
 
 
 def reviews_list(request):
@@ -55,6 +77,7 @@ def add_review(request, order_reference):
             review.user = request.user
             review.order = order
             review.save()
+            _log_admin_action(request, review, ADDITION, "Review submitted via website")
             messages.success(
                 request,
                 "Thanks for your review! It will appear once our team approves it."
@@ -88,6 +111,7 @@ def guest_review(request):
             review.user = request.user if request.user.is_authenticated else None
             review.order = order
             review.save()
+            _log_admin_action(request, review, ADDITION, "Guest review submitted via website")
             # Clear session keys
             request.session.pop("guest_review_ref", None)
             request.session.pop("guest_review_email", None)
