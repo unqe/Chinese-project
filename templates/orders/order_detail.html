@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Order" %} #{{ order.reference }} — Despair Chinese{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header page-header-sm">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-custom mb-2">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'orders:history' %}">{% trans "Orders" %}</a></li>
+                <li class="breadcrumb-item active">#{{ order.reference }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">{% trans "Order Details" %}</h1>
+        <p class="page-header-subtitle mb-0">
+            {% trans "Placed on" %} {{ order.created_at|date:"d N Y, H:i" }}
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- Left: receipt + items -->
+            <div class="col-lg-8">
+
+                <!-- Status banner -->
+                <div class="receipt-card mb-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="order-ref-badge">#{{ order.reference }}</span>
+                                <span class="status-pill status-{{ order.status }}">{{ order.get_status_display }}</span>
+                            </div>
+                            <p class="text-muted mb-0" style="font-size:0.875rem;">
+                                {{ order.created_at|date:"l, d F Y — H:i" }}
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'orders:history' %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Back" %}
+                            </a>
+                            {% if order.status == 'completed' and not order.review %}
+                            <a href="{% url 'reviews:add_review' order.pk %}" class="btn btn-primary-custom btn-sm">
+                                <i class="fa-solid fa-star me-1"></i>{% trans "Leave Review" %}
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <h6 class="checkout-section-title mb-3"><i class="fa-solid fa-bowl-rice me-2"></i>{% trans "Items" %}</h6>
+                    <div class="mb-3">
+                        {% for item in order.items.all %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-opacity-10" style="border-color: rgba(255,255,255,0.06) !important;">
+                            <div>
+                                <span class="fw-500" style="color: var(--text-light); font-size: 0.9rem;">{{ item.item_name }}</span>
+                                <span class="text-muted ms-2" style="font-size: 0.8rem;">× {{ item.quantity }}</span>
+                            </div>
+                            <span style="color: var(--gold); font-family: 'Playfair Display', serif; font-weight: 700;">£{{ item.line_total }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="summary-row">
+                        <span class="text-muted">{% trans "Subtotal" %}</span>
+                        <span>£{{ order.subtotal }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-muted">
+                            {% if order.delivery_type == 'delivery' %}
+                            <i class="fa-solid fa-truck me-1"></i>{% trans "Delivery" %}
+                            {% else %}
+                            <i class="fa-solid fa-store me-1"></i>{% trans "Collection" %}
+                            {% endif %}
+                        </span>
+                        <span>
+                            {% if order.delivery_charge == 0 %}
+                            <span style="color:#27ae60;">{% trans "Free" %}</span>
+                            {% else %}
+                            £{{ order.delivery_charge }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="summary-row summary-total border-top border-opacity-10 mt-2 pt-3">
+                        <span>{% trans "Total" %}</span>
+                        <span class="order-total">£{{ order.total }}</span>
+                    </div>
+                </div>
+
+                <!-- Special instructions -->
+                {% if order.special_instructions %}
+                <div class="checkout-section mb-4">
+                    <h6 class="checkout-section-title"><i class="fa-solid fa-note-sticky me-2"></i>{% trans "Special Instructions" %}</h6>
+                    <p class="mb-0" style="color: #c8b99a; font-size: 0.9rem;">{{ order.special_instructions }}</p>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Right: customer + payment info -->
+            <div class="col-lg-4">
+
+                <!-- Contact -->
+                <div class="checkout-section mb-3">
+                    <h6 class="checkout-section-title mb-3"><i class="fa-solid fa-user me-2"></i>{% trans "Contact" %}</h6>
+                    <div class="d-flex flex-column gap-2">
+                        <div>
+                            <div class="receipt-detail-label">{% trans "Name" %}</div>
+                            <div class="receipt-detail-value">{{ order.full_name }}</div>
+                        </div>
+                        <div>
+                            <div class="receipt-detail-label">{% trans "Email" %}</div>
+                            <div class="receipt-detail-value">{{ order.email }}</div>
+                        </div>
+                        <div>
+                            <div class="receipt-detail-label">{% trans "Phone" %}</div>
+                            <div class="receipt-detail-value">{{ order.phone }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery / Collection address -->
+                {% if order.delivery_type == 'delivery' %}
+                <div class="checkout-section mb-3">
+                    <h6 class="checkout-section-title mb-3"><i class="fa-solid fa-location-dot me-2"></i>{% trans "Delivery Address" %}</h6>
+                    <address class="receipt-detail-value mb-0" style="font-style: normal; line-height: 1.7;">
+                        {{ order.address_line1 }}{% if order.address_line2 %},<br>{{ order.address_line2 }}{% endif %}<br>
+                        {{ order.city }}<br>{{ order.postcode }}
+                    </address>
+                </div>
+                {% else %}
+                <div class="checkout-section mb-3">
+                    <h6 class="checkout-section-title mb-3"><i class="fa-solid fa-store me-2"></i>{% trans "Collection Address" %}</h6>
+                    <address class="receipt-detail-value mb-0" style="font-style: normal; line-height: 1.7;">
+                        Despair Chinese<br>
+                        47 Mare Street<br>
+                        Hackney, London<br>
+                        E8 1HE
+                    </address>
+                </div>
+                {% endif %}
+
+                <!-- Payment -->
+                <div class="checkout-section">
+                    <h6 class="checkout-section-title mb-3"><i class="fa-solid fa-credit-card me-2"></i>{% trans "Payment" %}</h6>
+                    <div>
+                        <div class="receipt-detail-label">{% trans "Method" %}</div>
+                        <div class="receipt-detail-value mb-2">{{ order.get_payment_method_display }}</div>
+                    </div>
+                    {% if order.card_last_four %}
+                    <div>
+                        <div class="receipt-detail-label">{% trans "Card" %}</div>
+                        <div class="receipt-detail-value">•••• •••• •••• {{ order.card_last_four }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
