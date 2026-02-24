@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Order History" %} | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "My Orders" %}</h1>
+    </div>
+</div>
+
+<div class="container py-5">
+    {% if orders %}
+    <div class="row g-4">
+        {% for order in orders %}
+        <div class="col-12">
+            <div class="order-history-card">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                    <div>
+                        <h6 class="mb-1">{% trans "Order" %} #{{ order.reference }}</h6>
+                        <p class="text-muted small mb-0">{{ order.created_at|date:"j M Y, g:i A" }}</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="status-pill status-{{ order.status }}">{{ order.get_status_display }}</span>
+                        <strong class="order-total">£{{ order.total }}</strong>
+                    </div>
+                </div>
+
+                <!-- Items summary -->
+                <div class="order-items-summary mt-3">
+                    {% for item in order.items.all %}
+                        <span class="order-item-chip">{{ item.quantity }}× {{ item.item_name }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <a href="{% url 'orders:order_detail' order.reference %}" class="btn btn-sm btn-outline-secondary">
+                        {% trans "View Details" %}
+                    </a>
+                    {% if order.status == 'completed' %}
+                        {% if order.review %}
+                            <a href="{% url 'reviews:edit' order.review.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-star me-1"></i>{% trans "Edit Review" %}
+                            </a>
+                        {% else %}
+                            <a href="{% url 'reviews:add' order.reference %}" class="btn btn-sm btn-primary-custom">
+                                <i class="fas fa-star me-1"></i>{% trans "Leave a Review" %}
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state text-center py-5">
+        <div class="empty-icon mb-3">📋</div>
+        <h3>{% trans "No orders yet" %}</h3>
+        <p class="text-muted mb-4">{% trans "Ready to place your first order?" %}</p>
+        <a href="{% url 'menu:menu' %}" class="btn btn-primary-custom btn-lg">
+            <i class="fas fa-utensils me-2"></i>{% trans "Browse Menu" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

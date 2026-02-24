@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Checkout" %} | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "Checkout" %}</h1>
+        <!-- Steps indicator -->
+        <div class="checkout-steps">
+            <div class="step step-done"><i class="fas fa-check"></i> {% trans "Basket" %}</div>
+            <div class="step step-active">{% trans "Details" %}</div>
+            <div class="step">{% trans "Confirmation" %}</div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <form method="post" id="checkout-form">
+        {% csrf_token %}
+        <div class="row g-4">
+
+            <!-- LEFT: Form -->
+            <div class="col-lg-7">
+
+                <!-- Contact details -->
+                <div class="checkout-section">
+                    <h5 class="checkout-section-title"><i class="fas fa-user me-2"></i>{% trans "Contact Details" %}</h5>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">{% trans "Full Name" %} *</label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}<div class="invalid-feedback d-block">{{ form.full_name.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{% trans "Email" %} *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{% trans "Phone" %} *</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}<div class="invalid-feedback d-block">{{ form.phone.errors|join:", " }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery or Collection -->
+                <div class="checkout-section mt-4">
+                    <h5 class="checkout-section-title"><i class="fas fa-motorcycle me-2"></i>{% trans "Delivery or Collection?" %}</h5>
+                    <div class="delivery-toggle row g-3">
+                        <div class="col-6">
+                            <label class="delivery-option-card {% if form.delivery_type.value == 'delivery' or not form.delivery_type.value %}active{% endif %}" id="opt-delivery">
+                                <input type="radio" name="delivery_type" value="delivery" {% if form.delivery_type.value == 'delivery' or not form.delivery_type.value %}checked{% endif %} class="d-none">
+                                <i class="fas fa-motorcycle fa-2x mb-2"></i>
+                                <strong>{% trans "Delivery" %}</strong>
+                                <span class="small text-muted">{% trans "30–45 min" %}</span>
+                                <span class="small">{% trans "£2.50 (free over £20)" %}</span>
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <label class="delivery-option-card {% if form.delivery_type.value == 'collection' %}active{% endif %}" id="opt-collection">
+                                <input type="radio" name="delivery_type" value="collection" {% if form.delivery_type.value == 'collection' %}checked{% endif %} class="d-none">
+                                <i class="fas fa-store fa-2x mb-2"></i>
+                                <strong>{% trans "Collection" %}</strong>
+                                <span class="small text-muted">{% trans "~15 min" %}</span>
+                                <span class="small text-success">{% trans "Free" %}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery address (shown only for delivery) -->
+                <div class="checkout-section mt-4" id="address-section">
+                    <h5 class="checkout-section-title"><i class="fas fa-map-marker-alt me-2"></i>{% trans "Delivery Address" %}</h5>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">{% trans "Address Line 1" %} *</label>
+                            {{ form.address_line1 }}
+                            {% if form.address_line1.errors %}<div class="invalid-feedback d-block">{{ form.address_line1.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{% trans "Address Line 2" %} <span class="text-muted">({% trans "optional" %})</span></label>
+                            {{ form.address_line2 }}
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">{% trans "City" %} *</label>
+                            {{ form.city }}
+                            {% if form.city.errors %}<div class="invalid-feedback d-block">{{ form.city.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">{% trans "Postcode" %} *</label>
+                            {{ form.postcode }}
+                            {% if form.postcode.errors %}<div class="invalid-feedback d-block">{{ form.postcode.errors|join:", " }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment method -->
+                <div class="checkout-section mt-4">
+                    <h5 class="checkout-section-title"><i class="fas fa-credit-card me-2"></i>{% trans "Payment Method" %}</h5>
+                    <div class="row g-3">
+                        {% for value, label in form.fields.payment_method.choices %}
+                        <div class="col-12 col-md-4">
+                            <label class="payment-option-card">
+                                <input type="radio" name="payment_method" value="{{ value }}" {% if form.payment_method.value == value or forloop.first %}checked{% endif %} class="d-none payment-radio">
+                                {% if value == 'card' %}
+                                    <i class="fas fa-credit-card fa-lg mb-1"></i>
+                                {% elif value == 'cash_delivery' %}
+                                    <i class="fas fa-money-bill-wave fa-lg mb-1"></i>
+                                {% else %}
+                                    <i class="fas fa-store fa-lg mb-1"></i>
+                                {% endif %}
+                                <span>{{ label }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Fake card entry fields -->
+                    <div id="card-fields" class="mt-3">
+                        <div class="card-fields-inner p-3 rounded-3">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">{% trans "Card Number" %}</label>
+                                    {{ form.card_number }}
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{% trans "Expiry" %}</label>
+                                    {{ form.card_expiry }}
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">CVV</label>
+                                    {{ form.card_cvv }}
+                                </div>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0"><i class="fas fa-lock me-1"></i>{% trans "This is a demo — no real payment is taken." %}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special instructions -->
+                <div class="checkout-section mt-4">
+                    <h5 class="checkout-section-title"><i class="fas fa-comment-dots me-2"></i>{% trans "Special Instructions" %} <span class="text-muted fw-normal">({% trans "optional" %})</span></h5>
+                    {{ form.special_instructions }}
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Order summary -->
+            <div class="col-lg-5">
+                <div class="order-summary-card sticky-top" style="top: 90px;">
+                    <h5 class="mb-4">{% trans "Your Order" %}</h5>
+                    {% for item_data in basket %}
+                    <div class="summary-line d-flex justify-content-between mb-2">
+                        <span>{{ item_data.quantity }}× {{ item_data.menu_item.name }}</span>
+                        <span>£{{ item_data.total_price }}</span>
+                    </div>
+                    {% endfor %}
+                    <hr>
+                    <div class="summary-row">
+                        <span>{% trans "Subtotal" %}</span>
+                        <span>£{{ basket.get_subtotal }}</span>
+                    </div>
+                    <div class="summary-row" id="delivery-summary-row">
+                        <span>{% trans "Delivery" %}</span>
+                        <span id="delivery-cost">
+                            {% if basket.get_subtotal >= 20 %}<span class="text-success">{% trans "Free" %}</span>
+                            {% else %}£{{ delivery_charge }}{% endif %}
+                        </span>
+                    </div>
+                    <hr>
+                    <div class="summary-row summary-total">
+                        <span>{% trans "Total" %}</span>
+                        <span id="total-cost">£{{ basket.get_total }}</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-custom w-100 mt-4 btn-lg">
+                        <i class="fas fa-check me-2"></i>{% trans "Place Order" %}
+                    </button>
+                    <p class="text-center text-muted small mt-2">
+                        <i class="fas fa-shield-alt me-1"></i>{% trans "Your order is safe with us" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const deliveryRadios = document.querySelectorAll('input[name="delivery_type"]');
+    const paymentRadios = document.querySelectorAll('.payment-radio');
+    const addressSection = document.getElementById('address-section');
+    const cardFields = document.getElementById('card-fields');
+    const cards = document.querySelectorAll('.delivery-option-card');
+    const payCards = document.querySelectorAll('.payment-option-card');
+
+    // Delivery/Collection toggle
+    function updateDelivery() {
+        const chosen = document.querySelector('input[name="delivery_type"]:checked').value;
+        addressSection.style.display = chosen === 'delivery' ? 'block' : 'none';
+        cards.forEach(c => c.classList.remove('active'));
+        document.querySelector(`input[name="delivery_type"][value="${chosen}"]`).closest('.delivery-option-card').classList.add('active');
+    }
+    deliveryRadios.forEach(r => r.addEventListener('change', updateDelivery));
+    updateDelivery();
+
+    // Payment method toggle
+    function updatePayment() {
+        const chosen = document.querySelector('.payment-radio:checked').value;
+        cardFields.style.display = chosen === 'card' ? 'block' : 'none';
+        payCards.forEach(c => c.classList.remove('active'));
+        document.querySelector(`.payment-radio[value="${chosen}"]`).closest('.payment-option-card').classList.add('active');
+    }
+    paymentRadios.forEach(r => r.addEventListener('change', updatePayment));
+    updatePayment();
+
+    // Card number formatting (add spaces every 4 digits)
+    const cardInput = document.querySelector('input[name="card_number"]');
+    if (cardInput) {
+        cardInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '').substring(0, 16);
+            this.value = val.replace(/(.{4})/g, '$1 ').trim();
+        });
+    }
+</script>
+{% endblock %}
