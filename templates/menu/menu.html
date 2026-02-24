@@ -50,18 +50,7 @@
                     {% endfor %}
                 </nav>
 
-                <!-- Basket mini-preview -->
-                {% if basket_count > 0 %}
-                <div class="sidebar-basket-card mt-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-semibold"><i class="fas fa-shopping-bag me-1"></i> {% trans "Your Basket" %}</span>
-                        <span class="badge-count">{{ basket_count }}</span>
-                    </div>
-                    <a href="{% url 'orders:basket' %}" class="btn btn-primary-custom w-100 btn-sm">
-                        {% trans "View Basket" %}
-                    </a>
-                </div>
-                {% endif %}
+
             </div>
         </div>
 
