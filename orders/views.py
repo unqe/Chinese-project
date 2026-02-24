@@ -32,9 +32,12 @@ def basket_add(request, item_id):
     basket.add(item, quantity=quantity)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        item_qty = basket.basket.get(str(item_id), {}).get("quantity", 0)
         return JsonResponse({
             "success": True,
             "basket_count": basket.get_total_quantity(),
+            "basket_subtotal": str(basket.get_subtotal()),
+            "item_quantity": item_qty,
             "message": f"{item.name} added to basket."
         })
 
@@ -44,26 +47,43 @@ def basket_add(request, item_id):
 
 @require_POST
 def basket_update(request, item_id):
-    """Updates the quantity of a basket item."""
+    """Updates the quantity of a basket item. Supports AJAX."""
     basket = Basket(request)
     quantity = int(request.POST.get("quantity", 1))
     basket.update(item_id, quantity)
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        item_qty = basket.basket.get(str(item_id), {}).get("quantity", 0)
+        return JsonResponse({
+            "success": True,
+            "basket_count": basket.get_total_quantity(),
+            "basket_subtotal": str(basket.get_subtotal()),
+            "item_quantity": item_qty,
+        })
     return redirect("orders:basket")
 
 
 @require_POST
 def basket_remove(request, item_id):
-    """Removes an item from the basket entirely."""
+    """Removes an item from the basket entirely. Supports AJAX."""
     basket = Basket(request)
     basket.remove(item_id)
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({
+            "success": True,
+            "basket_count": basket.get_total_quantity(),
+            "basket_subtotal": str(basket.get_subtotal()),
+            "item_quantity": 0,
+        })
     messages.info(request, "Item removed from basket.")
     return redirect("orders:basket")
 
 
-@login_required
 def checkout(request):
     """
-    Checkout page. Pre-fills with saved profile data.
+    Checkout page. Pre-fills with saved profile data for logged-in users.
+    Guests can also checkout — they just need to enter an email.
     Creates the Order and OrderItems on POST, then clears the basket.
     """
     basket = Basket(request)
@@ -72,24 +92,25 @@ def checkout(request):
         messages.warning(request, "Your basket is empty.")
         return redirect("menu:menu")
 
-    profile = getattr(request.user, "profile", None)
     initial = {}
-    if profile:
-        initial = {
-            "full_name": request.user.get_full_name() or request.user.username,
-            "email": request.user.email,
-            "phone": profile.phone,
-            "address_line1": profile.address_line1,
-            "address_line2": profile.address_line2,
-            "city": profile.city,
-            "postcode": profile.postcode,
-        }
+    if request.user.is_authenticated:
+        profile = getattr(request.user, "profile", None)
+        if profile:
+            initial = {
+                "full_name": request.user.get_full_name() or request.user.username,
+                "email": request.user.email,
+                "phone": profile.phone,
+                "address_line1": profile.address_line1,
+                "address_line2": profile.address_line2,
+                "city": profile.city,
+                "postcode": profile.postcode,
+            }
 
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-            order.user = request.user
+            order.user = request.user if request.user.is_authenticated else None
             delivery_type = form.cleaned_data["delivery_type"]
             order.subtotal = basket.get_subtotal()
             order.delivery_charge = basket.get_delivery_charge(delivery_type)
@@ -111,6 +132,8 @@ def checkout(request):
                 )
 
             basket.clear()
+            # Store reference in session so guests can access the confirmation
+            request.session["last_order_reference"] = order.reference
             messages.success(request, f"Order #{order.reference} placed successfully!")
             return redirect("orders:confirmation", reference=order.reference)
     else:
@@ -124,10 +147,19 @@ def checkout(request):
     })
 
 
-@login_required
 def order_confirmation(request, reference):
-    """Receipt page shown after a successful order."""
-    order = get_object_or_404(Order, reference=reference, user=request.user)
+    """Receipt page shown after a successful order.
+    Accessible by the owning user, or by guest if reference matches session.
+    """
+    if request.user.is_authenticated:
+        order = get_object_or_404(Order, reference=reference, user=request.user)
+    else:
+        # Guests can only see the order they just placed (reference in session)
+        session_ref = request.session.get("last_order_reference")
+        if session_ref != reference:
+            messages.error(request, "Order not found.")
+            return redirect("menu:menu")
+        order = get_object_or_404(Order, reference=reference, user__isnull=True)
     return render(request, "orders/confirmation.html", {"order": order})
 
 
