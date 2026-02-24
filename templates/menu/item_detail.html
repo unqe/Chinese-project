@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ item.name }} | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-custom">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'menu:menu' %}">{% trans "Menu" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'menu:menu' %}?category={{ item.category.pk }}">{{ item.category.name }}</a></li>
+                <li class="breadcrumb-item active">{{ item.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5 align-items-start">
+        <!-- Image -->
+        <div class="col-lg-5">
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="detail-img rounded-3 w-100">
+            {% else %}
+                <div class="detail-img-placeholder rounded-3">
+                    <i class="fas fa-bowl-food fa-5x"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Details -->
+        <div class="col-lg-7">
+            <span class="detail-category">{{ item.category.name }}</span>
+            <h1 class="detail-title mt-2">{{ item.name }}</h1>
+
+            <!-- Tags row -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                {% if item.is_popular %}<span class="badge-popular">⭐ {% trans "Popular" %}</span>{% endif %}
+                {% if item.is_vegetarian %}<span class="badge-veg">🌿 {% trans "Vegetarian" %}</span>{% endif %}
+                {% if item.is_vegan %}<span class="badge-vegan">🌱 {% trans "Vegan" %}</span>{% endif %}
+                {% if item.spice_level > 0 %}
+                    <span class="badge-spice">{% for _ in item.spice_icons %}🌶{% endfor %} {{ item.get_spice_level_display }}</span>
+                {% endif %}
+            </div>
+
+            <div class="detail-price">£{{ item.price }}</div>
+
+            {% if item.description %}
+                <p class="detail-description mt-3">{{ item.description }}</p>
+            {% endif %}
+
+            {% if item.allergens %}
+                <div class="allergens-notice mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>{% trans "Allergens:" %}</strong> {{ item.allergens }}
+                </div>
+            {% endif %}
+
+            <!-- Add to basket -->
+            <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="add-form mt-4">
+                {% csrf_token %}
+                <div class="qty-row d-flex align-items-center gap-3">
+                    <div class="qty-control d-flex align-items-center">
+                        <button type="button" class="qty-btn" id="qty-minus">−</button>
+                        <input type="number" name="quantity" id="qty-input" value="1" min="1" max="20" class="qty-input">
+                        <button type="button" class="qty-btn" id="qty-plus">+</button>
+                    </div>
+                    <button type="submit" class="btn btn-hero-primary flex-grow-1">
+                        <i class="fas fa-shopping-bag me-2"></i>{% trans "Add to Basket" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Related items -->
+    {% if related_items %}
+    <div class="mt-5 pt-4">
+        <h3 class="section-title mb-4">{% trans "More from" %} {{ item.category.name }}</h3>
+        <div class="row g-3">
+            {% for rel in related_items %}
+            <div class="col-sm-6 col-lg-3">
+                <div class="menu-card h-100">
+                    <div class="menu-card-img-wrap">
+                        {% if rel.image %}
+                            <img src="{{ rel.image.url }}" alt="{{ rel.name }}" class="menu-card-img" loading="lazy">
+                        {% else %}
+                            <div class="menu-card-img-placeholder"><i class="fas fa-bowl-food"></i></div>
+                        {% endif %}
+                    </div>
+                    <div class="menu-card-body">
+                        <h5 class="menu-card-title">
+                            <a href="{% url 'menu:item_detail' rel.pk %}" class="stretched-link-title">{{ rel.name }}</a>
+                        </h5>
+                        <div class="menu-card-footer">
+                            <span class="menu-card-price">£{{ rel.price }}</span>
+                            <form action="{% url 'orders:basket_add' rel.pk %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-add-to-basket"><i class="fas fa-plus"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const qtyInput = document.getElementById('qty-input');
+    document.getElementById('qty-minus').addEventListener('click', () => {
+        if (qtyInput.value > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
+    });
+    document.getElementById('qty-plus').addEventListener('click', () => {
+        if (qtyInput.value < 20) qtyInput.value = parseInt(qtyInput.value) + 1;
+    });
+</script>
+{% endblock %}
