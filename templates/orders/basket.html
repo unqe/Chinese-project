@@ -110,11 +110,12 @@
                         <i class="fas fa-lock me-2"></i>{% trans "Proceed to Checkout" %}
                     </a>
                 {% else %}
-                    <a href="{% url 'account_login' %}?next={% url 'orders:checkout' %}" class="btn btn-primary-custom w-100 mt-3 btn-lg">
-                        <i class="fas fa-sign-in-alt me-2"></i>{% trans "Sign In to Checkout" %}
+                    <a href="{% url 'orders:checkout' %}" class="btn btn-primary-custom w-100 mt-3 btn-lg">
+                        <i class="fas fa-shopping-bag me-2"></i>{% trans "Proceed to Checkout" %}
                     </a>
                     <p class="text-center text-muted small mt-2">
-                        {% trans "New here?" %} <a href="{% url 'account_signup' %}">{% trans "Create an account" %}</a>
+                        <a href="{% url 'account_login' %}?next={% url 'orders:checkout' %}">{% trans "Sign in" %}</a>
+                        {% trans "or checkout as guest" %}
                     </p>
                 {% endif %}
 
