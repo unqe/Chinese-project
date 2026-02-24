@@ -18,4 +18,5 @@ urlpatterns = [
     path("history/", views.order_history, name="history"),
     path("detail/<str:reference>/", views.order_detail, name="order_detail"),
     path("reorder/<str:reference>/", views.reorder, name="reorder"),
+    path("status/<str:reference>/", views.order_status_api, name="order_status_api"),
 ]

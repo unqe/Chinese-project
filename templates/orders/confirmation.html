@@ -37,9 +37,28 @@
                 {% endif %}
             </div>
 
+            <!-- Status tracker -->
+            {% if order.status != 'cancelled' %}
+            <div class="status-tracker-card mb-4" id="status-tracker"
+                 data-status-url="{% url 'orders:order_status_api' order.reference %}">
+                <h6 class="tracker-heading"><i class="fas fa-route me-2"></i>{% trans "Order Status" %}</h6>
+                <div class="tracker-steps">
+                    {% for step in status_steps %}
+                    <div class="tracker-step {% if step.done %}done{% elif step.active %}active{% endif %}"
+                         data-step="{{ step.key }}">
+                        <div class="tracker-dot">
+                            {% if step.done %}<i class="fas fa-check"></i>{% endif %}
+                        </div>
+                        <span class="tracker-label">{{ step.label }}</span>
+                    </div>
+                    {% if not forloop.last %}<div class="tracker-line {% if step.done %}done{% endif %}"></div>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Receipt card -->
             <div class="receipt-card">
-                <div class="receipt-header d-flex justify-content-between align-items-start flex-wrap gap-3">
                     <div>
                         <h5 class="mb-1">{% trans "Your Receipt" %}</h5>
                         <p class="text-muted small mb-0">{{ order.created_at|date:"j F Y, g:i A" }}</p>
@@ -151,4 +170,64 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const tracker = document.getElementById('status-tracker');
+    if (!tracker) return;
+    const statusUrl = tracker.dataset.statusUrl;
+    const TERMINAL = ['completed', 'cancelled'];
+    let currentStatus = '{{ order.status }}';
+
+    function updateTracker(status, statusDisplay) {
+        // Update active/done classes
+        const steps = tracker.querySelectorAll('.tracker-step');
+        const lines = tracker.querySelectorAll('.tracker-line');
+        let foundActive = false;
+        steps.forEach(function(step, i) {
+            const key = step.dataset.step;
+            if (key === status) {
+                step.className = 'tracker-step active';
+                foundActive = true;
+                if (lines[i - 1]) lines[i - 1].classList.add('done');
+            } else if (!foundActive) {
+                step.className = 'tracker-step done';
+                step.querySelector('.tracker-dot').innerHTML = '<i class="fas fa-check"></i>';
+                if (lines[i]) lines[i].classList.add('done');
+            } else {
+                step.className = 'tracker-step';
+                step.querySelector('.tracker-dot').innerHTML = '';
+                if (lines[i]) lines[i].classList.remove('done');
+            }
+        });
+        // Update status pill
+        const pill = document.querySelector('.status-pill');
+        if (pill) {
+            pill.className = 'status-pill status-' + status;
+            pill.textContent = statusDisplay;
+        }
+    }
+
+    function poll() {
+        if (TERMINAL.includes(currentStatus)) return;
+        fetch(statusUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.json())
+            .then(function(data) {
+                if (data.status && data.status !== currentStatus) {
+                    currentStatus = data.status;
+                    updateTracker(data.status, data.status_display);
+                }
+                if (!TERMINAL.includes(currentStatus)) {
+                    setTimeout(poll, 30000);
+                }
+            })
+            .catch(function() { setTimeout(poll, 60000); });
+    }
+
+    // Start polling after 30s
+    setTimeout(poll, 30000);
+})();
+</script>
 {% endblock %}

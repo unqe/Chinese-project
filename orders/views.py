@@ -188,6 +188,7 @@ def order_confirmation(request, reference):
         "order": order,
         "est_arrival": est_arrival,
         "est_minutes": est_minutes,
+        "status_steps": _build_status_steps(order),
     })
 
 
@@ -198,11 +199,39 @@ def order_history(request):
     return render(request, "orders/history.html", {"orders": orders})
 
 
+def _build_status_steps(order):
+    """Return a list of step dicts for the status tracker widget."""
+    if order.delivery_type == Order.COLLECTION:
+        keys = ["pending", "confirmed", "preparing", "ready", "completed"]
+        labels = ["Pending", "Confirmed", "Preparing", "Ready", "Done"]
+    else:
+        keys = ["pending", "confirmed", "preparing", "out_for_delivery", "completed"]
+        labels = ["Pending", "Confirmed", "Preparing", "Out for Delivery", "Done"]
+
+    try:
+        current_idx = keys.index(order.status)
+    except ValueError:
+        current_idx = -1  # cancelled or unknown
+
+    steps = []
+    for i, (key, label) in enumerate(zip(keys, labels)):
+        steps.append({
+            "key": key,
+            "label": label,
+            "done": i < current_idx,
+            "active": i == current_idx,
+        })
+    return steps
+
+
 @login_required
 def order_detail(request, reference):
     """Full detail view of a single past order."""
     order = get_object_or_404(Order, reference=reference, user=request.user)
-    return render(request, "orders/order_detail.html", {"order": order})
+    return render(request, "orders/order_detail.html", {
+        "order": order,
+        "status_steps": _build_status_steps(order),
+    })
 
 
 @login_required
@@ -221,4 +250,19 @@ def reorder(request, reference):
     else:
         messages.warning(request, "None of the items from that order are currently available.")
     return redirect("orders:basket")
+
+
+def order_status_api(request, reference):
+    """JSON endpoint for the status-tracker polling — returns current status."""
+    if request.user.is_authenticated:
+        order = get_object_or_404(Order, reference=reference, user=request.user)
+    else:
+        session_ref = request.session.get("last_order_reference")
+        if session_ref != reference:
+            return JsonResponse({"error": "not found"}, status=404)
+        order = get_object_or_404(Order, reference=reference, user__isnull=True)
+    return JsonResponse({
+        "status": order.status,
+        "status_display": order.get_status_display(),
+    })
 
