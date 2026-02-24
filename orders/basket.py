@@ -10,6 +10,7 @@ from menu.models import MenuItem
 BASKET_SESSION_KEY = "despair_basket"
 DELIVERY_CHARGE = Decimal("2.50")
 FREE_DELIVERY_THRESHOLD = Decimal("20.00")
+MIN_ORDER_DELIVERY = Decimal("10.00")
 
 
 class Basket:
