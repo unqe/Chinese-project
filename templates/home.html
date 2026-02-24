@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}Despair Chinese | Authentic Chinese Takeaway, Hackney London{% endblock %}
+
+{% block content %}
+
+<!-- ====================================================================
+     HERO SECTION
+==================================================================== -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative h-100">
+        <div class="row h-100 align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-content">
+                    <span class="hero-eyebrow">🐉 {% trans "Authentic Chinese Cuisine" %}</span>
+                    <h1 class="hero-title">
+                        {% trans "Taste The" %}<br>
+                        <span class="hero-title-highlight">{% trans "Real China" %}</span><br>
+                        {% trans "In Hackney" %}
+                    </h1>
+                    <p class="hero-subtitle">
+                        {% trans "Freshly made to order. Free delivery over £20. Open 7 days a week." %}
+                    </p>
+
+                    <!-- Open/closed status badge -->
+                    <div class="hero-status mb-4">
+                        {% if is_open %}
+                            <span class="status-badge status-open">
+                                <span class="status-dot"></span> {% trans "Open Now" %}
+                                {% if today_hours %} · {% trans "Closes" %} {{ today_hours.closing_time|time:"H:i" }}{% endif %}
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-closed">
+                                <span class="status-dot"></span> {% trans "Currently Closed" %}
+                                {% if today_hours and not today_hours.is_closed %} · {% trans "Opens" %} {{ today_hours.opening_time|time:"H:i" }}{% endif %}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="hero-cta d-flex flex-wrap gap-3">
+                        <a href="{% url 'menu:menu' %}" class="btn btn-hero-primary">
+                            <i class="fas fa-utensils me-2"></i>{% trans "Order Now" %}
+                        </a>
+                        <a href="{% url 'menu:menu' %}" class="btn btn-hero-outline">
+                            {% trans "View Full Menu" %} <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     TRUST STRIP
+==================================================================== -->
+<section class="trust-strip">
+    <div class="container">
+        <div class="row g-0 text-center">
+            <div class="col-6 col-md-3 trust-item">
+                <i class="fas fa-motorcycle"></i>
+                <span>{% trans "Fast Delivery" %}</span>
+            </div>
+            <div class="col-6 col-md-3 trust-item">
+                <i class="fas fa-pound-sign"></i>
+                <span>{% trans "Free over £20" %}</span>
+            </div>
+            <div class="col-6 col-md-3 trust-item">
+                <i class="fas fa-leaf"></i>
+                <span>{% trans "Fresh Ingredients" %}</span>
+            </div>
+            <div class="col-6 col-md-3 trust-item">
+                <i class="fas fa-star"></i>
+                <span>{% trans "Top Rated" %}</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     POPULAR DISHES
+==================================================================== -->
+{% if popular_items %}
+<section class="popular-section py-5">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-eyebrow">{% trans "Chef's Selection" %}</span>
+            <h2 class="section-title">{% trans "Most Popular Dishes" %}</h2>
+            <p class="section-subtitle">{% trans "Our customers can't get enough of these" %}</p>
+        </div>
+
+        <div class="row g-4">
+            {% for item in popular_items %}
+            <div class="col-sm-6 col-lg-3">
+                <div class="menu-card h-100">
+                    <!-- Image -->
+                    <div class="menu-card-img-wrap">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="menu-card-img" loading="lazy">
+                        {% else %}
+                            <div class="menu-card-img-placeholder">
+                                <i class="fas fa-bowl-food"></i>
+                            </div>
+                        {% endif %}
+                        <!-- Tags -->
+                        <div class="menu-card-tags">
+                            {% if item.is_vegetarian %}<span class="tag-veg" title="Vegetarian">V</span>{% endif %}
+                            {% if item.is_vegan %}<span class="tag-vegan" title="Vegan">Ve</span>{% endif %}
+                            {% if item.spice_level > 0 %}
+                                <span class="tag-spice">
+                                    {% for _ in item.spice_icons %}🌶{% endfor %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="menu-card-body">
+                        <span class="menu-card-category">{{ item.category.name }}</span>
+                        <h5 class="menu-card-title">{{ item.name }}</h5>
+                        {% if item.description %}
+                            <p class="menu-card-desc">{{ item.description|truncatewords:14 }}</p>
+                        {% endif %}
+                        <div class="menu-card-footer">
+                            <span class="menu-card-price">£{{ item.price }}</span>
+                            <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="add-to-basket-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-add-to-basket">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'menu:menu' %}" class="btn btn-outline-primary-custom btn-lg">
+                {% trans "View Full Menu" %} <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ====================================================================
+     ABOUT / STORY SECTION
+==================================================================== -->
+<section class="about-section py-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="about-img-grid">
+                    <div class="about-img-main">
+                        <img src="{% static 'images/about-main.jpg' %}" alt="Inside Despair Chinese" loading="lazy" onerror="this.style.display='none'">
+                        <div class="about-img-fallback"><i class="fas fa-bowl-food"></i></div>
+                    </div>
+                    <div class="about-badge">
+                        <span class="about-badge-years">15+</span>
+                        <span class="about-badge-text">{% trans "Years Serving<br>Hackney" %}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <span class="section-eyebrow">{% trans "Our Story" %}</span>
+                <h2 class="section-title">{% trans "A Slice of China<br>in East London" %}</h2>
+                <p class="text-muted mt-3">
+                    {% trans "Founded in 2010, Despair Chinese has been a Hackney institution for over 15 years. Every dish is prepared fresh using traditional recipes passed down through generations — from our crispy aromatic duck to our hand-rolled spring rolls." %}
+                </p>
+                <p class="text-muted">
+                    {% trans "Our kitchen is run by chefs with decades of experience, committed to bringing you the most authentic flavours East London has to offer." %}
+                </p>
+                <div class="about-features mt-4">
+                    <div class="about-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{% trans "Freshly cooked every order" %}</span>
+                    </div>
+                    <div class="about-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{% trans "Halal options available" %}</span>
+                    </div>
+                    <div class="about-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{% trans "Vegetarian & vegan dishes" %}</span>
+                    </div>
+                    <div class="about-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{% trans "Delivery or collection" %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     OPENING HOURS
+==================================================================== -->
+<section class="hours-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="section-header text-center mb-5">
+                    <span class="section-eyebrow">{% trans "We're Ready When You Are" %}</span>
+                    <h2 class="section-title">{% trans "Opening Hours" %}</h2>
+                </div>
+                <div class="hours-card">
+                    {% if opening_hours %}
+                        <div class="hours-grid">
+                            {% for day in opening_hours %}
+                                <div class="hours-row {% if forloop.counter0 == today_hours.day %}hours-row-today{% endif %}">
+                                    <span class="hours-day">{{ day.get_day_display }}</span>
+                                    <span class="hours-time">
+                                        {% if day.is_closed %}
+                                            <span class="hours-closed">{% trans "Closed" %}</span>
+                                        {% else %}
+                                            {{ day.opening_time|time:"g:i A" }} – {{ day.closing_time|time:"g:i A" }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="hours-grid">
+                            <div class="hours-row"><span class="hours-day">{% trans "Mon – Thu" %}</span><span class="hours-time">4:30 PM – 10:30 PM</span></div>
+                            <div class="hours-row"><span class="hours-day">{% trans "Friday" %}</span><span class="hours-time">4:30 PM – 11:00 PM</span></div>
+                            <div class="hours-row"><span class="hours-day">{% trans "Saturday" %}</span><span class="hours-time">12:00 PM – 11:00 PM</span></div>
+                            <div class="hours-row"><span class="hours-day">{% trans "Sunday" %}</span><span class="hours-time">12:00 PM – 10:30 PM</span></div>
+                        </div>
+                    {% endif %}
+                    <div class="hours-cta text-center mt-4">
+                        <a href="{% url 'menu:menu' %}" class="btn btn-primary-custom">
+                            <i class="fas fa-utensils me-2"></i>{% trans "Order Now" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
