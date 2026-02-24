@@ -67,11 +67,15 @@ def menu_page(request):
     # Build a dict of {item_id: quantity} from the current basket
     basket = Basket(request)
     basket_quantities = {int(k): v["quantity"] for k, v in basket.basket.items()}
+    basket_count = basket.get_total_quantity()
+    basket_subtotal = basket.get_subtotal()
 
     return render(request, "menu/menu.html", {
         "categories": filtered_categories,
         "active_category": active_category,
         "basket_quantities": basket_quantities,
+        "basket_count": basket_count,
+        "basket_subtotal": basket_subtotal,
     })
 
 
