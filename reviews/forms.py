@@ -33,3 +33,26 @@ class ReviewForm(forms.ModelForm):
                 "placeholder": "Tell others about your order — the food, delivery time, everything!",
             }),
         }
+
+
+class ReceiptLookupForm(forms.Form):
+    """
+    Identifies a real order by matching the receipt reference number
+    against the email address used at checkout.
+    """
+    reference = forms.CharField(
+        max_length=12,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "e.g. A3F9B2C1",
+            "style": "text-transform:uppercase;letter-spacing:0.1em;",
+        }),
+        label="Receipt / Order Reference",
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            "class": "form-control",
+            "placeholder": "Email used at checkout",
+        }),
+        label="Email Address",
+    )
