@@ -21,9 +21,6 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    # Use a single-page layout instead of tabs
-    jazzmin_changeform_format = "single"
-
     list_display = (
         "reference", "full_name", "customer_link", "delivery_type",
         "payment_method", "total", "status", "created_at"

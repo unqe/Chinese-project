@@ -212,7 +212,7 @@ JAZZMIN_SETTINGS = {
     "custom_js": None,
     "use_google_fonts_cdn": True,
     "show_ui_builder": False,
-    "changeform_format": "horizontal_tabs",
+    "changeform_format": "single",
     "theme": "darkly",
     "dark_mode_theme": "darkly",
     "button_classes": {
