@@ -126,13 +126,15 @@
                                 {% endif %}
                                 <div class="menu-card-footer">
                                     <span class="menu-card-price">£{{ item.price }}</span>
-                                    <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="add-to-basket-form">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-add-to-basket" title="Add to basket">
+                                    <div class="item-qty-wrapper" id="qty-wrap-{{ item.pk }}" data-item-id="{{ item.pk }}">
+                                        <button class="btn btn-add-to-basket ajax-add-btn"
+                                                data-item-id="{{ item.pk }}"
+                                                data-add-url="{% url 'orders:basket_add' item.pk %}"
+                                                data-update-url="{% url 'orders:basket_update' item.pk %}"
+                                                data-remove-url="{% url 'orders:basket_remove' item.pk %}">
                                             <i class="fas fa-plus"></i> {% trans "Add" %}
                                         </button>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -155,7 +157,7 @@
 
 {% block extra_js %}
 <script>
-    // Highlight active category link on scroll
+    // ---- Category highlight on scroll ----
     const sections = document.querySelectorAll('.menu-section');
     const navLinks = document.querySelectorAll('.category-nav-link');
 
@@ -171,5 +173,166 @@
     }, { rootMargin: '-30% 0px -60% 0px' });
 
     sections.forEach(section => observer.observe(section));
+
+    // ---- Basket qty controls ----
+    const CSRF = '{{ csrf_token }}';
+
+    // Pre-existing basket quantities from server
+    const initialQtys = {{ basket_quantities|default:"{}" }};
+
+    function getQtyHtml(itemId, qty, addUrl, updateUrl, removeUrl) {
+        return `
+        <div class="qty-control-card d-flex align-items-center gap-1">
+            <button class="qty-btn-card qty-minus-card"
+                    data-item-id="${itemId}"
+                    data-update-url="${updateUrl}"
+                    data-remove-url="${removeUrl}"
+                    data-qty="${qty}">−</button>
+            <span class="qty-val-card" id="qty-val-${itemId}">${qty}</span>
+            <button class="qty-btn-card qty-plus-card"
+                    data-item-id="${itemId}"
+                    data-update-url="${updateUrl}"
+                    data-qty="${qty}">+</button>
+        </div>`;
+    }
+
+    function getAddHtml(itemId, addUrl, updateUrl, removeUrl) {
+        return `
+        <button class="btn btn-add-to-basket ajax-add-btn"
+                data-item-id="${itemId}"
+                data-add-url="${addUrl}"
+                data-update-url="${updateUrl}"
+                data-remove-url="${removeUrl}">
+            <i class="fas fa-plus"></i> Add
+        </button>`;
+    }
+
+    function postAjax(url, body, callback) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRF,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams(body),
+        })
+        .then(r => r.json())
+        .then(callback)
+        .catch(err => console.error(err));
+    }
+
+    function updateNavBasket(count, subtotal) {
+        const countEl = document.querySelector('.basket-count');
+        const priceEl = document.querySelector('.basket-price');
+        if (countEl) countEl.textContent = count;
+        if (priceEl) {
+            if (count > 0) {
+                priceEl.textContent = '£' + parseFloat(subtotal).toFixed(2);
+                priceEl.style.display = '';
+            } else {
+                priceEl.style.display = 'none';
+            }
+        }
+    }
+
+    // Initialise qty controls for items already in basket
+    document.querySelectorAll('.item-qty-wrapper').forEach(wrapper => {
+        const itemId = parseInt(wrapper.dataset.itemId);
+        if (initialQtys[itemId] && initialQtys[itemId] > 0) {
+            const btn = wrapper.querySelector('.ajax-add-btn');
+            if (btn) {
+                const addUrl = btn.dataset.addUrl;
+                const updateUrl = btn.dataset.updateUrl;
+                const removeUrl = btn.dataset.removeUrl;
+                wrapper.innerHTML = getQtyHtml(itemId, initialQtys[itemId], addUrl, updateUrl, removeUrl);
+            }
+        }
+    });
+
+    // Event delegation on the menu items container
+    document.addEventListener('click', function(e) {
+        // Add button clicked
+        const addBtn = e.target.closest('.ajax-add-btn');
+        if (addBtn) {
+            e.preventDefault();
+            const itemId = addBtn.dataset.itemId;
+            const addUrl = addBtn.dataset.addUrl;
+            const updateUrl = addBtn.dataset.updateUrl;
+            const removeUrl = addBtn.dataset.removeUrl;
+            postAjax(addUrl, {quantity: 1}, function(data) {
+                if (data.success) {
+                    const wrapper = document.getElementById('qty-wrap-' + itemId);
+                    if (wrapper) {
+                        wrapper.innerHTML = getQtyHtml(itemId, data.item_quantity, addUrl, updateUrl, removeUrl);
+                    }
+                    updateNavBasket(data.basket_count, data.basket_subtotal);
+                }
+            });
+            return;
+        }
+
+        // Plus button
+        const plusBtn = e.target.closest('.qty-plus-card');
+        if (plusBtn) {
+            e.preventDefault();
+            const itemId = plusBtn.dataset.itemId;
+            const currentQty = parseInt(document.getElementById('qty-val-' + itemId).textContent);
+            const newQty = currentQty + 1;
+            const updateUrl = plusBtn.dataset.updateUrl;
+            const wrapper = document.getElementById('qty-wrap-' + itemId);
+            const addUrl = wrapper ? wrapper._addUrl : '';
+            const removeUrl = wrapper ? wrapper._removeUrl : '';
+            postAjax(updateUrl, {quantity: newQty}, function(data) {
+                if (data.success) {
+                    const valEl = document.getElementById('qty-val-' + itemId);
+                    if (valEl) valEl.textContent = data.item_quantity;
+                    // Update data-qty on buttons
+                    const w = document.getElementById('qty-wrap-' + itemId);
+                    if (w) {
+                        w.querySelector('.qty-minus-card').dataset.qty = data.item_quantity;
+                        w.querySelector('.qty-plus-card').dataset.qty = data.item_quantity;
+                    }
+                    updateNavBasket(data.basket_count, data.basket_subtotal);
+                }
+            });
+            return;
+        }
+
+        // Minus button
+        const minusBtn = e.target.closest('.qty-minus-card');
+        if (minusBtn) {
+            e.preventDefault();
+            const itemId = minusBtn.dataset.itemId;
+            const currentQty = parseInt(document.getElementById('qty-val-' + itemId).textContent);
+            const newQty = currentQty - 1;
+            const updateUrl = minusBtn.dataset.updateUrl;
+            const removeUrl = minusBtn.dataset.removeUrl;
+            const wrapper = document.getElementById('qty-wrap-' + itemId);
+
+            if (newQty <= 0) {
+                // Remove item — show Add button again
+                postAjax(removeUrl, {}, function(data) {
+                    if (data.success && wrapper) {
+                        // Re-query the btn data from what we stored
+                        const origBtn = wrapper.querySelector('.qty-btn-card');
+                        wrapper.innerHTML = getAddHtml(itemId,
+                            updateUrl.replace('basket-update', 'basket-add'),
+                            updateUrl, removeUrl);
+                        updateNavBasket(data.basket_count, data.basket_subtotal);
+                    }
+                });
+            } else {
+                postAjax(updateUrl, {quantity: newQty}, function(data) {
+                    if (data.success) {
+                        const valEl = document.getElementById('qty-val-' + itemId);
+                        if (valEl) valEl.textContent = data.item_quantity;
+                        updateNavBasket(data.basket_count, data.basket_subtotal);
+                    }
+                });
+            }
+            return;
+        }
+    });
 </script>
 {% endblock %}
