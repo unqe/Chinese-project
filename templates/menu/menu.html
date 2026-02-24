@@ -128,6 +128,12 @@
                                 <div class="menu-card-footer">
                                     <span class="menu-card-price">£{{ item.price }}</span>
                                     <div class="item-qty-wrapper" id="qty-wrap-{{ item.pk }}" data-item-id="{{ item.pk }}">
+                                        {% if item.pk in deal_item_pks %}
+                                            <a href="{% url 'orders:deal_picker' item.pk %}"
+                                               class="btn btn-add-to-basket">
+                                                <i class="fas fa-list-ul"></i> {% trans "Choose" %}
+                                            </a>
+                                        {% else %}
                                         <button class="btn btn-add-to-basket ajax-add-btn"
                                                 data-item-id="{{ item.pk }}"
                                                 data-add-url="{% url 'orders:basket_add' item.pk %}"
@@ -135,6 +141,7 @@
                                                 data-remove-url="{% url 'orders:basket_remove' item.pk %}">
                                             <i class="fas fa-plus"></i> {% trans "Add" %}
                                         </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

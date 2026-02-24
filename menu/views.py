@@ -3,7 +3,7 @@ Menu app views — homepage and full menu page.
 """
 
 from django.shortcuts import render, get_object_or_404
-from .models import Category, MenuItem
+from .models import Category, MenuItem, DealSlot
 from orders.models import OpeningHours
 from orders.basket import Basket
 import datetime
@@ -70,12 +70,18 @@ def menu_page(request):
     basket_count = basket.get_total_quantity()
     basket_subtotal = basket.get_subtotal()
 
+    # PKs of deal items that have at least one choosable slot
+    deal_item_pks = set(
+        DealSlot.objects.values_list("deal_id", flat=True).distinct()
+    )
+
     return render(request, "menu/menu.html", {
         "categories": filtered_categories,
         "active_category": active_category,
         "basket_quantities": basket_quantities,
         "basket_count": basket_count,
         "basket_subtotal": basket_subtotal,
+        "deal_item_pks": deal_item_pks,
     })
 
 
