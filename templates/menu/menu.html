@@ -153,6 +153,21 @@
     </div>
 </div>
 
+<!-- Sticky basket bar — visible when basket has items -->
+<div id="menu-basket-bar" class="menu-basket-bar{% if not basket_count %} menu-basket-bar-hidden{% endif %}">
+    <div class="container d-flex align-items-center justify-content-between gap-3">
+        <span class="menu-basket-bar-info">
+            <i class="fas fa-shopping-bag me-2"></i>
+            <span id="bar-count">{{ basket_count }}</span> item<span id="bar-count-plural">{% if basket_count != 1 %}s{% endif %}</span>
+            &nbsp;&middot;&nbsp;
+            £<span id="bar-subtotal">{{ basket_subtotal }}</span>
+        </span>
+        <a href="{% url 'orders:basket' %}" class="btn btn-light btn-sm fw-bold">
+            View Basket &rarr;
+        </a>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -232,6 +247,21 @@
                 priceEl.style.display = '';
             } else {
                 priceEl.style.display = 'none';
+            }
+        }
+        // Sticky bar
+        const bar = document.getElementById('menu-basket-bar');
+        const barCount = document.getElementById('bar-count');
+        const barPlural = document.getElementById('bar-count-plural');
+        const barSub = document.getElementById('bar-subtotal');
+        if (bar) {
+            if (count > 0) {
+                bar.classList.remove('menu-basket-bar-hidden');
+                if (barCount) barCount.textContent = count;
+                if (barPlural) barPlural.textContent = count === 1 ? '' : 's';
+                if (barSub) barSub.textContent = parseFloat(subtotal).toFixed(2);
+            } else {
+                bar.classList.add('menu-basket-bar-hidden');
             }
         }
     }
