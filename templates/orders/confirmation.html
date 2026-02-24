@@ -20,6 +20,21 @@
                 <div class="order-ref-badge">
                     {% trans "Order Reference" %}: <strong>#{{ order.reference }}</strong>
                 </div>
+
+                <!-- Estimated time -->
+                {% if order.status != 'cancelled' %}
+                <div class="est-time-badge mt-3">
+                    {% if order.is_delivery %}
+                        <i class="fas fa-motorcycle me-2"></i>
+                        {% trans "Estimated delivery" %}: <strong>{{ est_arrival|time:"g:i A" }}</strong>
+                        <span class="text-muted ms-2">(~{{ est_minutes }} {% trans "min" %})</span>
+                    {% else %}
+                        <i class="fas fa-store me-2"></i>
+                        {% trans "Ready for collection by" %} <strong>{{ est_arrival|time:"g:i A" }}</strong>
+                        <span class="text-muted ms-2">(~{{ est_minutes }} {% trans "min" %})</span>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
 
             <!-- Receipt card -->

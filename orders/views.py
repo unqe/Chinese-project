@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+import datetime
 
 from .basket import Basket
 from .models import Order, OrderItem
@@ -181,7 +182,13 @@ def order_confirmation(request, reference):
             messages.error(request, "Order not found.")
             return redirect("menu:menu")
         order = get_object_or_404(Order, reference=reference, user__isnull=True)
-    return render(request, "orders/confirmation.html", {"order": order})
+    est_minutes = 45 if order.is_delivery else 15
+    est_arrival = order.created_at + datetime.timedelta(minutes=est_minutes)
+    return render(request, "orders/confirmation.html", {
+        "order": order,
+        "est_arrival": est_arrival,
+        "est_minutes": est_minutes,
+    })
 
 
 @login_required
