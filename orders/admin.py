@@ -21,6 +21,9 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    # Use a single-page layout instead of tabs
+    jazzmin_changeform_format = "single"
+
     list_display = (
         "reference", "full_name", "customer_link", "delivery_type",
         "payment_method", "total", "status", "created_at"
@@ -32,7 +35,8 @@ class OrderAdmin(admin.ModelAdmin):
         "user__email", "user__username",
     )
     readonly_fields = (
-        "reference", "subtotal", "delivery_charge", "total", "created_at",
+        "reference", "customer_link",
+        "subtotal", "delivery_charge", "total", "created_at",
         "full_name", "email", "phone",
         "address_line1", "address_line2", "city", "postcode",
         "payment_method", "card_last_four", "special_instructions",
@@ -41,24 +45,26 @@ class OrderAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     ordering = ("-created_at",)
     fieldsets = (
-        ("Order Info", {
-            "fields": ("reference", "status", "created_at"),
+        ("📋  Order", {
+            "fields": (("reference", "status"), "created_at"),
         }),
-        ("Customer", {
-            "fields": ("user", "full_name", "email", "phone"),
+        ("👤  Customer", {
+            "fields": ("customer_link", "user", ("full_name", "email"), "phone"),
         }),
-        ("Delivery / Collection", {
-            "fields": ("delivery_type", "address_line1", "address_line2", "city", "postcode"),
+        ("🚚  Delivery / Collection", {
+            "fields": ("delivery_type", ("address_line1", "address_line2"), ("city", "postcode")),
         }),
-        ("Payment", {
-            "fields": ("payment_method", "card_last_four", "subtotal", "delivery_charge", "total"),
+        ("💳  Payment", {
+            "fields": (("payment_method", "card_last_four"), ("subtotal", "delivery_charge", "total")),
         }),
-        ("Notes", {
+        ("📝  Special Instructions", {
             "fields": ("special_instructions",),
+            "classes": ("collapse",),
+            "description": "Extra notes left by the customer at checkout.",
         }),
     )
 
-    @admin.display(description="Account")
+    @admin.display(description="Account link")
     def customer_link(self, obj):
         if obj.user:
             url = reverse("admin:auth_user_change", args=[obj.user.pk])
