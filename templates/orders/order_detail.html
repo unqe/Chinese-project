@@ -51,7 +51,7 @@
                                 </button>
                             </form>
                             {% if order.status == 'completed' and not order.review %}
-                            <a href="{% url 'reviews:add_review' order.pk %}" class="btn btn-primary-custom btn-sm">
+                            <a href="{% url 'reviews:add' order.reference %}" class="btn btn-primary-custom btn-sm">
                                 <i class="fa-solid fa-star me-1"></i>{% trans "Leave Review" %}
                             </a>
                             {% endif %}

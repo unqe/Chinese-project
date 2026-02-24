@@ -11,6 +11,7 @@ urlpatterns = [
     path("", views.reviews_list, name="list"),
     path("add/<str:order_reference>/", views.add_review, name="add"),
     path("by-receipt/", views.guest_review, name="guest_review"),
+    path("from-order/<str:reference>/", views.guest_review_prefill, name="guest_review_prefill"),
     path("edit/<int:pk>/", views.edit_review, name="edit"),
     path("delete/<int:pk>/", views.delete_review, name="delete"),
 ]

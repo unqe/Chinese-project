@@ -23,15 +23,18 @@
 
                 <!-- Estimated time -->
                 {% if order.status != 'cancelled' %}
-                <div class="est-time-badge mt-3">
-                    {% if order.is_delivery %}
+                <div class="est-time-badge mt-3" id="est-time-badge"
+                     data-is-delivery="{{ order.is_delivery|yesno:'true,false' }}">
+                    {% if order.status == 'completed' %}
+                        <i class="fas fa-check-circle me-2"></i>{% trans "Delivered!" %}
+                    {% elif order.is_delivery %}
                         <i class="fas fa-motorcycle me-2"></i>
-                        {% trans "Estimated delivery" %}: <strong>{{ est_arrival|time:"g:i A" }}</strong>
-                        <span class="text-muted ms-2">(~{{ est_minutes }} {% trans "min" %})</span>
+                        {% trans "Estimated delivery" %}: <strong id="est-arrival-time">{{ est_arrival|time:"g:i A" }}</strong>
+                        <span class="text-muted ms-2">(~<span id="est-min-val">{{ est_minutes }}</span> {% trans "min" %})</span>
                     {% else %}
                         <i class="fas fa-store me-2"></i>
-                        {% trans "Ready for collection by" %} <strong>{{ est_arrival|time:"g:i A" }}</strong>
-                        <span class="text-muted ms-2">(~{{ est_minutes }} {% trans "min" %})</span>
+                        {% trans "Ready for collection by" %} <strong id="est-arrival-time">{{ est_arrival|time:"g:i A" }}</strong>
+                        <span class="text-muted ms-2">(~<span id="est-min-val">{{ est_minutes }}</span> {% trans "min" %})</span>
                     {% endif %}
                 </div>
                 {% endif %}
@@ -161,9 +164,22 @@
                     <i class="fas fa-history me-2"></i>{% trans "View All Orders" %}
                 </a>
                 {% if order.status == 'completed' and not order.review %}
-                <a href="{% url 'reviews:add' order.reference %}" class="btn btn-primary-custom">
-                    <i class="fas fa-star me-2"></i>{% trans "Leave a Review" %}
-                </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'reviews:add' order.reference %}" class="btn btn-primary-custom">
+                        <i class="fas fa-star me-2"></i>{% trans "Leave a Review" %}
+                    </a>
+                    {% else %}
+                    <a href="{% url 'reviews:guest_review_prefill' order.reference %}" class="btn btn-primary-custom">
+                        <i class="fas fa-star me-2"></i>{% trans "Leave a Review" %}
+                    </a>
+                    {% endif %}
+                {% elif not order.review %}
+                    <span id="review-btn-placeholder"
+                          data-auth="{{ user.is_authenticated|yesno:'true,false' }}"
+                          data-auth-url="{% url 'reviews:add' order.reference %}"
+                          data-guest-url="{% url 'reviews:guest_review_prefill' order.reference %}"
+                          style="display:none;">
+                    </span>
                 {% endif %}
             </div>
 
@@ -210,6 +226,33 @@
         }
     }
 
+    function updateEstTime(estMinutes, estArrival) {
+        const badge = document.getElementById('est-time-badge');
+        if (!badge) return;
+        const minEl = document.getElementById('est-min-val');
+        const timeEl = document.getElementById('est-arrival-time');
+        if (estMinutes === 0) {
+            const isDelivery = badge.dataset.isDelivery === 'true';
+            badge.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + (isDelivery ? 'Delivered!' : 'Ready for collection!');
+        } else {
+            if (minEl) minEl.textContent = estMinutes;
+            if (timeEl) timeEl.textContent = estArrival;
+        }
+    }
+
+    function showReviewBtn(data) {
+        const placeholder = document.getElementById('review-btn-placeholder');
+        if (!placeholder) return;
+        if (data.status !== 'completed') return;
+        const isAuth = placeholder.dataset.auth === 'true';
+        const url = isAuth ? placeholder.dataset.authUrl : placeholder.dataset.guestUrl;
+        const btn = document.createElement('a');
+        btn.href = url;
+        btn.className = 'btn btn-primary-custom';
+        btn.innerHTML = '<i class="fas fa-star me-2"></i>Leave a Review';
+        placeholder.replaceWith(btn);
+    }
+
     function poll() {
         if (TERMINAL.includes(currentStatus)) return;
         fetch(statusUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -218,6 +261,8 @@
                 if (data.status && data.status !== currentStatus) {
                     currentStatus = data.status;
                     updateTracker(data.status, data.status_display);
+                    updateEstTime(data.est_minutes, data.est_arrival);
+                    showReviewBtn(data);
                 }
                 if (!TERMINAL.includes(currentStatus)) {
                     setTimeout(poll, 30000);

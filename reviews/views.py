@@ -143,6 +143,39 @@ def guest_review(request):
     })
 
 
+def guest_review_prefill(request, reference):
+    """
+    Shortcut for guests arriving from the confirmation page.
+    Reads the order reference + email from the session so they skip the
+    receipt lookup step and land straight on the review form.
+    """
+    session_ref = request.session.get("last_order_reference")
+    if session_ref != reference:
+        messages.error(request, "Couldn't verify your order. Please use the receipt lookup form.")
+        return redirect("reviews:guest_review")
+
+    order = get_object_or_404(Order, reference=reference, user__isnull=True)
+
+    if order.status != Order.STATUS_COMPLETED:
+        messages.info(request, "You can leave a review once your order is completed.")
+        return redirect("orders:confirmation", reference=reference)
+
+    if hasattr(order, "review"):
+        messages.info(request, "This order has already been reviewed.")
+        return redirect("reviews:list")
+
+    # Pre-verify: store in session so the shared guest_review step-2 POST works
+    request.session["guest_review_ref"] = order.reference
+    request.session["guest_review_email"] = order.email.lower()
+
+    return render(request, "reviews/guest_review.html", {
+        "lookup_form": None,
+        "review_form": ReviewForm(),
+        "order": order,
+        "step": 2,
+    })
+
+
 @login_required
 def edit_review(request, pk):
     """

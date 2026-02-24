@@ -7,12 +7,40 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-import datetime
+from django.utils import timezone
+from datetime import timedelta
 
 from .basket import Basket
 from .models import Order, OrderItem
 from .forms import CheckoutForm
 from menu.models import MenuItem
+
+
+# Minutes remaining from *now* for each delivery type + status combination
+_STATUS_EST_MINUTES = {
+    "delivery": {
+        "pending": 45,
+        "confirmed": 40,
+        "preparing": 25,
+        "out_for_delivery": 15,
+        "completed": 0,
+        "cancelled": 0,
+    },
+    "collection": {
+        "pending": 15,
+        "confirmed": 12,
+        "preparing": 8,
+        "ready": 5,
+        "completed": 0,
+        "cancelled": 0,
+    },
+}
+
+
+def _est_for_status(order):
+    """Return estimated remaining minutes based on current order status."""
+    mode = "delivery" if order.is_delivery else "collection"
+    return _STATUS_EST_MINUTES.get(mode, {}).get(order.status, 45 if order.is_delivery else 15)
 
 
 def basket_view(request):
@@ -182,8 +210,8 @@ def order_confirmation(request, reference):
             messages.error(request, "Order not found.")
             return redirect("menu:menu")
         order = get_object_or_404(Order, reference=reference, user__isnull=True)
-    est_minutes = 45 if order.is_delivery else 15
-    est_arrival = order.created_at + datetime.timedelta(minutes=est_minutes)
+    est_minutes = _est_for_status(order)
+    est_arrival = timezone.now() + timedelta(minutes=est_minutes)
     return render(request, "orders/confirmation.html", {
         "order": order,
         "est_arrival": est_arrival,
@@ -253,7 +281,7 @@ def reorder(request, reference):
 
 
 def order_status_api(request, reference):
-    """JSON endpoint for the status-tracker polling — returns current status."""
+    """JSON endpoint for the status-tracker polling — returns current status and est time."""
     if request.user.is_authenticated:
         order = get_object_or_404(Order, reference=reference, user=request.user)
     else:
@@ -261,8 +289,12 @@ def order_status_api(request, reference):
         if session_ref != reference:
             return JsonResponse({"error": "not found"}, status=404)
         order = get_object_or_404(Order, reference=reference, user__isnull=True)
+    est_minutes = _est_for_status(order)
+    est_arrival = timezone.now() + timedelta(minutes=est_minutes)
     return JsonResponse({
         "status": order.status,
         "status_display": order.get_status_display(),
+        "est_minutes": est_minutes,
+        "est_arrival": est_arrival.strftime("%-I:%M %p"),
     })
 
