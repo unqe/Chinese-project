@@ -17,7 +17,16 @@ from menu.models import MenuItem
 def basket_view(request):
     """Displays the current basket contents."""
     basket = Basket(request)
-    return render(request, "orders/basket.html", {"basket": basket})
+    basket_item_ids = set(basket.basket.keys())
+    popular_items = (
+        MenuItem.objects
+        .filter(is_popular=True, is_available=True)
+        .exclude(pk__in=basket_item_ids)[:4]
+    )
+    return render(request, "orders/basket.html", {
+        "basket": basket,
+        "popular_items": popular_items,
+    })
 
 
 @require_POST
@@ -42,6 +51,8 @@ def basket_add(request, item_id):
         })
 
     messages.success(request, f"\u2713 {item.name} added to your basket.")
+    if request.POST.get("from_basket"):
+        return redirect("orders:basket")
     return redirect("menu:menu")
 
 

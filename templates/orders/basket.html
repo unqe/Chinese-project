@@ -65,6 +65,41 @@
             <a href="{% url 'menu:menu' %}" class="btn btn-outline-secondary mt-3">
                 <i class="fas fa-arrow-left me-2"></i>{% trans "Continue Shopping" %}
             </a>
+
+            <!-- Upsell — popular items not already in basket -->
+            {% if popular_items %}
+            <div class="upsell-section mt-4">
+                <h6 class="upsell-heading">
+                    <i class="fas fa-fire me-2" style="color: var(--gold);"></i>{% trans "Customers also ordered…" %}
+                </h6>
+                <div class="row g-2">
+                    {% for item in popular_items %}
+                    <div class="col-sm-6">
+                        <div class="upsell-card d-flex align-items-center gap-3">
+                            <div class="upsell-img">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
+                                {% else %}
+                                    <div class="upsell-img-placeholder"><i class="fas fa-bowl-food"></i></div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="upsell-name">{{ item.name }}</div>
+                                <div class="upsell-price">£{{ item.price }}</div>
+                            </div>
+                            <form action="{% url 'orders:basket_add' item.pk %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="from_basket" value="1">
+                                <button type="submit" class="btn-upsell-add" title="Add to basket">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Order summary -->

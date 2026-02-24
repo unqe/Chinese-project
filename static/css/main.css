@@ -879,6 +879,73 @@ p { color: #c8b99a; }
 
 .payment-icons { color: var(--text-muted); }
 
+/* Upsell section on basket page */
+.upsell-section {}
+.upsell-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+}
+.upsell-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.75rem;
+    transition: border-color 0.15s;
+}
+.upsell-card:hover { border-color: rgba(196,164,98,0.4); }
+.upsell-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.upsell-img img { width: 100%; height: 100%; object-fit: cover; }
+.upsell-img-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--surface-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+.upsell-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.upsell-price {
+    font-size: 0.78rem;
+    color: var(--gold);
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+}
+.btn-upsell-add {
+    background: var(--gold);
+    color: #1a0a00;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s;
+    cursor: pointer;
+}
+.btn-upsell-add:hover { background: var(--gold-light, #e8c86a); transform: scale(1.1); }
+
 /* Free delivery progress bar */
 .free-delivery-bar { font-size: 0.8rem; }
 .free-delivery-progress { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-bottom: 4px; }
