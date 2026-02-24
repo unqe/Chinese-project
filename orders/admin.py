@@ -65,6 +65,10 @@ class OrderAdmin(admin.ModelAdmin):
             return format_html('<a href="{}">{}</a>', url, obj.user.email or obj.user.username)
         return format_html('<span style="color:#999">Guest</span>')
 
+    def has_add_permission(self, request):
+        # Orders are created by customers via the website, not manually in admin
+        return False
+
 
 @admin.register(OpeningHours)
 class OpeningHoursAdmin(admin.ModelAdmin):

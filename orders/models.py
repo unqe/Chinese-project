@@ -163,5 +163,7 @@ class OrderItem(models.Model):
     @property
     def line_total(self):
         """Total cost for this line: price * quantity."""
+        if self.item_price is None:
+            return None
         return self.item_price * self.quantity
 

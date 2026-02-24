@@ -11,7 +11,10 @@ def basket_context(request):
     """
     Makes 'basket' and 'basket_count' available in every template.
     The Basket object reads from the session, so no database hit occurs.
+    Skips gracefully for requests without sessions (e.g. Django admin pages).
     """
+    if not hasattr(request, 'session'):
+        return {"basket": None, "basket_count": 0, "basket_subtotal": 0}
     basket = Basket(request)
     return {
         "basket": basket,
