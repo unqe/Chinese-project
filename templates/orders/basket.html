@@ -38,6 +38,15 @@
                     <div class="basket-item-info flex-grow-1">
                         <h6 class="basket-item-name mb-0">{{ item_data.menu_item.name }}</h6>
                         <span class="basket-item-unit-price">£{{ item_data.price }} {% trans "each" %}</span>
+                        <div class="basket-item-note-wrap mt-1">
+                            <input type="text"
+                                   class="basket-item-note"
+                                   placeholder="{% trans "Add a note (e.g. no onions)" %}"
+                                   value="{{ item_data.notes }}"
+                                   maxlength="300"
+                                   data-note-url="{% url 'orders:basket_note' item_data.menu_item.pk %}"
+                                   data-csrf="{{ csrf_token }}">
+                        </div>
                     </div>
                     <!-- Quantity controls -->
                     <form action="{% url 'orders:basket_update' item_data.menu_item.pk %}" method="post" class="basket-qty-form">
@@ -175,4 +184,28 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Save per-item notes on blur via AJAX
+    document.querySelectorAll('.basket-item-note').forEach(function(input) {
+        var lastVal = input.value;
+        input.addEventListener('blur', function() {
+            if (this.value === lastVal) return;
+            lastVal = this.value;
+            const noteUrl = this.dataset.noteUrl;
+            const csrf = this.dataset.csrf;
+            fetch(noteUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrf,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new URLSearchParams({ note: this.value }),
+            });
+        });
+    });
+</script>
 {% endblock %}

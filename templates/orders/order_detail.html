@@ -56,10 +56,13 @@
                     <h6 class="checkout-section-title mb-3"><i class="fa-solid fa-bowl-rice me-2"></i>{% trans "Items" %}</h6>
                     <div class="mb-3">
                         {% for item in order.items.all %}
-                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-opacity-10" style="border-color: rgba(255,255,255,0.06) !important;">
+                        <div class="d-flex justify-content-between align-items-start py-2 border-bottom border-opacity-10" style="border-color: rgba(255,255,255,0.06) !important;">
                             <div>
                                 <span class="fw-500" style="color: var(--text-light); font-size: 0.9rem;">{{ item.item_name }}</span>
                                 <span class="text-muted ms-2" style="font-size: 0.8rem;">× {{ item.quantity }}</span>
+                                {% if item.notes %}
+                                <div class="text-muted mt-1" style="font-size: 0.78rem;"><i class="fas fa-pen me-1"></i>{{ item.notes }}</div>
+                                {% endif %}
                             </div>
                             <span style="color: var(--gold); font-family: 'Playfair Display', serif; font-weight: 700;">£{{ item.line_total }}</span>
                         </div>

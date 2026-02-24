@@ -879,6 +879,21 @@ p { color: #c8b99a; }
 
 .payment-icons { color: var(--text-muted); }
 
+.basket-item-note-wrap { margin-top: 0.3rem; }
+.basket-item-note {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--border);
+    padding: 0.15rem 0;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.basket-item-note::placeholder { color: rgba(160,140,120,0.5); }
+.basket-item-note:focus { border-bottom-color: var(--gold); color: var(--text-light); }
+
 /* Upsell section on basket page */
 .upsell-section {}
 .upsell-heading {

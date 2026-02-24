@@ -47,6 +47,13 @@ class Basket:
                 self.remove(item_id)
         self._save()
 
+    def set_notes(self, item_id, notes):
+        """Attach a per-item note (e.g. 'no onions') to a basket entry."""
+        item_id = str(item_id)
+        if item_id in self.basket:
+            self.basket[item_id]["notes"] = notes.strip()
+            self._save()
+
     def remove(self, item_id):
         """Remove an item from the basket entirely."""
         item_id = str(item_id)
@@ -85,6 +92,7 @@ class Basket:
                 continue   # item was deleted from the menu
             item_data["price"] = Decimal(item_data["price"])
             item_data["total_price"] = item_data["price"] * item_data["quantity"]
+            item_data["notes"] = item_data.get("notes", "")
             yield item_data
 
     def get_total_quantity(self):

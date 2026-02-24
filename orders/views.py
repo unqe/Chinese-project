@@ -75,6 +75,15 @@ def basket_update(request, item_id):
 
 
 @require_POST
+def basket_note(request, item_id):
+    """Saves a per-item note to the session basket. Called via AJAX."""
+    basket = Basket(request)
+    note = request.POST.get("note", "").strip()
+    basket.set_notes(item_id, note)
+    return JsonResponse({"success": True})
+
+
+@require_POST
 def basket_remove(request, item_id):
     """Removes an item from the basket entirely. Supports AJAX."""
     basket = Basket(request)
@@ -140,6 +149,7 @@ def checkout(request):
                     item_name=item_data["menu_item"].name,
                     item_price=item_data["price"],
                     quantity=item_data["quantity"],
+                    notes=item_data.get("notes", ""),
                 )
 
             basket.clear()

@@ -152,6 +152,7 @@ class OrderItem(models.Model):
     item_name = models.CharField(max_length=200)      # snapshot of name at order time
     item_price = models.DecimalField(max_digits=6, decimal_places=2)  # snapshot
     quantity = models.PositiveIntegerField(default=1)
+    notes = models.CharField(max_length=300, blank=True, help_text="Per-item special request (e.g. no onions)")
 
     class Meta:
         ordering = ["id"]

@@ -12,6 +12,7 @@ urlpatterns = [
     path("basket/add/<int:item_id>/", views.basket_add, name="basket_add"),
     path("basket/update/<int:item_id>/", views.basket_update, name="basket_update"),
     path("basket/remove/<int:item_id>/", views.basket_remove, name="basket_remove"),
+    path("basket/note/<int:item_id>/", views.basket_note, name="basket_note"),
     path("checkout/", views.checkout, name="checkout"),
     path("confirmation/<str:reference>/", views.order_confirmation, name="confirmation"),
     path("history/", views.order_history, name="history"),
