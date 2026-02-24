@@ -20,6 +20,9 @@ SECRET_KEY = config("SECRET_KEY", default="change-me-in-production")
 # Application definition
 # ---------------------------------------------------------------------------
 INSTALLED_APPS = [
+    # modeltranslation must come before django.contrib.admin
+    "modeltranslation",
+
     # Jazzmin must come before django.contrib.admin to override the admin UI
     "jazzmin",
 
@@ -36,7 +39,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "modeltranslation",
     "crispy_forms",
     "crispy_bootstrap5",
 
@@ -100,13 +102,11 @@ SITE_ID = 1
 
 # Allauth configuration
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_VERIFICATION = "none"          # no real email server needed
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-ACCOUNT_SIGNUP_FIELDS = ['username*', 'email*', 'password1*', 'password2*']
 
 
 # ---------------------------------------------------------------------------

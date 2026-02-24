@@ -1,0 +1,11 @@
+[
+  {"model": "sites.site", "pk": 1, "fields": {"domain": "localhost:8000", "name": "Despair Chinese"}},
+
+  {"model": "orders.openinghours", "pk": 1, "fields": {"day": 0, "opening_time": "12:00:00", "closing_time": "22:00:00", "is_closed": false}},
+  {"model": "orders.openinghours", "pk": 2, "fields": {"day": 1, "opening_time": "12:00:00", "closing_time": "22:00:00", "is_closed": false}},
+  {"model": "orders.openinghours", "pk": 3, "fields": {"day": 2, "opening_time": "12:00:00", "closing_time": "22:00:00", "is_closed": false}},
+  {"model": "orders.openinghours", "pk": 4, "fields": {"day": 3, "opening_time": "12:00:00", "closing_time": "22:30:00", "is_closed": false}},
+  {"model": "orders.openinghours", "pk": 5, "fields": {"day": 4, "opening_time": "12:00:00", "closing_time": "23:00:00", "is_closed": false}},
+  {"model": "orders.openinghours", "pk": 6, "fields": {"day": 5, "opening_time": "12:00:00", "closing_time": "23:30:00", "is_closed": false}},
+  {"model": "orders.openinghours", "pk": 7, "fields": {"day": 6, "opening_time": "13:00:00", "closing_time": "22:00:00", "is_closed": false}}
+]
