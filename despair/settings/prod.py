@@ -12,6 +12,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     ".herokuapp.com",
+    "despair.cc",
+    "www.despair.cc",
     "localhost",
     "127.0.0.1",
 ]
