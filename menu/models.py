@@ -82,3 +82,47 @@ class MenuItem(models.Model):
         """Returns a range used by templates to render chilli icons."""
         return range(self.spice_level)
 
+
+class DealSlot(models.Model):
+    """
+    Defines a customer-selectable slot within a set-menu deal.
+    For example, "Deal for 2" might have two DealSlots labelled
+    "Starter 1" and "Starter 2", restricted to the Starters category.
+    When a customer adds a deal to the basket, they choose one MenuItem
+    per slot and those choices are stored as the item note.
+    """
+
+    deal = models.ForeignKey(
+        MenuItem,
+        on_delete=models.CASCADE,
+        related_name="slots",
+        help_text="The deal MenuItem this selection slot belongs to.",
+    )
+    label = models.CharField(
+        max_length=100,
+        help_text="Displayed label e.g. 'Starter 1' or 'Main Course 2'.",
+    )
+    categories = models.ManyToManyField(
+        Category,
+        blank=True,
+        related_name="deal_slots",
+        help_text="Items from these categories are available to choose. Leave empty to allow all.",
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Display order within the deal form.")
+
+    class Meta:
+        ordering = ["order", "pk"]
+
+    def __str__(self):
+        return f"{self.deal.name} – {self.label}"
+
+    def get_choices(self):
+        """Return available MenuItems for this slot."""
+        qs = MenuItem.objects.filter(is_available=True)
+        cats = self.categories.all()
+        if cats.exists():
+            qs = qs.filter(category__in=cats)
+        # Never show other deals as choices
+        qs = qs.exclude(category__name="Deals & Set Menus")
+        return qs.select_related("category")
+
