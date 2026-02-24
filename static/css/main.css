@@ -1258,3 +1258,27 @@ hr { border-color: var(--border); }
     .btn-hero-primary, .btn-hero-outline { text-align: center; }
     .delivery-option-card { padding: 0.9rem 0.5rem; font-size: 0.8rem; }
 }
+
+/* -------------------------------------------------------------------------
+   Menu Page — Sticky Basket Bar
+------------------------------------------------------------------------- */
+.menu-basket-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    background: var(--red);
+    color: #fff;
+    padding: 0.8rem 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.45);
+    transition: transform 0.3s ease;
+}
+.menu-basket-bar-hidden {
+    transform: translateY(110%);
+    pointer-events: none;
+}
+.menu-basket-bar-info {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
