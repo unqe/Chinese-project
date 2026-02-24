@@ -1192,5 +1192,134 @@
       "created_at": "2025-06-01T12:00:00Z",
       "updated_at": "2025-06-01T12:00:00Z"
     }
+  },
+  {
+    "model": "menu.category",
+    "pk": 14,
+    "fields": {
+      "name": "Deals & Set Menus",
+      "name_en": "Deals & Set Menus",
+      "name_zh_hans": "优惠套餐",
+      "description": "Great value set menus and meal deals",
+      "description_en": "Great value set menus and meal deals",
+      "description_zh_hans": "超值套餐与优惠组合",
+      "icon": "🎁",
+      "order": 0
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 45,
+    "fields": {
+      "category": 14,
+      "name": "Deal for 2",
+      "name_en": "Deal for 2",
+      "name_zh_hans": "双人套餐",
+      "description": "2 starters + 2 main courses of your choice + 2 portions of egg fried rice. Perfect for two!",
+      "description_en": "2 starters + 2 main courses of your choice + 2 portions of egg fried rice. Perfect for two!",
+      "description_zh_hans": "2份开胃菜 + 2份主菜（自选）+ 2份蛋炒饭。双人享用，完美之选！",
+      "price": "29.95",
+      "spice_level": 0,
+      "is_vegetarian": false,
+      "is_vegan": false,
+      "is_available": true,
+      "is_popular": true,
+      "allergens": "Gluten, Eggs, Crustaceans, Soya",
+      "order": 1,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 46,
+    "fields": {
+      "category": 14,
+      "name": "Family Feast (4 People)",
+      "name_en": "Family Feast (4 People)",
+      "name_zh_hans": "家庭盛宴（4人份）",
+      "description": "Half aromatic crispy duck + 4 main courses + 4 portions of fried rice or noodles + prawn crackers. Feeds the whole family!",
+      "description_en": "Half aromatic crispy duck + 4 main courses + 4 portions of fried rice or noodles + prawn crackers. Feeds the whole family!",
+      "description_zh_hans": "半只香酥鸭 + 4份主菜 + 4份炒饭或面条 + 虾饼。全家享用，实惠美味！",
+      "price": "59.95",
+      "spice_level": 0,
+      "is_vegetarian": false,
+      "is_vegan": false,
+      "is_available": true,
+      "is_popular": true,
+      "allergens": "Gluten, Eggs, Crustaceans, Soya, Molluscs",
+      "order": 2,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 47,
+    "fields": {
+      "category": 14,
+      "name": "Student Special",
+      "name_en": "Student Special",
+      "name_zh_hans": "学生特惠",
+      "description": "1 starter + 1 main course + 1 egg fried rice or boiled rice. Great value — show your student ID to redeem.",
+      "description_en": "1 starter + 1 main course + 1 egg fried rice or boiled rice. Great value — show your student ID to redeem.",
+      "description_zh_hans": "1份开胃菜 + 1份主菜 + 1份蛋炒饭或白米饭。实惠之选——出示学生证即可享用。",
+      "price": "12.95",
+      "spice_level": 0,
+      "is_vegetarian": false,
+      "is_vegan": false,
+      "is_available": true,
+      "is_popular": false,
+      "allergens": "Gluten, Eggs, Soya",
+      "order": 3,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 48,
+    "fields": {
+      "category": 14,
+      "name": "Veggie Set Menu",
+      "name_en": "Veggie Set Menu",
+      "name_zh_hans": "素食套餐",
+      "description": "2 vegetable spring rolls + tofu in black bean sauce + mixed vegetables in oyster sauce + 2 egg fried rice. 100% vegetarian.",
+      "description_en": "2 vegetable spring rolls + tofu in black bean sauce + mixed vegetables in oyster sauce + 2 egg fried rice. 100% vegetarian.",
+      "description_zh_hans": "2份蔬菜春卷 + 豆豉豆腐 + 蚝油什锦蔬菜 + 2份蛋炒饭。100%素食。",
+      "price": "24.95",
+      "spice_level": 1,
+      "is_vegetarian": true,
+      "is_vegan": false,
+      "is_available": true,
+      "is_popular": false,
+      "allergens": "Gluten, Eggs, Soya, Molluscs",
+      "order": 4,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 49,
+    "fields": {
+      "category": 14,
+      "name": "Duck Banquet for 2",
+      "name_en": "Duck Banquet for 2",
+      "name_zh_hans": "双人鸭肉盛宴",
+      "description": "Half aromatic crispy duck with pancakes + 1 main course each + 2 egg fried rice + prawn crackers. Our most popular deal!",
+      "description_en": "Half aromatic crispy duck with pancakes + 1 main course each + 2 egg fried rice + prawn crackers. Our most popular deal!",
+      "description_zh_hans": "半只香酥鸭配荷叶饼 + 各1份主菜 + 2份蛋炒饭 + 虾饼。最受欢迎的优惠套餐！",
+      "price": "39.95",
+      "spice_level": 0,
+      "is_vegetarian": false,
+      "is_vegan": false,
+      "is_available": true,
+      "is_popular": true,
+      "allergens": "Gluten, Eggs, Crustaceans, Soya, Sesame",
+      "order": 5,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
   }
 ]
