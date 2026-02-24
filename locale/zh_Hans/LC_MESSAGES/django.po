@@ -267,7 +267,7 @@ msgid "Fast Delivery"
 msgstr "快速配送"
 
 #: templates/home.html:68 templates/orders/basket.html:86
-msgid "Free over £20"
+msgid "Free delivery over £20"
 msgstr "满£20免配送费"
 
 #: templates/home.html:72
@@ -533,7 +533,7 @@ msgid "30–45 min"
 msgstr "30至45分钟"
 
 #: templates/orders/checkout.html:59
-msgid "£2.50 (free over £20)"
+msgid "£2.50 (free delivery over £20)"
 msgstr "£2.50（满£20免费）"
 
 #: templates/orders/checkout.html:66 templates/orders/confirmation.html:81
