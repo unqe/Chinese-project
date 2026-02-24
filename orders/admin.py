@@ -14,8 +14,9 @@ class OrderItemInline(admin.TabularInline):
     """Displays all items for an order inline on the order detail page."""
     model = OrderItem
     extra = 0
-    readonly_fields = ("item_name", "item_price", "quantity", "line_total")
+    readonly_fields = ("item_name", "item_price", "quantity", "line_total", "notes")
     can_delete = False
+    fields = ("item_name", "item_price", "quantity", "line_total", "notes")
 
 
 @admin.register(Order)
@@ -30,10 +31,32 @@ class OrderAdmin(admin.ModelAdmin):
         "reference", "full_name", "email", "phone",
         "user__email", "user__username",
     )
-    readonly_fields = ("reference", "subtotal", "delivery_charge", "total", "created_at")
+    readonly_fields = (
+        "reference", "subtotal", "delivery_charge", "total", "created_at",
+        "full_name", "email", "phone",
+        "address_line1", "address_line2", "city", "postcode",
+        "payment_method", "card_last_four", "special_instructions",
+    )
     inlines = [OrderItemInline]
     date_hierarchy = "created_at"
     ordering = ("-created_at",)
+    fieldsets = (
+        ("Order Info", {
+            "fields": ("reference", "status", "created_at"),
+        }),
+        ("Customer", {
+            "fields": ("user", "full_name", "email", "phone"),
+        }),
+        ("Delivery / Collection", {
+            "fields": ("delivery_type", "address_line1", "address_line2", "city", "postcode"),
+        }),
+        ("Payment", {
+            "fields": ("payment_method", "card_last_four", "subtotal", "delivery_charge", "total"),
+        }),
+        ("Notes", {
+            "fields": ("special_instructions",),
+        }),
+    )
 
     @admin.display(description="Account")
     def customer_link(self, obj):
