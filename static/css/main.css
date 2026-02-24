@@ -559,6 +559,24 @@ p { color: #c8b99a; }
     color: white;
 }
 
+/* Qty +/- controls on menu cards */
+.item-qty-wrapper { display: flex; align-items: center; }
+.qty-control-card { display: flex; align-items: center; gap: 4px; }
+.qty-btn-card {
+    width: 30px; height: 30px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--transition);
+    padding: 0;
+}
+.qty-btn-card:hover { background: var(--red); color: #fff; border-color: var(--red); }
+.qty-val-card { min-width: 24px; text-align: center; font-weight: 700; font-size: 0.9rem; }
+
 /* -------------------------------------------------------------------------
    About Section (Homepage)
 ------------------------------------------------------------------------- */
