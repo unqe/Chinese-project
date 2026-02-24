@@ -1,3 +1,27 @@
-from django.contrib import admin
+"""
+Accounts app admin configuration.
+UserProfile is shown inline on the built-in User admin page.
+"""
 
-# Register your models here.
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+from .models import UserProfile
+
+
+class UserProfileInline(admin.StackedInline):
+    """Adds the UserProfile fields inline on the User admin page."""
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = "Profile"
+    fields = ("phone", "address_line1", "address_line2", "city", "postcode", "marketing_opt_in")
+
+
+class UserAdmin(BaseUserAdmin):
+    inlines = (UserProfileInline,)
+
+
+# Re-register User with the extended admin
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+

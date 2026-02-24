@@ -1,3 +1,36 @@
-from django.contrib import admin
+"""
+Menu app admin configuration.
+Uses tabular inlines so category items can be managed on the category page.
+"""
 
-# Register your models here.
+from django.contrib import admin
+from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
+from .models import Category, MenuItem
+
+
+class MenuItemInline(TranslationTabularInline):
+    """Shows menu items inline when editing a Category."""
+    model = MenuItem
+    extra = 1
+    fields = ("name", "price", "spice_level", "is_available", "is_popular", "order")
+
+
+@admin.register(Category)
+class CategoryAdmin(TranslationAdmin):
+    list_display = ("name", "order", "icon")
+    list_editable = ("order",)
+    search_fields = ("name",)
+    inlines = [MenuItemInline]
+
+
+@admin.register(MenuItem)
+class MenuItemAdmin(TranslationAdmin):
+    list_display = (
+        "name", "category", "price", "spice_level",
+        "is_available", "is_popular", "is_vegetarian"
+    )
+    list_filter = ("category", "is_available", "is_popular", "spice_level", "is_vegetarian")
+    list_editable = ("price", "is_available", "is_popular")
+    search_fields = ("name", "description")
+    ordering = ("category", "order", "name")
+
