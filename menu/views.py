@@ -5,29 +5,37 @@ Menu app views — homepage and full menu page.
 from django.shortcuts import render, get_object_or_404
 from .models import Category, MenuItem
 from orders.models import OpeningHours
+from orders.basket import Basket
 import datetime
+from zoneinfo import ZoneInfo
+
+LONDON_TZ = ZoneInfo("Europe/London")
 
 
 def homepage(request):
     """
     Main landing page. Shows popular dishes, opening hours today,
     and a hero section with a call-to-action to order.
+    Open/closed status is based on real London time (handles BST/GMT).
     """
     popular_items = MenuItem.objects.filter(
         is_popular=True, is_available=True
     ).select_related("category")[:8]
 
     opening_hours = OpeningHours.objects.all()
-    today = datetime.date.today().weekday()  # 0=Monday, 6=Sunday
+
+    # Use London local time so BST/GMT is handled automatically
+    now_london = datetime.datetime.now(tz=LONDON_TZ)
+    today = now_london.weekday()   # 0=Monday, 6=Sunday
+    now_time = now_london.time()
 
     is_open = False
     today_hours = None
-    now = datetime.datetime.now().time()
     for hours in opening_hours:
         if hours.day == today:
             today_hours = hours
             if not hours.is_closed and hours.opening_time and hours.closing_time:
-                is_open = hours.opening_time <= now <= hours.closing_time
+                is_open = hours.opening_time <= now_time <= hours.closing_time
             break
 
     context = {
@@ -44,6 +52,7 @@ def menu_page(request):
     Full menu page grouped by category.
     Only shows available items and supports a 'category' query param
     to scroll/highlight a specific section.
+    Passes basket quantities so cards can show +/- controls.
     """
     categories = Category.objects.prefetch_related("items").all()
 
@@ -55,9 +64,14 @@ def menu_page(request):
 
     active_category = request.GET.get("category", None)
 
+    # Build a dict of {item_id: quantity} from the current basket
+    basket = Basket(request)
+    basket_quantities = {int(k): v["quantity"] for k, v in basket.basket.items()}
+
     return render(request, "menu/menu.html", {
         "categories": filtered_categories,
         "active_category": active_category,
+        "basket_quantities": basket_quantities,
     })
 
 
