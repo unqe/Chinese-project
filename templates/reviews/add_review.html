@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Write a Review" %} | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "Write a Review" %}</h1>
+        <p class="page-header-subtitle">{% trans "Reviewing order" %} #{{ order.reference }}</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="form-card">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Star rating picker -->
+                    <div class="mb-4 text-center">
+                        <label class="form-label d-block mb-2">{% trans "Your Rating" %} *</label>
+                        <div class="star-picker" id="star-picker">
+                            {% for i in "54321" %}
+                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" class="d-none star-input"
+                                   {% if form.rating.value == i %}checked{% endif %}>
+                            <label for="star{{ i }}" class="star-label">
+                                <i class="fas fa-star"></i>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <!-- Hidden fallback / actual value -->
+                        {{ form.rating }}
+                        {% if form.rating.errors %}<div class="text-danger small mt-1">{{ form.rating.errors|join:", " }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Review Title" %} *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="invalid-feedback d-block">{{ form.title.errors|join:", " }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">{% trans "Your Review" %} *</label>
+                        {{ form.body }}
+                        {% if form.body.errors %}<div class="invalid-feedback d-block">{{ form.body.errors|join:", " }}</div>{% endif %}
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1">
+                            <i class="fas fa-paper-plane me-2"></i>{% trans "Submit Review" %}
+                        </button>
+                        <a href="{% url 'orders:history' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Star hover/select effect
+    const starLabels = document.querySelectorAll('.star-label');
+    const hiddenRatingInput = document.querySelector('input[name="rating"][type="hidden"]');
+
+    starLabels.forEach(label => {
+        label.addEventListener('click', function() {
+            const val = this.previousElementSibling.value || this.getAttribute('for').replace('star', '');
+            if (hiddenRatingInput) hiddenRatingInput.value = val;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Profile" %} | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "My Profile" %}</h1>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="profile-sidebar">
+                <div class="profile-avatar mb-3">
+                    <i class="fas fa-user-circle fa-4x"></i>
+                </div>
+                <strong class="d-block">{{ user.get_full_name|default:user.username }}</strong>
+                <span class="text-muted small">{{ user.email }}</span>
+                <nav class="profile-nav mt-3">
+                    <a href="{% url 'accounts:profile' %}" class="profile-nav-link active">
+                        <i class="fas fa-user me-2"></i>{% trans "Profile" %}
+                    </a>
+                    <a href="{% url 'orders:history' %}" class="profile-nav-link">
+                        <i class="fas fa-history me-2"></i>{% trans "Order History" %}
+                    </a>
+                    <a href="{% url 'reviews:list' %}" class="profile-nav-link">
+                        <i class="fas fa-star me-2"></i>{% trans "Reviews" %}
+                    </a>
+                    <a href="{% url 'account_logout' %}" class="profile-nav-link text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>{% trans "Sign Out" %}
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main form -->
+        <div class="col-lg-9">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Personal details -->
+                <div class="form-card mb-4">
+                    <h5 class="form-card-title mb-4">
+                        <i class="fas fa-user me-2"></i>{% trans "Personal Details" %}
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{% trans "First Name" %}</label>
+                            {{ user_form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{% trans "Last Name" %}</label>
+                            {{ user_form.last_name }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{% trans "Email Address" %}</label>
+                            {{ user_form.email }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery details -->
+                <div class="form-card mb-4">
+                    <h5 class="form-card-title mb-4">
+                        <i class="fas fa-map-marker-alt me-2"></i>{% trans "Default Delivery Address" %}
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{% trans "Phone" %}</label>
+                            {{ profile_form.phone }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{% trans "Address Line 1" %}</label>
+                            {{ profile_form.address_line1 }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{% trans "Address Line 2" %}</label>
+                            {{ profile_form.address_line2 }}
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">{% trans "City" %}</label>
+                            {{ profile_form.city }}
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">{% trans "Postcode" %}</label>
+                            {{ profile_form.postcode }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ profile_form.marketing_opt_in }}
+                                <label class="form-check-label" for="{{ profile_form.marketing_opt_in.id_for_label }}">
+                                    {{ profile_form.marketing_opt_in.label }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="fas fa-save me-2"></i>{% trans "Save Changes" %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

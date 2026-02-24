@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Reviews" %} | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "Customer Reviews" %}</h1>
+        {% if avg_rating %}
+        <div class="reviews-hero-rating">
+            <div class="stars-large">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= avg_rating %}
+                        <i class="fas fa-star"></i>
+                    {% else %}
+                        <i class="far fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <span class="avg-rating-text">{{ avg_rating }} / 5 · {{ review_count }} {% trans "reviews" %}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container py-5">
+    {% if reviews %}
+    <div class="row g-4">
+        {% for review in reviews %}
+        <div class="col-md-6 col-lg-4">
+            <div class="review-card h-100">
+                <!-- Stars -->
+                <div class="review-stars mb-2">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <i class="fas fa-star text-warning"></i>
+                        {% else %}
+                            <i class="far fa-star text-muted"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <h6 class="review-title">"{{ review.title }}"</h6>
+                <p class="review-body text-muted">{{ review.body|truncatewords:30 }}</p>
+                <div class="review-footer mt-auto d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong class="review-author">{{ review.user.username }}</strong>
+                        <span class="text-muted small d-block">{{ review.created_at|date:"j M Y" }}</span>
+                    </div>
+                    {% if user == review.user %}
+                    <div class="review-actions">
+                        <a href="{% url 'reviews:edit' review.pk %}" class="btn btn-xs btn-outline-secondary me-1">{% trans "Edit" %}</a>
+                        <a href="{% url 'reviews:delete' review.pk %}" class="btn btn-xs btn-outline-danger">{% trans "Delete" %}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state text-center py-5">
+        <div class="empty-icon mb-3">⭐</div>
+        <h3>{% trans "No reviews yet" %}</h3>
+        <p class="text-muted">{% trans "Be the first to share your experience!" %}</p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'orders:history' %}" class="btn btn-primary-custom mt-3">{% trans "Review a Past Order" %}</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
