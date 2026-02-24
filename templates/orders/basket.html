@@ -149,6 +149,50 @@
                     <span>£{{ basket.get_total }}</span>
                 </div>
 
+                {% if show_free_drink %}
+                <div class="alert alert-success py-2 px-3 mt-3 mb-0 rounded-3" style="font-size:0.9rem;">
+                    <i class="fas fa-gift me-1"></i>
+                    <strong>{% trans "Free drinks unlocked!" %}</strong>
+                    {% blocktrans %}Your order qualifies for 2 complimentary Coca-Colas! Just mention it in your special instructions at checkout and we'll include them.{% endblocktrans %}
+                </div>
+                {% endif %}
+
+                {% if show_prawn_crackers and prawn_crackers %}
+                <div class="prawn-crackers-nudge d-flex align-items-center justify-content-between mt-3 p-3 rounded-3">
+                    <div>
+                        <i class="fas fa-plus-circle me-1" style="color:var(--gold);"></i>
+                        <strong>{% trans "Add Prawn Crackers?" %}</strong>
+                        <span class="text-muted ms-1">£{{ prawn_crackers.price }}</span>
+                    </div>
+                    <form action="{% url 'orders:basket_add' prawn_crackers.pk %}" method="post" class="mb-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="from_basket" value="1">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">{% trans "Add" %}</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                {% if basket.get_subtotal < min_order_delivery %}
+                <div class="alert alert-warning py-2 px-3 mt-3 mb-0 rounded-3" style="font-size:0.85rem;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {% blocktrans with min=min_order_delivery %}Minimum order for delivery is £{{ min }}. No minimum for collection.{% endblocktrans %}
+                </div>
+                {% endif %}
+
+                {% if not is_open %}
+                <div class="alert alert-warning py-2 px-3 mt-3 mb-0 rounded-3 d-flex gap-2" style="font-size:0.85rem;">
+                    <i class="fas fa-moon mt-1 flex-shrink-0"></i>
+                    <div>
+                        <strong>{% trans "We're closed right now" %}</strong><br>
+                        {% if next_open_text %}
+                            {% blocktrans with t=next_open_text %}Orders placed now will be prepared when we open {{ t }}.{% endblocktrans %}
+                        {% else %}
+                            {% trans "You can still order — we'll prepare it when we next open." %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
                 {% if user.is_authenticated %}
                     <a href="{% url 'orders:checkout' %}" class="btn btn-primary-custom w-100 mt-3 btn-lg">
                         <i class="fas fa-lock me-2"></i>{% trans "Proceed to Checkout" %}

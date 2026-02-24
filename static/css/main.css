@@ -961,6 +961,13 @@ p { color: #c8b99a; }
 }
 .btn-upsell-add:hover { background: var(--gold-light, #e8c86a); transform: scale(1.1); }
 
+/* Prawn crackers / low-key upsell nudge */
+.prawn-crackers-nudge {
+    background: rgba(196,164,98,0.07);
+    border: 1px dashed rgba(196,164,98,0.35);
+    font-size: 0.88rem;
+}
+
 /* Free delivery progress bar */
 .free-delivery-bar { font-size: 0.8rem; }
 .free-delivery-progress { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-bottom: 4px; }
