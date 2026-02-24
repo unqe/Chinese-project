@@ -1043,6 +1043,12 @@ p { color: #c8b99a; }
 .stars-large i { font-size: 1.4rem; color: var(--gold); }
 .avg-rating-text { font-size: 1rem; color: #c8b99a; }
 
+.reviews-cta-bar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+}
+
 .review-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
