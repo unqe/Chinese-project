@@ -18,7 +18,10 @@ class Review(models.Model):
     which prevents spam appearing on the public review page.
     """
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reviews",
+        null=True, blank=True
+    )
     order = models.OneToOneField(
         Order, on_delete=models.CASCADE, related_name="review",
         help_text="Each order can only have one review."
@@ -40,7 +43,8 @@ class Review(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.user.username} \u2014 {self.rating}\u2605 ({self.order.reference})"
+        username = self.user.username if self.user else "Guest"
+        return f"{username} — {self.rating}★ ({self.order.reference})"
 
     @property
     def star_range(self):
