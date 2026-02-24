@@ -70,7 +70,7 @@
                 <h5 class="checkout-section-title mb-4">
                     <i class="fas fa-star me-2"></i>Your Rating & Review
                 </h5>
-                <form method="post">
+                <form method="post" action="{% url 'reviews:guest_review' %}">
                     {% csrf_token %}
                     {{ review_form.rating }}
 
