@@ -2,6 +2,10 @@
 Orders app views — basket, checkout, confirmation, and order history.
 """
 
+import datetime
+from zoneinfo import ZoneInfo
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -10,10 +14,58 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from datetime import timedelta
 
-from .basket import Basket
-from .models import Order, OrderItem
+from .basket import Basket, MIN_ORDER_DELIVERY
 from .forms import CheckoutForm
-from menu.models import MenuItem
+from .models import Order, OrderItem, OpeningHours
+from menu.models import MenuItem, DealSlot
+
+LONDON_TZ = ZoneInfo("Europe/London")
+
+# PKs for upsell items (kept as constants so they're easy to change in admin)
+_PRAWN_CRACKERS_PK = 36
+_COKE_PK = 43
+_FREE_DRINK_THRESHOLD = Decimal("70.00")
+
+
+def _get_opening_status():
+    """
+    Return (is_open: bool, next_open_text: str | None) based on London time.
+    next_open_text is a human-readable string like "Tomorrow at 12:00 PM"
+    or "Saturday at 5:00 PM".
+    """
+    now_london = datetime.datetime.now(tz=LONDON_TZ)
+    today = now_london.weekday()  # 0=Monday
+    now_time = now_london.time()
+
+    hours_by_day = {h.day: h for h in OpeningHours.objects.all()}
+
+    today_hours = hours_by_day.get(today)
+    is_open = False
+    if today_hours and not today_hours.is_closed and today_hours.opening_time and today_hours.closing_time:
+        is_open = today_hours.opening_time <= now_time <= today_hours.closing_time
+
+    # Find next opening window (within 7 days)
+    next_open_text = None
+    for offset in range(1, 8):
+        check_day = (today + offset) % 7
+        h = hours_by_day.get(check_day)
+        if h and not h.is_closed and h.opening_time:
+            # If same day but before opening, that counts as "today later"
+            if offset == 0 and now_time < h.opening_time:
+                day_label = "Today"
+            elif offset == 1:
+                day_label = "Tomorrow"
+            else:
+                day_label = h.get_day_display()
+            open_str = datetime.datetime.combine(datetime.date.today(), h.opening_time).strftime("%-I:%M %p")
+            next_open_text = f"{day_label} at {open_str}"
+            break
+    # Also check if today opens later
+    if not is_open and today_hours and not today_hours.is_closed and today_hours.opening_time:
+        if now_time < today_hours.opening_time:
+            open_str = datetime.datetime.combine(datetime.date.today(), today_hours.opening_time).strftime("%-I:%M %p")
+            next_open_text = f"Today at {open_str}"
+    return is_open, next_open_text
 
 
 # Minutes remaining from *now* for each delivery type + status combination
@@ -52,9 +104,33 @@ def basket_view(request):
         .filter(is_popular=True, is_available=True)
         .exclude(pk__in=basket_item_ids)[:4]
     )
+    subtotal = basket.get_subtotal()
+    # Contextual upsell nudges
+    show_prawn_crackers = str(_PRAWN_CRACKERS_PK) not in basket_item_ids
+    show_free_drink = subtotal >= _FREE_DRINK_THRESHOLD
+    prawn_crackers = None
+    coke = None
+    if show_prawn_crackers:
+        try:
+            prawn_crackers = MenuItem.objects.get(pk=_PRAWN_CRACKERS_PK, is_available=True)
+        except MenuItem.DoesNotExist:
+            show_prawn_crackers = False
+    if show_free_drink:
+        try:
+            coke = MenuItem.objects.get(pk=_COKE_PK, is_available=True)
+        except MenuItem.DoesNotExist:
+            pass
+    is_open, next_open_text = _get_opening_status()
     return render(request, "orders/basket.html", {
         "basket": basket,
         "popular_items": popular_items,
+        "show_prawn_crackers": show_prawn_crackers,
+        "prawn_crackers": prawn_crackers,
+        "show_free_drink": show_free_drink,
+        "coke": coke,
+        "min_order_delivery": MIN_ORDER_DELIVERY,
+        "is_open": is_open,
+        "next_open_text": next_open_text,
     })
 
 
@@ -134,8 +210,10 @@ def checkout(request):
     Checkout page. Pre-fills with saved profile data for logged-in users.
     Guests can also checkout — they just need to enter an email.
     Creates the Order and OrderItems on POST, then clears the basket.
+    If the restaurant is currently closed, a pre-booking notice is shown.
     """
     basket = Basket(request)
+    is_open, next_open_text = _get_opening_status()
 
     if not basket:
         messages.warning(request, "Your basket is empty.")
@@ -158,9 +236,25 @@ def checkout(request):
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         if form.is_valid():
+            delivery_type = form.cleaned_data["delivery_type"]
+            # Enforce minimum order for delivery
+            if delivery_type == "delivery" and basket.get_subtotal() < MIN_ORDER_DELIVERY:
+                messages.error(
+                    request,
+                    f"A minimum order of £{MIN_ORDER_DELIVERY} is required for delivery. "
+                    "There's no minimum for collection."
+                )
+                return render(request, "orders/checkout.html", {
+                    "form": form,
+                    "basket": basket,
+                    "delivery_charge": basket.get_delivery_charge("delivery"),
+                    "free_delivery_threshold": 20,
+                    "min_order_delivery": MIN_ORDER_DELIVERY,
+                    "is_open": is_open,
+                    "next_open_text": next_open_text,
+                })
             order = form.save(commit=False)
             order.user = request.user if request.user.is_authenticated else None
-            delivery_type = form.cleaned_data["delivery_type"]
             order.subtotal = basket.get_subtotal()
             order.delivery_charge = basket.get_delivery_charge(delivery_type)
             order.total = basket.get_total(delivery_type)
@@ -194,6 +288,9 @@ def checkout(request):
         "basket": basket,
         "delivery_charge": basket.get_delivery_charge("delivery"),
         "free_delivery_threshold": 20,
+        "min_order_delivery": MIN_ORDER_DELIVERY,
+        "is_open": is_open,
+        "next_open_text": next_open_text,
     })
 
 
@@ -298,3 +395,55 @@ def order_status_api(request, reference):
         "est_arrival": est_arrival.strftime("%-I:%M %p"),
     })
 
+
+def deal_picker(request, item_id):
+    """
+    Shows a form for the customer to choose items within a set-menu deal,
+    then adds the deal to the basket with their choices stored as a note.
+    """
+    deal = get_object_or_404(MenuItem, pk=item_id, is_available=True)
+    slots = list(deal.slots.prefetch_related("categories").order_by("order", "pk"))
+
+    if not slots:
+        # No slots configured — just add it directly and go to basket
+        basket = Basket(request)
+        basket.add(deal, quantity=1)
+        messages.success(request, f"{deal.name} added to your basket.")
+        return redirect("orders:basket")
+
+    # Build choices list per slot (list of MenuItems)
+    slot_choices = []
+    for slot in slots:
+        choices = list(slot.get_choices())
+        slot_choices.append((slot, choices))
+
+    if request.method == "POST":
+        notes_parts = []
+        errors = []
+        for slot, choices in slot_choices:
+            chosen_pk = request.POST.get(f"slot_{slot.pk}")
+            if not chosen_pk:
+                errors.append(f"Please select an item for '{slot.label}'.")
+                continue
+            choice_map = {str(c.pk): c for c in choices}
+            chosen = choice_map.get(chosen_pk)
+            if not chosen:
+                errors.append(f"Invalid selection for '{slot.label}'.")
+            else:
+                notes_parts.append(f"{slot.label}: {chosen.name}")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        else:
+            basket = Basket(request)
+            basket.add(deal, quantity=1)
+            note = "Choices — " + ", ".join(notes_parts)
+            basket.set_notes(item_id, note)
+            messages.success(request, f"{deal.name} added to your basket.")
+            return redirect("orders:basket")
+
+    return render(request, "orders/deal_picker.html", {
+        "deal": deal,
+        "slot_choices": slot_choices,
+    })

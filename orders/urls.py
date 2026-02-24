@@ -19,4 +19,5 @@ urlpatterns = [
     path("detail/<str:reference>/", views.order_detail, name="order_detail"),
     path("reorder/<str:reference>/", views.reorder, name="reorder"),
     path("status/<str:reference>/", views.order_status_api, name="order_status_api"),
+    path("deal-picker/<int:item_id>/", views.deal_picker, name="deal_picker"),
 ]
