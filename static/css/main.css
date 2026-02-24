@@ -129,6 +129,14 @@ p { color: #c8b99a; }
 }
 .btn-basket:hover { border-color: var(--red); color: var(--red); }
 
+.basket-price {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    font-family: 'Playfair Display', Georgia, serif;
+    line-height: 1;
+}
+
 .basket-badge {
     position: absolute;
     top: -6px;

@@ -16,4 +16,5 @@ def basket_context(request):
     return {
         "basket": basket,
         "basket_count": basket.get_total_quantity(),
+        "basket_subtotal": basket.get_subtotal(),
     }
