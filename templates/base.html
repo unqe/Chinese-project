@@ -69,14 +69,15 @@
                             <input type="hidden" name="language" value="en">
                             <button type="submit" class="btn btn-lang">English</button>
                         {% endif %}
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <input type="hidden" name="next" value="/">
                     </form>
 
                     <!-- Basket -->
-                    <a href="{% url 'orders:basket' %}" class="btn btn-basket position-relative">
+                    <a href="{% url 'orders:basket' %}" class="btn btn-basket position-relative d-flex align-items-center gap-2">
                         <i class="fas fa-shopping-bag"></i>
                         {% if basket_count > 0 %}
                             <span class="basket-badge">{{ basket_count }}</span>
+                            <span class="basket-price">£{{ basket_subtotal }}</span>
                         {% endif %}
                     </a>
 
@@ -160,9 +161,8 @@
                 <div class="col-lg-3 col-6">
                     <h6 class="footer-heading">{% trans "Opening Hours" %}</h6>
                     <ul class="list-unstyled footer-links small">
-                        <li>{% trans "Mon – Thu" %}: 4:30pm – 10:30pm</li>
-                        <li>{% trans "Friday" %}: 4:30pm – 11:00pm</li>
-                        <li>{% trans "Sat – Sun" %}: 12:00pm – 11:00pm</li>
+                        <li>{% trans "Monday" %}: {% trans "Closed" %}</li>
+                        <li>{% trans "Tue – Sun" %}: 4:30pm – 11:00pm</li>
                     </ul>
                 </div>
 
