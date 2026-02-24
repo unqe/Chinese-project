@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Menu" %} | Despair Chinese{% endblock %}
+{% block meta_description %}Browse our full menu of authentic Chinese dishes. Starters, mains, noodles, rice dishes, sides and drinks. Order online for delivery or collection in Hackney.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Sticky category sidebar on desktop */
+    @media (min-width: 992px) {
+        .category-sidebar { position: sticky; top: 90px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "Our Menu" %}</h1>
+        <p class="page-header-subtitle">{% trans "Everything freshly made to order" %}</p>
+        <!-- Delivery info bar -->
+        <div class="menu-info-bar">
+            <span><i class="fas fa-motorcycle me-1"></i> {% trans "Free delivery over £20" %}</span>
+            <span class="mx-3">·</span>
+            <span><i class="fas fa-clock me-1"></i> {% trans "30–45 min delivery" %}</span>
+            <span class="mx-3">·</span>
+            <span><i class="fas fa-store me-1"></i> {% trans "15 min collection" %}</span>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- ============================================================
+             CATEGORY SIDEBAR (desktop) / horizontal tabs (mobile)
+        ============================================================ -->
+        <div class="col-lg-3">
+            <div class="category-sidebar">
+                <h6 class="sidebar-heading">{% trans "Categories" %}</h6>
+                <nav class="category-nav">
+                    {% for category, items in categories %}
+                        <a href="#cat-{{ category.pk }}" class="category-nav-link {% if active_category == category.pk|stringformat:'s' %}active{% endif %}">
+                            {% if category.icon %}<i class="{{ category.icon }} me-2"></i>{% endif %}
+                            {{ category.name }}
+                            <span class="cat-count">{{ items|length }}</span>
+                        </a>
+                    {% endfor %}
+                </nav>
+
+                <!-- Basket mini-preview -->
+                {% if basket_count > 0 %}
+                <div class="sidebar-basket-card mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold"><i class="fas fa-shopping-bag me-1"></i> {% trans "Your Basket" %}</span>
+                        <span class="badge-count">{{ basket_count }}</span>
+                    </div>
+                    <a href="{% url 'orders:basket' %}" class="btn btn-primary-custom w-100 btn-sm">
+                        {% trans "View Basket" %}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MENU ITEMS
+        ============================================================ -->
+        <div class="col-lg-9">
+            <!-- Mobile horizontal category scroll -->
+            <div class="category-tabs-mobile mb-4 d-lg-none">
+                {% for category, items in categories %}
+                    <a href="#cat-{{ category.pk }}" class="cat-tab-mobile">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+
+            {% for category, items in categories %}
+            <section id="cat-{{ category.pk }}" class="menu-section mb-5">
+                <div class="menu-section-header">
+                    {% if category.icon %}<i class="{{ category.icon }} me-2"></i>{% endif %}
+                    <h2 class="menu-section-title">{{ category.name }}</h2>
+                    {% if category.description %}
+                        <p class="menu-section-desc">{{ category.description }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="row g-3">
+                    {% for item in items %}
+                    <div class="col-md-6 col-xl-4">
+                        <div class="menu-card h-100">
+                            <div class="menu-card-img-wrap">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="menu-card-img" loading="lazy">
+                                {% else %}
+                                    <div class="menu-card-img-placeholder">
+                                        <i class="fas fa-bowl-food"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="menu-card-tags">
+                                    {% if item.is_popular %}<span class="tag-popular">{% trans "Popular" %}</span>{% endif %}
+                                    {% if item.is_vegetarian %}<span class="tag-veg" title="Vegetarian">V</span>{% endif %}
+                                    {% if item.is_vegan %}<span class="tag-vegan" title="Vegan">Ve</span>{% endif %}
+                                </div>
+                            </div>
+                            <div class="menu-card-body">
+                                <h5 class="menu-card-title">
+                                    <a href="{% url 'menu:item_detail' item.pk %}" class="stretched-link-title">{{ item.name }}</a>
+                                </h5>
+                                {% if item.description %}
+                                    <p class="menu-card-desc">{{ item.description|truncatewords:16 }}</p>
+                                {% endif %}
+                                <!-- Spice level -->
+                                {% if item.spice_level > 0 %}
+                                    <div class="menu-card-spice mb-1">
+                                        {% for _ in item.spice_icons %}
+                                            <span class="chilli-icon">🌶</span>
+                                        {% endfor %}
+                                        <span class="spice-label">{{ item.get_spice_level_display }}</span>
+                                    </div>
+                                {% endif %}
+                                <!-- Allergens -->
+                                {% if item.allergens %}
+                                    <p class="menu-card-allergens"><i class="fas fa-exclamation-triangle me-1"></i>{{ item.allergens }}</p>
+                                {% endif %}
+                                <div class="menu-card-footer">
+                                    <span class="menu-card-price">£{{ item.price }}</span>
+                                    <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="add-to-basket-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-add-to-basket" title="Add to basket">
+                                            <i class="fas fa-plus"></i> {% trans "Add" %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% empty %}
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                <h4>{% trans "Menu coming soon" %}</h4>
+                <p class="text-muted">{% trans "Check back later." %}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Highlight active category link on scroll
+    const sections = document.querySelectorAll('.menu-section');
+    const navLinks = document.querySelectorAll('.category-nav-link');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+                });
+            }
+        });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+</script>
+{% endblock %}
