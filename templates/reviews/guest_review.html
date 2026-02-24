@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}Review by Receipt | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <h1 class="page-header-title">
+            <i class="fas fa-receipt me-2"></i>Review by Receipt Number
+        </h1>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            {% if step == 1 %}
+            <!-- Step 1: Verify your order -->
+            <div class="checkout-section">
+                <h5 class="checkout-section-title mb-1">
+                    <i class="fas fa-search me-2"></i>Find Your Order
+                </h5>
+                <p class="text-muted small mb-4">
+                    Enter the reference number from your confirmation page and the email
+                    address you used at checkout. We'll verify your order is real before letting
+                    you leave a review.
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ lookup_form.reference.label }} *</label>
+                        {{ lookup_form.reference }}
+                        {% if lookup_form.reference.errors %}
+                            <div class="invalid-feedback d-block">{{ lookup_form.reference.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">{{ lookup_form.email.label }} *</label>
+                        {{ lookup_form.email }}
+                        {% if lookup_form.email.errors %}
+                            <div class="invalid-feedback d-block">{{ lookup_form.email.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100">
+                        <i class="fas fa-arrow-right me-2"></i>Verify Order
+                    </button>
+                    <a href="{% url 'reviews:list' %}" class="btn btn-outline-secondary w-100 mt-2">
+                        Back to Reviews
+                    </a>
+                </form>
+            </div>
+
+            {% elif step == 2 %}
+            <!-- Step 2: Write the review -->
+            <div class="checkout-section mb-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <h6 class="mb-0">Order verified — <strong>#{{ order.reference }}</strong></h6>
+                </div>
+                <p class="text-muted small mb-0">
+                    Placed on {{ order.created_at|date:"j F Y" }}
+                    · {{ order.items.count }} item{{ order.items.count|pluralize }}
+                    · Total £{{ order.total }}
+                </p>
+            </div>
+
+            <div class="checkout-section">
+                <h5 class="checkout-section-title mb-4">
+                    <i class="fas fa-star me-2"></i>Your Rating & Review
+                </h5>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ review_form.rating }}
+
+                    <!-- Star picker -->
+                    <div class="mb-4">
+                        <label class="form-label">Your Rating *</label>
+                        <div class="star-rating-input d-flex gap-2">
+                            {% for val in "54321" %}
+                            <button type="button"
+                                    class="star-rating-btn"
+                                    data-value="{{ val }}">
+                                <i class="far fa-star fa-2x"></i>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        {% if review_form.rating.errors %}
+                            <div class="invalid-feedback d-block">{{ review_form.rating.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ review_form.title.label }} *</label>
+                        {{ review_form.title }}
+                        {% if review_form.title.errors %}
+                            <div class="invalid-feedback d-block">{{ review_form.title.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">{{ review_form.body.label }} *</label>
+                        {{ review_form.body }}
+                        {% if review_form.body.errors %}
+                            <div class="invalid-feedback d-block">{{ review_form.body.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" name="submit_review" class="btn btn-primary-custom w-100">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Review
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Star rating picker (same as add_review page)
+    const ratingInput = document.getElementById('id_rating');
+    const starBtns = document.querySelectorAll('.star-rating-btn');
+
+    function setStars(val) {
+        starBtns.forEach(btn => {
+            const v = parseInt(btn.dataset.value);
+            const icon = btn.querySelector('i');
+            if (v <= val) {
+                icon.classList.replace('far', 'fas');
+                icon.style.color = 'var(--gold)';
+            } else {
+                icon.classList.replace('fas', 'far');
+                icon.style.color = '';
+            }
+        });
+        if (ratingInput) ratingInput.value = val;
+    }
+
+    starBtns.forEach(btn => {
+        btn.addEventListener('click', () => setStars(parseInt(btn.dataset.value)));
+        btn.addEventListener('mouseenter', () => {
+            starBtns.forEach(b => {
+                if (parseInt(b.dataset.value) <= parseInt(btn.dataset.value)) {
+                    b.querySelector('i').style.color = 'var(--gold)';
+                }
+            });
+        });
+        btn.addEventListener('mouseleave', () => {
+            const current = ratingInput ? parseInt(ratingInput.value) || 0 : 0;
+            starBtns.forEach(b => {
+                const icon = b.querySelector('i');
+                icon.style.color = parseInt(b.dataset.value) <= current ? 'var(--gold)' : '';
+            });
+        });
+    });
+</script>
+{% endblock %}
