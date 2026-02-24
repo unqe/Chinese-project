@@ -153,19 +153,22 @@
     </div>
 </div>
 
-<!-- Sticky basket bar — visible when basket has items -->
-<div id="menu-basket-bar" class="menu-basket-bar{% if not basket_count %} menu-basket-bar-hidden{% endif %}">
-    <div class="container d-flex align-items-center justify-content-between gap-3">
-        <span class="menu-basket-bar-info">
-            <i class="fas fa-shopping-bag me-2"></i>
-            <span id="bar-count">{{ basket_count }}</span> item<span id="bar-count-plural">{% if basket_count != 1 %}s{% endif %}</span>
-            &nbsp;&middot;&nbsp;
-            £<span id="bar-subtotal">{{ basket_subtotal }}</span>
-        </span>
-        <a href="{% url 'orders:basket' %}" class="btn btn-light btn-sm fw-bold">
-            View Basket &rarr;
-        </a>
-    </div>
+<!-- Floating basket widget — bottom-right corner -->
+<div id="menu-basket-bar" class="basket-float{% if not basket_count %} basket-float-hidden{% endif %}">
+    <a href="{% url 'orders:basket' %}" class="basket-float-inner">
+        <div class="basket-float-icon">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="basket-float-badge" id="bar-count">{{ basket_count }}</span>
+        </div>
+        <div class="basket-float-info">
+            <span class="basket-float-label">View Basket</span>
+            <span class="basket-float-meta">
+                <span id="bar-count-text"><span id="bar-count2">{{ basket_count }}</span> item{% if basket_count != 1 %}s{% endif %}</span>
+                &nbsp;&middot;&nbsp;£<span id="bar-subtotal">{{ basket_subtotal }}</span>
+            </span>
+        </div>
+        <i class="fas fa-chevron-right basket-float-arrow"></i>
+    </a>
 </div>
 
 {% endblock %}
@@ -251,17 +254,19 @@
         }
         // Sticky bar
         const bar = document.getElementById('menu-basket-bar');
-        const barCount = document.getElementById('bar-count');
-        const barPlural = document.getElementById('bar-count-plural');
-        const barSub = document.getElementById('bar-subtotal');
         if (bar) {
             if (count > 0) {
-                bar.classList.remove('menu-basket-bar-hidden');
-                if (barCount) barCount.textContent = count;
-                if (barPlural) barPlural.textContent = count === 1 ? '' : 's';
-                if (barSub) barSub.textContent = parseFloat(subtotal).toFixed(2);
+                bar.classList.remove('basket-float-hidden');
+                const el1 = document.getElementById('bar-count');
+                const el2 = document.getElementById('bar-count2');
+                const elPlural = document.getElementById('bar-count-text');
+                const elSub = document.getElementById('bar-subtotal');
+                if (el1) el1.textContent = count;
+                if (el2) el2.textContent = count;
+                if (elPlural) elPlural.innerHTML = count + ' item' + (count === 1 ? '' : 's');
+                if (elSub) elSub.textContent = parseFloat(subtotal).toFixed(2);
             } else {
-                bar.classList.add('menu-basket-bar-hidden');
+                bar.classList.add('basket-float-hidden');
             }
         }
     }
