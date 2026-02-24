@@ -144,20 +144,16 @@
 
 <!-- Floating basket widget — bottom-right corner -->
 <div id="menu-basket-bar" class="basket-float{% if not basket_count %} basket-float-hidden{% endif %}">
-    <a href="{% url 'orders:basket' %}" class="basket-float-inner">
-        <div class="basket-float-icon">
-            <i class="fas fa-shopping-bag"></i>
-            <span class="basket-float-badge" id="bar-count">{{ basket_count }}</span>
+    <div class="basket-float-card">
+        <div class="basket-float-top">
+            <i class="fas fa-shopping-bag basket-float-icon"></i>
+            <span id="bar-count-text">{{ basket_count }} item{% if basket_count != 1 %}s{% endif %}</span>
+            <span class="basket-float-price">£<span id="bar-subtotal">{{ basket_subtotal }}</span></span>
         </div>
-        <div class="basket-float-info">
-            <span class="basket-float-label">View Basket</span>
-            <span class="basket-float-meta">
-                <span id="bar-count-text"><span id="bar-count2">{{ basket_count }}</span> item{% if basket_count != 1 %}s{% endif %}</span>
-                &nbsp;&middot;&nbsp;£<span id="bar-subtotal">{{ basket_subtotal }}</span>
-            </span>
-        </div>
-        <i class="fas fa-chevron-right basket-float-arrow"></i>
-    </a>
+        <a href="{% url 'orders:basket' %}" class="basket-float-btn">
+            View Basket <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
 </div>
 
 {% endblock %}
@@ -246,13 +242,9 @@
         if (bar) {
             if (count > 0) {
                 bar.classList.remove('basket-float-hidden');
-                const el1 = document.getElementById('bar-count');
-                const el2 = document.getElementById('bar-count2');
-                const elPlural = document.getElementById('bar-count-text');
+                const elText = document.getElementById('bar-count-text');
                 const elSub = document.getElementById('bar-subtotal');
-                if (el1) el1.textContent = count;
-                if (el2) el2.textContent = count;
-                if (elPlural) elPlural.innerHTML = count + ' item' + (count === 1 ? '' : 's');
+                if (elText) elText.textContent = count + ' item' + (count === 1 ? '' : 's');
                 if (elSub) elSub.textContent = parseFloat(subtotal).toFixed(2);
             } else {
                 bar.classList.add('basket-float-hidden');
