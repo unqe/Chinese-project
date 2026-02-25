@@ -104,6 +104,12 @@
                             {% endif %}
                         </span>
                     </div>
+                    {% if order.discount_amount %}
+                    <div class="summary-row" style="color:var(--gold);">
+                        <span><i class="fas fa-tag me-1"></i>{% trans "Discount" %}{% if order.promo_code %} <small class="text-muted">({{ order.promo_code }})</small>{% endif %}</span>
+                        <span>− £{{ order.discount_amount }}</span>
+                    </div>
+                    {% endif %}
                     <div class="summary-row summary-total">
                         <span>{% trans "Total Paid" %}</span>
                         <span>£{{ order.total }}</span>
@@ -265,14 +271,14 @@
                     showReviewBtn(data);
                 }
                 if (!TERMINAL.includes(currentStatus)) {
-                    setTimeout(poll, 30000);
+                    setTimeout(poll, 8000);
                 }
             })
-            .catch(function() { setTimeout(poll, 60000); });
+            .catch(function() { setTimeout(poll, 15000); });
     }
 
-    // Start polling after 30s
-    setTimeout(poll, 30000);
+    // Start polling after 8s
+    setTimeout(poll, 8000);
 })();
 </script>
 {% endblock %}
