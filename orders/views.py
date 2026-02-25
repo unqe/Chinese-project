@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION
@@ -304,6 +305,10 @@ def checkout(request):
                     f"A minimum order of £{MIN_ORDER_DELIVERY} is required for delivery. "
                     "There's no minimum for collection."
                 )
+                profile_has_address_err = False
+                if request.user.is_authenticated:
+                    _p = getattr(request.user, "profile", None)
+                    profile_has_address_err = bool(_p and _p.address_line1)
                 return render(request, "orders/checkout.html", {
                     "form": form,
                     "basket": basket,
@@ -312,6 +317,7 @@ def checkout(request):
                     "min_order_delivery": MIN_ORDER_DELIVERY,
                     "is_open": is_open,
                     "next_open_text": next_open_text,
+                    "profile_has_address": profile_has_address_err,
                 })
             order = form.save(commit=False)
             order.user = request.user if request.user.is_authenticated else None
@@ -346,6 +352,18 @@ def checkout(request):
                     notes=item_data.get("notes", ""),
                 )
 
+            # Save address back to profile if checkbox ticked
+            if request.user.is_authenticated and request.POST.get("save_address"):
+                profile = getattr(request.user, "profile", None)
+                if profile:
+                    profile.address_line1 = form.cleaned_data.get("address_line1", "")
+                    profile.address_line2 = form.cleaned_data.get("address_line2", "")
+                    profile.city = form.cleaned_data.get("city", "")
+                    profile.postcode = form.cleaned_data.get("postcode", "")
+                    if form.cleaned_data.get("phone"):
+                        profile.phone = form.cleaned_data["phone"]
+                    profile.save()
+
             basket.clear()
             # Store reference in session so guests can access the confirmation
             request.session["last_order_reference"] = order.reference
@@ -353,6 +371,11 @@ def checkout(request):
             return redirect("orders:confirmation", reference=order.reference)
     else:
         form = CheckoutForm(initial=initial)
+
+    profile_has_address = False
+    if request.user.is_authenticated:
+        _p = getattr(request.user, "profile", None)
+        profile_has_address = bool(_p and _p.address_line1)
 
     return render(request, "orders/checkout.html", {
         "form": form,
@@ -362,6 +385,7 @@ def checkout(request):
         "min_order_delivery": MIN_ORDER_DELIVERY,
         "is_open": is_open,
         "next_open_text": next_open_text,
+        "profile_has_address": profile_has_address,
     })
 
 
@@ -518,3 +542,47 @@ def deal_picker(request, item_id):
         "deal": deal,
         "slot_choices": slot_choices,
     })
+
+
+# ---------------------------------------------------------------------------
+# Kitchen Display Screen
+# ---------------------------------------------------------------------------
+
+KITCHEN_STATUSES = ["pending", "confirmed", "preparing", "ready"]
+KITCHEN_NEXT_STATUS = {
+    "pending": "confirmed",
+    "confirmed": "preparing",
+    "preparing": "ready",
+    "ready": "completed",
+}
+
+
+@staff_member_required
+def kitchen_display(request):
+    """Full-page kitchen view — designed to be left open on a tablet.
+    Shows all active (non-complete, non-cancelled) orders as large cards.
+    Auto-refreshes every 5 s via JS.
+    """
+    active_orders = (
+        Order.objects
+        .filter(status__in=KITCHEN_STATUSES)
+        .prefetch_related("items")
+        .order_by("created_at")
+    )
+    return render(request, "orders/kitchen_display.html", {
+        "active_orders": active_orders,
+        "kitchen_next_status": KITCHEN_NEXT_STATUS,
+    })
+
+
+@staff_member_required
+@require_POST
+def kitchen_update_status(request, reference):
+    """AJAX endpoint — advance an order to the next kitchen status."""
+    order = get_object_or_404(Order, reference=reference)
+    next_status = KITCHEN_NEXT_STATUS.get(order.status)
+    if next_status:
+        order.status = next_status
+        order.save(update_fields=["status"])
+        return JsonResponse({"ok": True, "new_status": order.status})
+    return JsonResponse({"ok": False, "error": "No next status"}, status=400)

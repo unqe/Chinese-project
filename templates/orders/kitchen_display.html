@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Display — Dragon Palace</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #1a1a2e;
+            color: #eee;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .kds-header {
+            background: #16213e;
+            border-bottom: 2px solid #c0392b;
+            padding: 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .kds-header h1 {
+            font-size: 1.4rem;
+            margin: 0;
+            color: #f0c040;
+            letter-spacing: 1px;
+        }
+        .kds-clock {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #aaa;
+        }
+        .kds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+            padding: 1.5rem;
+        }
+        .order-card {
+            background: #16213e;
+            border-radius: 12px;
+            border: 2px solid #0f3460;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.3s;
+        }
+        .order-card.status-pending  { border-color: #c0392b; }
+        .order-card.status-confirmed { border-color: #e67e22; }
+        .order-card.status-preparing { border-color: #f39c12; }
+        .order-card.status-ready    { border-color: #27ae60; }
+
+        .order-card-header {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .order-card.status-pending  .order-card-header { background: rgba(192,57,43,0.25); }
+        .order-card.status-confirmed .order-card-header { background: rgba(230,126,34,0.25); }
+        .order-card.status-preparing .order-card-header { background: rgba(243,156,18,0.25); }
+        .order-card.status-ready    .order-card-header { background: rgba(39,174,96,0.25); }
+
+        .order-ref {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        .order-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .badge-pending   { background: #c0392b; }
+        .badge-confirmed { background: #e67e22; }
+        .badge-preparing { background: #f39c12; color: #000; }
+        .badge-ready     { background: #27ae60; }
+
+        .order-meta {
+            font-size: 0.82rem;
+            color: #aaa;
+            padding: 0.5rem 1rem 0;
+        }
+        .order-items {
+            padding: 0.75rem 1rem;
+            flex: 1;
+        }
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.95rem;
+        }
+        .order-item-row:last-child { border-bottom: none; }
+        .item-qty {
+            font-weight: 800;
+            color: #f0c040;
+            min-width: 28px;
+        }
+        .item-note {
+            font-size: 0.78rem;
+            color: #e74c3c;
+            font-style: italic;
+        }
+        .order-special {
+            margin: 0 1rem 0.5rem;
+            padding: 0.4rem 0.7rem;
+            background: rgba(255,255,255,0.05);
+            border-left: 3px solid #f0c040;
+            font-size: 0.82rem;
+            border-radius: 0 4px 4px 0;
+        }
+        .order-card-footer {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .btn-advance {
+            width: 100%;
+            padding: 0.6rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-advance:hover { opacity: 0.85; }
+        .btn-confirm  { background: #e67e22; color: #fff; }
+        .btn-prepare  { background: #f39c12; color: #000; }
+        .btn-ready    { background: #27ae60; color: #fff; }
+        .btn-complete { background: #2980b9; color: #fff; }
+
+        .kds-empty {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: #555;
+        }
+        .kds-empty i { font-size: 4rem; margin-bottom: 1rem; }
+        .kds-empty p { font-size: 1.2rem; }
+
+        .timer-badge {
+            font-size: 0.75rem;
+            color: #ccc;
+        }
+        .timer-badge.urgent { color: #e74c3c; font-weight: 700; }
+
+        .refresh-indicator {
+            font-size: 0.75rem;
+            color: #555;
+        }
+        .refresh-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+            margin-right: 4px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .delivery-chip {
+            font-size: 0.72rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+        .chip-delivery   { background: #8e44ad; color: #fff; }
+        .chip-collection { background: #16a085; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="kds-header">
+    <h1><i class="fas fa-utensils me-2" style="color:#c0392b;"></i>Kitchen Display</h1>
+    <div class="d-flex align-items-center gap-3">
+        <span class="refresh-indicator">
+            <span class="refresh-dot"></span>auto-refresh 5s
+        </span>
+        <span class="kds-clock" id="kds-clock">--:--:--</span>
+    </div>
+</div>
+
+{% if active_orders %}
+    <div class="kds-grid" id="order-grid">
+        {% for order in active_orders %}
+        <div class="order-card status-{{ order.status }}" data-reference="{{ order.reference }}">
+
+            <div class="order-card-header">
+                <span class="order-ref">
+                    #{{ order.reference }}
+                    <span class="delivery-chip {% if order.delivery_type == 'delivery' %}chip-delivery{% else %}chip-collection{% endif %}">
+                        {{ order.delivery_type|title }}
+                    </span>
+                </span>
+                <span class="order-badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
+            </div>
+
+            <div class="order-meta">
+                <i class="fas fa-user me-1"></i>{{ order.full_name }}
+                &nbsp;|&nbsp;
+                <i class="fas fa-clock me-1"></i>
+                <span class="timer-badge" data-placed="{{ order.created_at.isoformat }}">
+                    {{ order.created_at|timesince }} ago
+                </span>
+            </div>
+
+            <div class="order-items">
+                {% for item in order.items.all %}
+                <div class="order-item-row">
+                    <span>
+                        <span class="item-qty">×{{ item.quantity }}</span>
+                        {{ item.item_name }}
+                    </span>
+                    <span style="color:#aaa;">£{{ item.line_total }}</span>
+                </div>
+                {% if item.notes %}
+                <div class="item-note ps-4"><i class="fas fa-sticky-note me-1"></i>{{ item.notes }}</div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if order.special_instructions %}
+            <div class="order-special">
+                <i class="fas fa-comment-alt me-1" style="color:#f0c040;"></i>
+                {{ order.special_instructions }}
+            </div>
+            {% endif %}
+
+            <div class="order-card-footer">
+                {% if order.status == 'pending' %}
+                    <button class="btn-advance btn-confirm" onclick="advanceOrder('{{ order.reference }}', this)">
+                        <i class="fas fa-check me-1"></i> Confirm Order
+                    </button>
+                {% elif order.status == 'confirmed' %}
+                    <button class="btn-advance btn-prepare" onclick="advanceOrder('{{ order.reference }}', this)">
+                        <i class="fas fa-fire me-1"></i> Start Preparing
+                    </button>
+                {% elif order.status == 'preparing' %}
+                    <button class="btn-advance btn-ready" onclick="advanceOrder('{{ order.reference }}', this)">
+                        <i class="fas fa-bell me-1"></i> Mark Ready
+                    </button>
+                {% elif order.status == 'ready' %}
+                    <button class="btn-advance btn-complete" onclick="advanceOrder('{{ order.reference }}', this)">
+                        <i class="fas fa-flag-checkered me-1"></i> Complete
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="kds-empty">
+        <i class="fas fa-concierge-bell"></i>
+        <p>No active orders right now 🎉</p>
+    </div>
+{% endif %}
+
+<script>
+// ——— Clock ———
+function updateClock() {
+    const now = new Date();
+    document.getElementById('kds-clock').textContent =
+        now.toLocaleTimeString('en-GB');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ——— Auto-refresh every 5 seconds ———
+let refreshTimer = setInterval(() => location.reload(), 5000);
+
+// Pause auto-refresh while user is hovering over a card (avoid mid-click reload)
+document.querySelectorAll('.order-card').forEach(card => {
+    card.addEventListener('mouseenter', () => clearInterval(refreshTimer));
+    card.addEventListener('mouseleave', () => {
+        refreshTimer = setInterval(() => location.reload(), 5000);
+    });
+});
+
+// ——— Advance order status via AJAX ———
+function getCsrfToken() {
+    const name = 'csrftoken';
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+        const [k, v] = c.trim().split('=');
+        if (k === name) return decodeURIComponent(v);
+    }
+    return '';
+}
+
+function advanceOrder(reference, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Updating…';
+
+    fetch(`/orders/kitchen/update/${reference}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            // Reload to refresh all cards
+            clearInterval(refreshTimer);
+            location.reload();
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '⚠ Error — retry';
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '⚠ Network error — retry';
+    });
+}
+</script>
+</body>
+</html>

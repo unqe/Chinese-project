@@ -22,4 +22,6 @@ urlpatterns = [
     path("reorder/<str:reference>/", views.reorder, name="reorder"),
     path("status/<str:reference>/", views.order_status_api, name="order_status_api"),
     path("deal-picker/<int:item_id>/", views.deal_picker, name="deal_picker"),
+    path("kitchen/", views.kitchen_display, name="kitchen_display"),
+    path("kitchen/update/<str:reference>/", views.kitchen_update_status, name="kitchen_update_status"),
 ]
