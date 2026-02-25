@@ -59,7 +59,15 @@
                     </div>
 
                     <!-- Status tracker -->
-                    {% if order.status != 'cancelled' %}
+                    {% if order.status == 'cancelled' %}
+                    <div class="alert d-flex align-items-center gap-3 mb-4" style="background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.35);border-radius:10px;color:#e74c3c;">
+                        <i class="fas fa-times-circle fa-2x flex-shrink-0"></i>
+                        <div>
+                            <strong style="font-size:1.05rem;">{% trans "This order was cancelled" %}</strong><br>
+                            <span class="small" style="color:#c8b99a;">{% trans "If you have any questions please contact us." %}</span>
+                        </div>
+                    </div>
+                    {% elif order.status != 'cancelled' %}
                     <div class="status-tracker-card mb-4"
                          id="status-tracker"
                          data-ref="{{ order.reference }}"
@@ -216,6 +224,7 @@
     const tracker = document.getElementById('status-tracker');
     if (!tracker) return;                          // status == cancelled, no tracker in DOM
     if (tracker.dataset.status === 'completed') return;  // already done, no need to poll
+    if (tracker.dataset.status === 'cancelled') return;   // cancelled, no polling needed
 
     const statusApiUrl = '{% url "orders:order_status_api" order.reference %}';
     const deliveryType = tracker.dataset.deliveryType;
@@ -244,7 +253,18 @@
         });
 
         tracker.dataset.status = status;
-        if (status === 'completed') stopPolling();
+        if (status === 'completed' || status === 'cancelled') stopPolling();
+        // If cancelled mid-view, hide tracker and show banner
+        if (status === 'cancelled') {
+            tracker.style.display = 'none';
+            const banner = document.createElement('div');
+            banner.className = 'alert d-flex align-items-center gap-3 mb-4';
+            banner.style.cssText = 'background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.35);border-radius:10px;color:#e74c3c;';
+            banner.innerHTML = '<i class="fas fa-times-circle fa-2x flex-shrink-0"></i><div><strong>This order was cancelled</strong></div>';
+            tracker.parentNode.insertBefore(banner, tracker);
+            const pill = document.querySelector('.status-pill');
+            if (pill) { pill.className = 'status-pill status-cancelled'; pill.textContent = 'Cancelled'; }
+        }
     }
 
     /* ---------- polling ---------- */

@@ -237,7 +237,11 @@
         if (!badge) return;
         const minEl = document.getElementById('est-min-val');
         const timeEl = document.getElementById('est-arrival-time');
-        if (estMinutes === 0) {
+        if (currentStatus === 'cancelled') {
+            badge.innerHTML = '<i class="fas fa-times-circle me-2"></i>Order Cancelled';
+            badge.style.background = 'rgba(192,57,43,0.15)';
+            badge.style.color = '#e74c3c';
+        } else if (estMinutes === 0) {
             const isDelivery = badge.dataset.isDelivery === 'true';
             badge.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + (isDelivery ? 'Delivered!' : 'Ready for collection!');
         } else {
