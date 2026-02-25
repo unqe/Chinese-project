@@ -3,8 +3,9 @@ Menu app views — homepage and full menu page.
 """
 
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Count
 from .models import Category, MenuItem, DealSlot
-from orders.models import OpeningHours
+from orders.models import OpeningHours, OrderItem
 from orders.basket import Basket
 import datetime
 from zoneinfo import ZoneInfo
@@ -75,6 +76,23 @@ def menu_page(request):
         DealSlot.objects.values_list("deal_id", flat=True).distinct()
     )
 
+    # Favourite items for logged-in users — top 6 most-ordered available items
+    favourite_items = []
+    if request.user.is_authenticated:
+        fav_ids = (
+            OrderItem.objects
+            .filter(order__user=request.user, menu_item__is_available=True)
+            .values("menu_item_id")
+            .annotate(cnt=Count("id"))
+            .order_by("-cnt")[:6]
+            .values_list("menu_item_id", flat=True)
+        )
+        if fav_ids:
+            # Preserve ordering by count
+            fav_map = {pk: i for i, pk in enumerate(fav_ids)}
+            qs = MenuItem.objects.filter(pk__in=fav_ids).select_related("category")
+            favourite_items = sorted(qs, key=lambda m: fav_map.get(m.pk, 99))
+
     return render(request, "menu/menu.html", {
         "categories": filtered_categories,
         "active_category": active_category,
@@ -82,6 +100,7 @@ def menu_page(request):
         "basket_count": basket_count,
         "basket_subtotal": basket_subtotal,
         "deal_item_pks": deal_item_pks,
+        "favourite_items": favourite_items,
     })
 
 

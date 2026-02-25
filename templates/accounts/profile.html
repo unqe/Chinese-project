@@ -31,6 +31,12 @@
                     <a href="{% url 'reviews:list' %}" class="profile-nav-link">
                         <i class="fas fa-star me-2"></i>{% trans "Reviews" %}
                     </a>
+                    <a href="{% url 'account_change_password' %}" class="profile-nav-link">
+                        <i class="fas fa-lock me-2"></i>{% trans "Change Password" %}
+                    </a>
+                    <a href="{% url 'account_email' %}" class="profile-nav-link">
+                        <i class="fas fa-envelope me-2"></i>{% trans "Manage Email" %}
+                    </a>
                     <a href="{% url 'account_logout' %}" class="profile-nav-link text-danger">
                         <i class="fas fa-sign-out-alt me-2"></i>{% trans "Sign Out" %}
                     </a>
