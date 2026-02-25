@@ -21,6 +21,43 @@
 
     {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}
+    <style>
+    /* Site announcement bar */
+    .site-announcement-bar {
+        background: linear-gradient(90deg, #1c0d00 0%, #2d1800 50%, #1c0d00 100%);
+        border-bottom: 1.5px solid rgba(212, 160, 23, .5);
+        color: #f0e8d4;
+        padding: .7rem 0;
+        overflow: hidden;
+        max-height: 80px;
+    }
+    .site-announcement-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .75rem;
+        position: relative;
+        font-size: .88rem;
+        line-height: 1.4;
+        min-height: 1.4rem;
+    }
+    .site-announcement-icon { color: #d4a017; font-size: .85rem; flex-shrink: 0; }
+    .site-announcement-close {
+        position: absolute;
+        right: 0;
+        background: none;
+        border: none;
+        color: #9a8870;
+        cursor: pointer;
+        padding: .25rem .5rem;
+        font-size: .8rem;
+        line-height: 1;
+        transition: color .2s;
+    }
+    .site-announcement-close:hover { color: #d4a017; }
+    /* Password reveal button */
+    .pw-toggle:focus { outline: none; box-shadow: none; }
+    </style>
 </head>
 <body>
 
@@ -132,10 +169,17 @@
          SITE ANNOUNCEMENT BANNER
     ================================================================ -->
     {% if site_announcement %}
-        <div class="alert alert-{{ site_announcement.style }} alert-dismissible fade show mb-0 rounded-0 text-center" role="alert" style="border-left:none;border-right:none;border-top:none;">
-            <i class="fas fa-bullhorn me-2"></i>{{ site_announcement.message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="site-announcement-bar" id="site-announcement" role="alert">
+        <div class="container">
+            <div class="site-announcement-inner">
+                <i class="fas fa-bullhorn site-announcement-icon"></i>
+                <span>{{ site_announcement.message }}</span>
+                <button type="button" id="announcement-close" class="site-announcement-close" aria-label="Dismiss announcement">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
+    </div>
     {% endif %}
 
     <!-- ================================================================

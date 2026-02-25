@@ -191,6 +191,7 @@
     </div>
 </div>
 
+<div id="kds-orders">
 {% if active_orders %}
     <div class="kds-grid" id="order-grid">
         {% for order in active_orders %}
@@ -265,6 +266,7 @@
         <p>No active orders right now 🎉</p>
     </div>
 {% endif %}
+</div>
 
 <script>
 // ——— Clock ———
@@ -276,15 +278,31 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// ——— Auto-refresh every 5 seconds ———
-let refreshTimer = setInterval(() => location.reload(), 5000);
+// ——— AJAX order polling (replaces full page reload) ———
+function pollOrders() {
+    fetch('/orders/kitchen/partial/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.text(); })
+    .then(function(html) {
+        var container = document.getElementById('kds-orders');
+        if (container) container.innerHTML = html;
+    })
+    .catch(function() {}); // silent on network error
+}
 
-// Pause auto-refresh while user is hovering over a card (avoid mid-click reload)
-document.querySelectorAll('.order-card').forEach(card => {
-    card.addEventListener('mouseenter', () => clearInterval(refreshTimer));
-    card.addEventListener('mouseleave', () => {
-        refreshTimer = setInterval(() => location.reload(), 5000);
-    });
+var refreshTimer = setInterval(pollOrders, 5000);
+
+// Pause polling while hovering an order card so clicks don't get interrupted
+var kdsOrders = document.getElementById('kds-orders');
+kdsOrders.addEventListener('mouseover', function(e) {
+    if (e.target.closest('.order-card')) clearInterval(refreshTimer);
+});
+kdsOrders.addEventListener('mouseout', function(e) {
+    if (e.target.closest('.order-card') && !(e.relatedTarget && e.relatedTarget.closest('.order-card'))) {
+        clearInterval(refreshTimer);
+        refreshTimer = setInterval(pollOrders, 5000);
+    }
 });
 
 // ——— Advance order status via AJAX ———
@@ -312,9 +330,10 @@ function advanceOrder(reference, btn) {
     .then(r => r.json())
     .then(data => {
         if (data.ok) {
-            // Reload to refresh all cards
+            // Refresh the order grid via AJAX
             clearInterval(refreshTimer);
-            location.reload();
+            pollOrders();
+            refreshTimer = setInterval(pollOrders, 5000);
         } else {
             btn.disabled = false;
             btn.innerHTML = '⚠ Error — retry';

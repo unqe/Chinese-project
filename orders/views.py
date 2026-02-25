@@ -586,3 +586,20 @@ def kitchen_update_status(request, reference):
         order.save(update_fields=["status"])
         return JsonResponse({"ok": True, "new_status": order.status})
     return JsonResponse({"ok": False, "error": "No next status"}, status=400)
+
+
+@staff_member_required
+def kitchen_orders_partial(request):
+    """Returns only the order-cards HTML fragment for AJAX polling.
+    Called every 5 s by the kitchen display JS to update the grid
+    without a full page reload.
+    """
+    active_orders = (
+        Order.objects
+        .filter(status__in=KITCHEN_STATUSES)
+        .prefetch_related("items")
+        .order_by("created_at")
+    )
+    return render(request, "orders/kitchen_partial.html", {
+        "active_orders": active_orders,
+    })

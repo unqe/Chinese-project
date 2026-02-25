@@ -1,0 +1,78 @@
+{% comment %}
+Partial template — rendered by kitchen_orders_partial view and fetched
+via AJAX to update the order grid without a full page reload.
+{% endcomment %}
+{% if active_orders %}
+<div class="kds-grid">
+    {% for order in active_orders %}
+    <div class="order-card status-{{ order.status }}" data-reference="{{ order.reference }}">
+
+        <div class="order-card-header">
+            <span class="order-ref">
+                #{{ order.reference }}
+                <span class="delivery-chip {% if order.delivery_type == 'delivery' %}chip-delivery{% else %}chip-collection{% endif %}">
+                    {{ order.delivery_type|title }}
+                </span>
+            </span>
+            <span class="order-badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
+        </div>
+
+        <div class="order-meta">
+            <i class="fas fa-user me-1"></i>{{ order.full_name }}
+            &nbsp;|&nbsp;
+            <i class="fas fa-clock me-1"></i>
+            <span class="timer-badge" data-placed="{{ order.created_at.isoformat }}">
+                {{ order.created_at|timesince }} ago
+            </span>
+        </div>
+
+        <div class="order-items">
+            {% for item in order.items.all %}
+            <div class="order-item-row">
+                <span>
+                    <span class="item-qty">×{{ item.quantity }}</span>
+                    {{ item.item_name }}
+                </span>
+                <span style="color:#aaa;">£{{ item.line_total }}</span>
+            </div>
+            {% if item.notes %}
+            <div class="item-note ps-4"><i class="fas fa-sticky-note me-1"></i>{{ item.notes }}</div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if order.special_instructions %}
+        <div class="order-special">
+            <i class="fas fa-comment-alt me-1" style="color:#f0c040;"></i>
+            {{ order.special_instructions }}
+        </div>
+        {% endif %}
+
+        <div class="order-card-footer">
+            {% if order.status == 'pending' %}
+                <button class="btn-advance btn-confirm" onclick="advanceOrder('{{ order.reference }}', this)">
+                    <i class="fas fa-check me-1"></i> Confirm Order
+                </button>
+            {% elif order.status == 'confirmed' %}
+                <button class="btn-advance btn-prepare" onclick="advanceOrder('{{ order.reference }}', this)">
+                    <i class="fas fa-fire me-1"></i> Start Preparing
+                </button>
+            {% elif order.status == 'preparing' %}
+                <button class="btn-advance btn-ready" onclick="advanceOrder('{{ order.reference }}', this)">
+                    <i class="fas fa-bell me-1"></i> Mark Ready
+                </button>
+            {% elif order.status == 'ready' %}
+                <button class="btn-advance btn-complete" onclick="advanceOrder('{{ order.reference }}', this)">
+                    <i class="fas fa-flag-checkered me-1"></i> Complete
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="kds-empty">
+    <i class="fas fa-concierge-bell"></i>
+    <p>No active orders right now 🎉</p>
+</div>
+{% endif %}

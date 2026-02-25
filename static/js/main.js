@@ -18,6 +18,73 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // -----------------------------------------------------------------------
+    // Site announcement banner — dismiss after 12 s or on close click
+    // -----------------------------------------------------------------------
+    var announcementBar  = document.getElementById('site-announcement');
+    var announcementClose = document.getElementById('announcement-close');
+    if (announcementBar) {
+        function slideUpAnnouncement() {
+            announcementBar.style.transition = 'opacity .5s, max-height .6s, padding .6s';
+            announcementBar.style.opacity    = '0';
+            announcementBar.style.maxHeight  = '0';
+            announcementBar.style.paddingTop    = '0';
+            announcementBar.style.paddingBottom = '0';
+            announcementBar.style.overflow   = 'hidden';
+        }
+        setTimeout(slideUpAnnouncement, 12000);
+        if (announcementClose) {
+            announcementClose.addEventListener('click', slideUpAnnouncement);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Password reveal toggle — auto-applied to every password input on the page
+    // -----------------------------------------------------------------------
+    document.querySelectorAll('input[type="password"]').forEach(function (input) {
+        if (input.dataset.pwWrapped) return;          // don't double-apply
+        input.dataset.pwWrapped = '1';
+
+        // Wrap input in a relative container
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;width:100%;display:block;';
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+        input.style.paddingRight = '2.5rem';
+
+        // Build the eye button
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pw-toggle';
+        btn.tabIndex  = -1;
+        btn.setAttribute('aria-label', 'Show or hide password');
+        btn.innerHTML = '<i class="fas fa-eye"></i>';
+        btn.style.cssText = [
+            'position:absolute',
+            'top:50%',
+            'right:.65rem',
+            'transform:translateY(-50%)',
+            'background:none',
+            'border:none',
+            'color:#9a8870',
+            'cursor:pointer',
+            'padding:.2rem',
+            'font-size:.85rem',
+            'z-index:10',
+            'line-height:1',
+            'transition:color .2s'
+        ].join(';') + ';';
+
+        btn.addEventListener('click', function () {
+            var show = input.type === 'password';
+            input.type    = show ? 'text' : 'password';
+            btn.innerHTML = show ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            btn.style.color = show ? '#d4a017' : '#9a8870';
+        });
+
+        wrap.appendChild(btn);
+    });
+
+    // -----------------------------------------------------------------------
     // Navbar shadow on scroll
     // -----------------------------------------------------------------------
     const nav = document.getElementById('main-nav');
