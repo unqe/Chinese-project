@@ -38,15 +38,6 @@
             <button type="submit" class="btn btn-primary-custom">
                 <i class="fas fa-paper-plane me-1"></i>{% trans "Post Reply" %}
             </button>
-            {% if review.owner_reply %}
-            <form method="post" action="{% url 'reviews:delete_reply' review.pk %}" class="d-inline m-0">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-red-custom"
-                        onclick="return confirm('Remove this reply?')">
-                    <i class="fas fa-times me-1"></i>{% trans "Delete Reply" %}
-                </button>
-            </form>
-            {% endif %}
             <a href="{% url 'reviews:list' %}" class="btn btn-outline-primary-custom">{% trans "Cancel" %}</a>
         </div>
     </form>
