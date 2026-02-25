@@ -1,0 +1,45 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+<!-- ================================================================
+     DASHBOARD STATS — shown at the top of the admin home page
+================================================================ -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-bottom:1.5rem;">
+
+    <div style="background:#1e2a38;border-radius:10px;padding:1.1rem 1.4rem;border-left:4px solid #e8a838;">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8fa0b0;margin-bottom:.3rem;">Today's Orders</div>
+        <div style="font-size:2rem;font-weight:700;color:#f0f4f8;">{{ stats.today_orders }}</div>
+    </div>
+
+    <div style="background:#1e2a38;border-radius:10px;padding:1.1rem 1.4rem;border-left:4px solid #27ae60;">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8fa0b0;margin-bottom:.3rem;">Today's Revenue</div>
+        <div style="font-size:2rem;font-weight:700;color:#f0f4f8;">£{{ stats.today_revenue }}</div>
+    </div>
+
+    <div style="background:#1e2a38;border-radius:10px;padding:1.1rem 1.4rem;border-left:4px solid #3498db;">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8fa0b0;margin-bottom:.3rem;">This Week</div>
+        <div style="font-size:2rem;font-weight:700;color:#f0f4f8;">£{{ stats.week_revenue }}</div>
+        <div style="font-size:0.8rem;color:#8fa0b0;">{{ stats.week_orders }} orders</div>
+    </div>
+
+    <div style="background:#1e2a38;border-radius:10px;padding:1.1rem 1.4rem;border-left:4px solid #e84393;">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8fa0b0;margin-bottom:.3rem;">Pending Orders</div>
+        <div style="font-size:2rem;font-weight:700;color:#f0f4f8;">{{ stats.pending_orders }}</div>
+    </div>
+
+    <div style="background:#1e2a38;border-radius:10px;padding:1.1rem 1.4rem;border-left:4px solid #9b59b6;">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8fa0b0;margin-bottom:.3rem;">Awaiting Approval</div>
+        <div style="font-size:2rem;font-weight:700;color:#f0f4f8;">{{ stats.pending_reviews }}</div>
+        <div style="font-size:0.8rem;color:#8fa0b0;">reviews</div>
+    </div>
+
+    <div style="background:#1e2a38;border-radius:10px;padding:1.1rem 1.4rem;border-left:4px solid #e74c3c;">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8fa0b0;margin-bottom:.3rem;">Top Dish</div>
+        <div style="font-size:1rem;font-weight:700;color:#f0f4f8;line-height:1.25;">{{ stats.top_item|default:"—" }}</div>
+        <div style="font-size:0.8rem;color:#8fa0b0;">last 30 days</div>
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
