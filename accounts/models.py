@@ -29,6 +29,11 @@ class UserProfile(models.Model):
         default=False,
         help_text="User agreed to receive promotional emails."
     )
+    saved_basket = models.TextField(
+        blank=True,
+        default="",
+        help_text="JSON snapshot of basket saved on logout."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
