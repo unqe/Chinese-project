@@ -8,6 +8,7 @@ from decimal import Decimal
 from menu.models import MenuItem
 
 BASKET_SESSION_KEY = "despair_basket"
+PROMO_SESSION_KEY  = "despair_promo"
 DELIVERY_CHARGE = Decimal("2.50")
 FREE_DELIVERY_THRESHOLD = Decimal("20.00")
 MIN_ORDER_DELIVERY = Decimal("10.00")
@@ -65,7 +66,40 @@ class Basket:
     def clear(self):
         """Empty the basket after a successful order."""
         del self.session[BASKET_SESSION_KEY]
+        if PROMO_SESSION_KEY in self.session:
+            del self.session[PROMO_SESSION_KEY]
         self.session.modified = True
+
+    # ------------------------------------------------------------------
+    # Promo code helpers
+    # ------------------------------------------------------------------
+
+    def apply_promo(self, code_str, discount_amount):
+        """Store a validated promo code + calculated discount in the session."""
+        self.session[PROMO_SESSION_KEY] = {
+            "code": code_str.upper(),
+            "discount": str(discount_amount),
+        }
+        self.session.modified = True
+
+    def remove_promo(self):
+        """Clear any applied promo code from the session."""
+        if PROMO_SESSION_KEY in self.session:
+            del self.session[PROMO_SESSION_KEY]
+        self.session.modified = True
+
+    @property
+    def promo_code(self):
+        """The applied promo code string, or empty string."""
+        data = self.session.get(PROMO_SESSION_KEY)
+        return data["code"] if data else ""
+
+    def get_discount(self):
+        """Return the promo discount amount as Decimal (0 if none applied)."""
+        data = self.session.get(PROMO_SESSION_KEY)
+        if data:
+            return Decimal(data["discount"])
+        return Decimal("0.00")
 
     def _save(self):
         """Mark the session as modified so Django persists the change."""
@@ -121,8 +155,9 @@ class Basket:
         return DELIVERY_CHARGE
 
     def get_total(self, delivery_type="delivery"):
-        """Total including delivery charge."""
-        return self.get_subtotal() + self.get_delivery_charge(delivery_type)
+        """Total including delivery charge and minus any promo discount."""
+        before_discount = self.get_subtotal() + self.get_delivery_charge(delivery_type)
+        return max(Decimal("0.00"), before_discount - self.get_discount())
 
     def __len__(self):
         return self.get_total_quantity()

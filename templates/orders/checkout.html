@@ -196,6 +196,15 @@
                         </span>
                     </div>
                     <hr>
+                    {% if basket.get_discount %}
+                    <div class="summary-row" style="color:var(--gold);">
+                        <span><i class="fas fa-tag me-1"></i>
+                            {% trans "Discount" %}
+                            {% if basket.promo_code %}({{ basket.promo_code }}){% endif %}
+                        </span>
+                        <span>− £{{ basket.get_discount }}</span>
+                    </div>
+                    {% endif %}
                     <div class="summary-row summary-total">
                         <span>{% trans "Total" %}</span>
                         <span id="total-cost">£{{ basket.get_total }}</span>

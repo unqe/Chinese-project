@@ -116,6 +116,8 @@ class Order(models.Model):
     special_instructions = models.TextField(blank=True)
     subtotal = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     delivery_charge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    promo_code = models.CharField(max_length=30, blank=True)
     total = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -167,3 +169,68 @@ class OrderItem(models.Model):
             return None
         return self.item_price * self.quantity
 
+
+class PromoCode(models.Model):
+    """
+    Discount/promo codes redeemable at checkout.
+    Supports percentage off or fixed-amount off discounts.
+    """
+
+    PERCENT = "percent"
+    FIXED = "fixed"
+    DISCOUNT_TYPE_CHOICES = [
+        (PERCENT, "Percentage off"),
+        (FIXED, "Fixed amount off (£)"),
+    ]
+
+    code = models.CharField(max_length=30, unique=True)
+    description = models.CharField(max_length=200, blank=True)
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES, default=PERCENT)
+    value = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        help_text="Percentage (e.g. 10 for 10% off) or fixed £ amount.",
+    )
+    min_order = models.DecimalField(
+        max_digits=6, decimal_places=2, default=0,
+        help_text="Minimum subtotal required.",
+    )
+    max_uses = models.PositiveIntegerField(default=0, help_text="0 = unlimited")
+    uses_count = models.PositiveIntegerField(default=0)
+    active = models.BooleanField(default=True)
+    valid_from = models.DateTimeField(null=True, blank=True)
+    valid_until = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        if self.discount_type == self.PERCENT:
+            return f"{self.code} — {self.value}% off"
+        return f"{self.code} — \u00a3{self.value} off"
+
+    def is_valid(self, subtotal=None):
+        """Check if the code can be used. Returns (bool, error_message)."""
+        from django.utils import timezone
+        now = timezone.now()
+        if not self.active:
+            return False, "This promo code is no longer active."
+        if self.valid_from and now < self.valid_from:
+            return False, "This promo code is not yet valid."
+        if self.valid_until and now > self.valid_until:
+            return False, "This promo code has expired."
+        if self.max_uses > 0 and self.uses_count >= self.max_uses:
+            return False, "This promo code has been fully redeemed."
+        if subtotal is not None and subtotal < self.min_order:
+            return False, f"This code requires a minimum order of \u00a3{self.min_order}."
+        return True, ""
+
+    def get_discount(self, subtotal):
+        """Return the discount amount for the given subtotal."""
+        from decimal import Decimal
+        if self.discount_type == self.PERCENT:
+            discount = subtotal * self.value / Decimal("100")
+        else:
+            discount = self.value
+        return min(discount, subtotal).quantize(Decimal("0.01"))

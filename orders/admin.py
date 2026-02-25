@@ -7,7 +7,7 @@ visible at a glance. Status can be changed directly from the list view.
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from .models import Order, OrderItem, OpeningHours
+from .models import Order, OrderItem, OpeningHours, PromoCode
 
 
 class OrderItemInline(admin.TabularInline):
@@ -33,7 +33,7 @@ class OrderAdmin(admin.ModelAdmin):
     )
     readonly_fields = (
         "reference", "customer_link",
-        "subtotal", "delivery_charge", "total", "created_at",
+        "subtotal", "delivery_charge", "discount_amount", "promo_code", "total", "created_at",
         "full_name", "email", "phone",
         "address_line1", "address_line2", "city", "postcode",
         "payment_method", "card_last_four", "special_instructions",
@@ -52,7 +52,7 @@ class OrderAdmin(admin.ModelAdmin):
             "fields": ("delivery_type", ("address_line1", "address_line2"), ("city", "postcode")),
         }),
         ("💳  Payment", {
-            "fields": (("payment_method", "card_last_four"), ("subtotal", "delivery_charge", "total")),
+            "fields": ("payment_method", "card_last_four", ("subtotal", "delivery_charge"), ("promo_code", "discount_amount"), "total"),
         }),
         ("📝  Special Instructions", {
             "fields": ("special_instructions",),
@@ -78,4 +78,27 @@ class OpeningHoursAdmin(admin.ModelAdmin):
     list_display = ("day", "opening_time", "closing_time", "is_closed")
     list_editable = ("opening_time", "closing_time", "is_closed")
     ordering = ("day",)
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = (
+        "code", "discount_type", "value", "min_order",
+        "uses_count", "max_uses", "active", "valid_until",
+    )
+    list_editable = ("active",)
+    list_filter  = ("discount_type", "active")
+    search_fields = ("code", "description")
+    readonly_fields = ("uses_count", "created_at")
+    fieldsets = (
+        ("Code", {
+            "fields": ("code", "description", "active"),
+        }),
+        ("Discount", {
+            "fields": (("discount_type", "value"), "min_order"),
+        }),
+        ("Limits / Validity", {
+            "fields": (("max_uses", "uses_count"), ("valid_from", "valid_until"), "created_at"),
+        }),
+    )
 
