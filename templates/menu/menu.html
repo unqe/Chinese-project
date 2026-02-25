@@ -10,6 +10,21 @@
     @media (min-width: 992px) {
         .category-sidebar { position: sticky; top: 90px; }
     }
+    /* Typeable qty input on menu cards */
+    .qty-input-card {
+        width: 38px;
+        text-align: center;
+        border: none;
+        background: transparent;
+        color: #f5f0e8;
+        font-size: 0.95rem;
+        font-weight: 700;
+        -moz-appearance: textfield;
+        padding: 0 2px;
+    }
+    .qty-input-card::-webkit-inner-spin-button,
+    .qty-input-card::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .qty-input-card:focus { outline: 1px solid rgba(212,160,23,.5); border-radius: 3px; }
 </style>
 {% endblock %}
 
@@ -236,7 +251,11 @@
                     data-update-url="${updateUrl}"
                     data-remove-url="${removeUrl}"
                     data-qty="${qty}">−</button>
-            <span class="qty-val-card" id="qty-val-${itemId}">${qty}</span>
+            <input type="number" class="qty-input-card" id="qty-val-${itemId}"
+                   value="${qty}" min="1" max="10"
+                   data-item-id="${itemId}"
+                   data-update-url="${updateUrl}"
+                   data-remove-url="${removeUrl}">
             <button class="qty-btn-card qty-plus-card"
                     data-item-id="${itemId}"
                     data-update-url="${updateUrl}"
@@ -340,7 +359,7 @@
         if (plusBtn) {
             e.preventDefault();
             const itemId = plusBtn.dataset.itemId;
-            const currentQty = parseInt(document.getElementById('qty-val-' + itemId).textContent);
+            const currentQty = parseInt(document.getElementById('qty-val-' + itemId).value);
             const newQty = currentQty + 1;
             const updateUrl = plusBtn.dataset.updateUrl;
             const wrapper = document.getElementById('qty-wrap-' + itemId);
@@ -349,7 +368,7 @@
             postAjax(updateUrl, {quantity: newQty}, function(data) {
                 if (data.success) {
                     const valEl = document.getElementById('qty-val-' + itemId);
-                    if (valEl) valEl.textContent = data.item_quantity;
+                    if (valEl) valEl.value = data.item_quantity;
                     // Update data-qty on buttons
                     const w = document.getElementById('qty-wrap-' + itemId);
                     if (w) {
@@ -367,7 +386,7 @@
         if (minusBtn) {
             e.preventDefault();
             const itemId = minusBtn.dataset.itemId;
-            const currentQty = parseInt(document.getElementById('qty-val-' + itemId).textContent);
+            const currentQty = parseInt(document.getElementById('qty-val-' + itemId).value);
             const newQty = currentQty - 1;
             const updateUrl = minusBtn.dataset.updateUrl;
             const removeUrl = minusBtn.dataset.removeUrl;
@@ -386,13 +405,33 @@
                 postAjax(updateUrl, {quantity: newQty}, function(data) {
                     if (data.success) {
                         const valEl = document.getElementById('qty-val-' + itemId);
-                        if (valEl) valEl.textContent = data.item_quantity;
+                        if (valEl) valEl.value = data.item_quantity;
                         updateNavBasket(data.basket_count, data.basket_subtotal);
                     }
                 });
             }
             return;
         }
+    });
+
+    // Typed qty — user types directly into the number input
+    document.addEventListener('change', function(e) {
+        const input = e.target.closest('.qty-input-card');
+        if (!input) return;
+        let val = parseInt(input.value);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 10) val = 10;
+        input.value = val;
+        const itemId = input.dataset.itemId;
+        const updateUrl = input.dataset.updateUrl;
+        const removeUrl = input.dataset.removeUrl;
+        const wrapper = document.getElementById('qty-wrap-' + itemId);
+        postAjax(updateUrl, {quantity: val}, function(data) {
+            if (data.success) {
+                input.value = data.item_quantity;
+                updateNavBasket(data.basket_count, data.basket_subtotal);
+            }
+        });
     });
 
     // ---- Allergen toggle ----
