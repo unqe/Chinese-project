@@ -309,5 +309,44 @@
             this.value = val.replace(/(.{4})/g, '$1 ').trim();
         });
     }
+
+    // Expiry auto-format MM/YY
+    const expiryInput = document.querySelector('input[name="card_expiry"]');
+    if (expiryInput) {
+        expiryInput.setAttribute('placeholder', 'MM/YY');
+        expiryInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '').substring(0, 4);
+            if (val.length >= 3) val = val.substring(0, 2) + '/' + val.substring(2);
+            this.value = val;
+        });
+    }
+
+    // CVV — digits only, exactly 3
+    const cvvInput = document.querySelector('input[name="card_cvv"]');
+    if (cvvInput) {
+        cvvInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 3);
+        });
+    }
+
+    // Card field validation on submit
+    const checkoutForm = document.getElementById('checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            const payMethod = document.querySelector('.payment-radio:checked');
+            if (!payMethod || payMethod.value !== 'card') return;
+            const exp = expiryInput ? expiryInput.value : '';
+            if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)) {
+                e.preventDefault();
+                if (expiryInput) { expiryInput.focus(); expiryInput.style.outline = '2px solid var(--red)'; }
+                return;
+            }
+            if (cvvInput && cvvInput.value.length !== 3) {
+                e.preventDefault();
+                cvvInput.focus();
+                cvvInput.style.outline = '2px solid var(--red)';
+            }
+        });
+    }
 </script>
 {% endblock %}

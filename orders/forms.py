@@ -33,12 +33,12 @@ class CheckoutForm(forms.ModelForm):
         }),
     )
     card_cvv = forms.CharField(
-        max_length=4,
+        max_length=3,
         required=False,
         widget=forms.TextInput(attrs={
-            "placeholder": "CVV",
+            "placeholder": "123",
             "class": "form-control card-only",
-            "maxlength": "4",
+            "maxlength": "3",
         }),
     )
 
