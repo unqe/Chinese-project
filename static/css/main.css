@@ -1177,12 +1177,37 @@ p { color: #c8b99a; }
     background: rgba(212,160,23,0.15);
     border-color: var(--gold);
     color: var(--gold);
+    animation: trackerPulse 1.8s ease-in-out infinite;
+}
+@keyframes trackerPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,160,23,0.5); }
+    50%       { box-shadow: 0 0 0 7px rgba(212,160,23,0); }
+}
+.tracker-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 1.2rem;
+    min-width: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s ease;
+}
+.tracker-line::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; height: 100%;
+    width: 0;
+    background: var(--gold);
+    transition: width 0.6s ease;
+}
+.tracker-line.done {
+    background: var(--gold);
 }
 .tracker-step.active .tracker-label {
     color: var(--gold);
     font-weight: 700;
 }
-
 .receipt-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -1408,11 +1433,43 @@ p { color: #c8b99a; }
 /* -------------------------------------------------------------------------
    Alerts
 ------------------------------------------------------------------------- */
-.alert { font-size: 0.875rem; border-radius: var(--radius-sm); }
-.alert-success { background: rgba(39, 174, 96, 0.12); border: 1px solid rgba(39, 174, 96, 0.25); color: #2ecc71; }
-.alert-warning { background: rgba(241, 196, 15, 0.1); border: 1px solid rgba(241, 196, 15, 0.25); color: #f1c40f; }
-.alert-info { background: rgba(52, 152, 219, 0.1); border: 1px solid rgba(52, 152, 219, 0.25); color: #5dade2; }
-.alert-danger, .alert-error { background: rgba(192, 57, 43, 0.12); border: 1px solid rgba(192, 57, 43, 0.3); color: #e74c3c; }
+.alert {
+    font-size: 0.875rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.1rem;
+    animation: alertSlideDown 0.3s ease;
+}
+@keyframes alertSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+/* Success — gold toned (matches site's golden accent) */
+.alert-success {
+    background: rgba(212, 160, 23, 0.12);
+    border: 1px solid rgba(212, 160, 23, 0.35);
+    color: var(--gold-light);
+}
+/* Warning — warm amber */
+.alert-warning {
+    background: rgba(192, 57, 43, 0.08);
+    border: 1px solid rgba(192, 57, 43, 0.25);
+    color: #e07060;
+}
+/* Info — subtle neutral */
+.alert-info {
+    background: rgba(245, 240, 232, 0.06);
+    border: 1px solid rgba(245, 240, 232, 0.15);
+    color: var(--text-muted);
+}
+/* Danger/Error — red */
+.alert-danger, .alert-error {
+    background: rgba(192, 57, 43, 0.14);
+    border: 1px solid rgba(192, 57, 43, 0.35);
+    color: #e74c3c;
+}
 .btn-close { filter: invert(1) opacity(0.5); }
 
 /* -------------------------------------------------------------------------
@@ -1431,8 +1488,48 @@ hr { border-color: var(--border); }
 .form-check-input:checked { background-color: var(--red); border-color: var(--red); }
 .btn-outline-secondary { border-color: rgba(255,255,255,0.2); color: #c8b99a; }
 .btn-outline-secondary:hover { background: rgba(255,255,255,0.07); color: var(--text-light); border-color: rgba(255,255,255,0.3); }
-.btn-danger { background: #c0392b; border: none; }
-.btn-danger:hover { background: #a93226; }
+.btn-danger { background: #c0392b; border: none; color: #fff; }
+.btn-danger:hover { background: #a93226; color: #fff; }
+
+/* Gold outline — for constructive staff actions (Reply, Edit Reply) */
+.btn-outline-gold-custom {
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition);
+}
+.btn-outline-gold-custom:hover {
+    background: rgba(212,160,23,0.15);
+    color: var(--gold-light);
+    border-color: var(--gold-light);
+}
+/* Muted red outline — for soft delete-like actions */
+.btn-outline-red-custom {
+    background: transparent;
+    border: 1.5px solid rgba(192,57,43,0.6);
+    color: #e07060;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition);
+}
+.btn-outline-red-custom:hover {
+    background: rgba(192,57,43,0.12);
+    border-color: var(--red);
+    color: #e74c3c;
+}
+/* Bootstrap btn-outline-danger — site-themed */
+.btn-outline-danger {
+    border-color: rgba(192,57,43,0.65) !important;
+    color: #e07060 !important;
+    background: transparent !important;
+}
+.btn-outline-danger:hover {
+    background: rgba(192,57,43,0.12) !important;
+    border-color: var(--red) !important;
+    color: #e74c3c !important;
+}
 
 /* -------------------------------------------------------------------------
    Responsive Adjustments
