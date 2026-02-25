@@ -54,7 +54,7 @@
                         <div class="qty-control-sm d-flex align-items-center">
                             <button type="submit" name="quantity" value="{{ item_data.quantity|add:'-1' }}" class="qty-btn-sm">−</button>
                             <input type="number" class="qty-display qty-input-basket"
-                                   value="{{ item_data.quantity }}" min="1" max="10"
+                                   value="{{ item_data.quantity }}" min="1" max="20"
                                    style="-moz-appearance:textfield;width:42px;text-align:center;border:none;background:transparent;color:inherit;font-weight:600;">
                             <button type="submit" name="quantity" value="{{ item_data.quantity|add:'1' }}" class="qty-btn-sm">+</button>
                         </div>
@@ -293,7 +293,7 @@
         input.addEventListener('change', function() {
             var val = parseInt(this.value);
             if (isNaN(val) || val < 1) val = 1;
-            if (val > 10) val = 10;
+            if (val > 20) val = 20;
             this.value = val;
             var form = this.closest('.basket-qty-form');
             var hidden = form.querySelector('input.qty-hidden-submit');
