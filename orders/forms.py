@@ -77,6 +77,12 @@ class CheckoutForm(forms.ModelForm):
             if not cleaned_data.get("postcode"):
                 self.add_error("postcode", "Postcode is required.")
 
+        # Payment method must match delivery type
+        if delivery_type == Order.DELIVERY and payment_method == Order.PAYMENT_CASH_COLLECTION:
+            self.add_error("payment_method", "Cash on Collection is not available for delivery orders.")
+        if delivery_type == Order.COLLECTION and payment_method == Order.PAYMENT_CASH_DELIVERY:
+            self.add_error("payment_method", "Cash on Delivery is not available for collection orders.")
+
         # Fake card validation for simulated card payment
         if payment_method == Order.PAYMENT_CARD:
             card_number = cleaned_data.get("card_number", "").replace(" ", "")

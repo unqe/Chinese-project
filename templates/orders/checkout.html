@@ -115,22 +115,28 @@
                 <!-- Payment method -->
                 <div class="checkout-section mt-4">
                     <h5 class="checkout-section-title"><i class="fas fa-credit-card me-2"></i>{% trans "Payment Method" %}</h5>
-                    <div class="row g-3">
-                        {% for value, label in form.fields.payment_method.choices %}
-                        <div class="col-12 col-md-4">
+                    <div class="row g-3" id="payment-options">
+                        <div class="col-12 col-md-4" data-payment-mode="both">
                             <label class="payment-option-card">
-                                <input type="radio" name="payment_method" value="{{ value }}" {% if form.payment_method.value == value or forloop.first %}checked{% endif %} class="d-none payment-radio">
-                                {% if value == 'card' %}
-                                    <i class="fas fa-credit-card fa-lg mb-1"></i>
-                                {% elif value == 'cash_delivery' %}
-                                    <i class="fas fa-money-bill-wave fa-lg mb-1"></i>
-                                {% else %}
-                                    <i class="fas fa-store fa-lg mb-1"></i>
-                                {% endif %}
-                                <span>{{ label }}</span>
+                                <input type="radio" name="payment_method" value="card" {% if form.payment_method.value == 'card' or not form.payment_method.value %}checked{% endif %} class="d-none payment-radio">
+                                <i class="fas fa-credit-card fa-lg mb-1"></i>
+                                <span>Card Payment</span>
                             </label>
                         </div>
-                        {% endfor %}
+                        <div class="col-12 col-md-4" data-payment-mode="delivery">
+                            <label class="payment-option-card">
+                                <input type="radio" name="payment_method" value="cash_delivery" {% if form.payment_method.value == 'cash_delivery' %}checked{% endif %} class="d-none payment-radio">
+                                <i class="fas fa-money-bill-wave fa-lg mb-1"></i>
+                                <span>Cash on Delivery</span>
+                            </label>
+                        </div>
+                        <div class="col-12 col-md-4" data-payment-mode="collection">
+                            <label class="payment-option-card">
+                                <input type="radio" name="payment_method" value="cash_collection" {% if form.payment_method.value == 'cash_collection' %}checked{% endif %} class="d-none payment-radio">
+                                <i class="fas fa-store fa-lg mb-1"></i>
+                                <span>Cash on Collection</span>
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Fake card entry fields -->
@@ -230,6 +236,18 @@
         addressSection.style.display = chosen === 'delivery' ? 'block' : 'none';
         cards.forEach(c => c.classList.remove('active'));
         document.querySelector(`input[name="delivery_type"][value="${chosen}"]`).closest('.delivery-option-card').classList.add('active');
+
+        // Show/hide payment options — cash on delivery only for delivery, cash on collection only for collection
+        document.querySelectorAll('#payment-options [data-payment-mode]').forEach(col => {
+            const mode = col.dataset.paymentMode;
+            const visible = mode === 'both' || mode === chosen;
+            col.style.display = visible ? '' : 'none';
+            // If the hidden option was selected, auto-switch to card
+            if (!visible && col.querySelector('.payment-radio:checked')) {
+                document.querySelector('.payment-radio[value="card"]').checked = true;
+                updatePayment();
+            }
+        });
 
         // Recalculate delivery charge & total live
         if (summaryCard) {

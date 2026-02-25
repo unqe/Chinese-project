@@ -16,7 +16,7 @@ urlpatterns = [
 
 # i18n_patterns adds /en/ or /zh-hans/ prefix automatically
 urlpatterns += i18n_patterns(
-    path("admin/", admin.site.urls),
+    path("kitchen-panel/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("menu/", include("menu.urls", namespace="menu")),
     path("orders/", include("orders.urls", namespace="orders")),
