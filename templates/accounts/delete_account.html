@@ -1,61 +1,111 @@
 {% extends "base.html" %}
-{% load static %}
+{% load i18n static %}
 
 {% block title %}Delete Account — Despair Chinese{% endblock %}
 
 {% block content %}
-<div class="container py-5" style="max-width:520px;">
-    <div class="text-center mb-4">
-        <div style="font-size:3rem;color:#c0392b;"><i class="fas fa-user-times"></i></div>
-        <h1 class="mt-3" style="font-size:1.6rem;font-weight:700;">Delete Your Account</h1>
-        <p class="text-muted">This action is <strong>permanent and irreversible</strong>.</p>
+<div class="page-header page-header-sm">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "Delete Account" %}</h1>
     </div>
+</div>
 
-    <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
-        <div class="card-body p-4">
+<div class="container py-5">
+    <div class="row g-4">
 
-            <div class="alert alert-danger" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>Warning:</strong> Deleting your account will permanently remove:
-                <ul class="mb-0 mt-2">
-                    <li>All your personal details and saved addresses</li>
-                    <li>Your full order history</li>
-                    <li>Your login access</li>
-                </ul>
+        <!-- Sidebar (mirrors profile page) -->
+        <div class="col-lg-3">
+            <div class="profile-sidebar">
+                <div class="profile-avatar mb-3">
+                    <i class="fas fa-user-circle fa-4x"></i>
+                </div>
+                <strong class="d-block">{{ user.get_full_name|default:user.username }}</strong>
+                <span class="text-muted small">{{ user.email }}</span>
+                <nav class="profile-nav mt-3">
+                    <a href="{% url 'accounts:profile' %}" class="profile-nav-link">
+                        <i class="fas fa-user me-2"></i>{% trans "Profile" %}
+                    </a>
+                    <a href="{% url 'orders:history' %}" class="profile-nav-link">
+                        <i class="fas fa-history me-2"></i>{% trans "Order History" %}
+                    </a>
+                    <a href="{% url 'reviews:list' %}" class="profile-nav-link">
+                        <i class="fas fa-star me-2"></i>{% trans "Reviews" %}
+                    </a>
+                    <a href="{% url 'account_change_password' %}" class="profile-nav-link">
+                        <i class="fas fa-lock me-2"></i>{% trans "Change Password" %}
+                    </a>
+                    <a href="{% url 'account_email' %}" class="profile-nav-link">
+                        <i class="fas fa-envelope me-2"></i>{% trans "Manage Email" %}
+                    </a>
+                    <a href="{% url 'account_logout' %}" class="profile-nav-link text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>{% trans "Sign Out" %}
+                    </a>
+                    <a href="{% url 'accounts:delete_account' %}" class="profile-nav-link active" style="color:#e74c3c;border-top:1px solid rgba(255,255,255,.06);margin-top:.25rem;padding-top:.75rem;font-size:.85rem;">
+                        <i class="fas fa-user-times me-2"></i>{% trans "Delete Account" %}
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-lg-9">
+            <div class="form-card mb-4">
+                <h5 class="form-card-title mb-4" style="color:#e74c3c;">
+                    <i class="fas fa-user-times me-2"></i>{% trans "Permanently Delete Your Account" %}
+                </h5>
+
+                <div class="alert alert-danger d-flex gap-3" role="alert" style="border-radius:10px;">
+                    <div style="font-size:1.4rem;flex-shrink:0;"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div>
+                        <strong>This action cannot be undone.</strong> Deleting your account will permanently remove:
+                        <ul class="mb-0 mt-2">
+                            <li>All your personal details and saved addresses</li>
+                            <li>Your full order history</li>
+                            <li>Your login access</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <p class="text-muted small mt-3 mb-4">
+                    If you just want a break, you can simply stop using your account — your order history will still be here when you return.
+                    If you're sure, enter your current password below to confirm.
+                </p>
+
+                <form method="post" action="{% url 'accounts:delete_account' %}">
+                    {% csrf_token %}
+                    <div class="mb-4" style="max-width:360px;">
+                        <label for="password" class="form-label fw-semibold">{% trans "Current Password" %}</label>
+                        <input type="password"
+                               id="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="Enter your password to confirm"
+                               required
+                               autocomplete="current-password">
+                    </div>
+
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button type="submit"
+                                class="btn btn-danger fw-semibold px-4"
+                                onclick="return confirm('Last chance — this permanently deletes your account and all data. Continue?');">
+                            <i class="fas fa-trash-alt me-2"></i>{% trans "Delete My Account" %}
+                        </button>
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-arrow-left me-2"></i>{% trans "Cancel" %}
+                        </a>
+                    </div>
+                </form>
+
             </div>
 
-            <p class="text-muted small">To confirm, please enter your current password below.</p>
-
-            <form method="post" action="{% url 'accounts:delete_account' %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="password" class="form-label fw-semibold">Current Password</label>
-                    <input type="password"
-                           id="password"
-                           name="password"
-                           class="form-control"
-                           placeholder="Enter your password"
-                           required
-                           autocomplete="current-password">
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button type="submit"
-                            class="btn btn-danger fw-semibold"
-                            onclick="return confirm('Are you absolutely sure? This cannot be undone.');">
-                        <i class="fas fa-trash-alt me-2"></i>Permanently Delete My Account
-                    </button>
-                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Cancel — Go Back to Profile
-                    </a>
-                </div>
-            </form>
-
+            <p class="text-muted small">
+                <i class="fas fa-envelope me-1"></i>
+                Changed your mind or need help? Email us at
+                <a href="mailto:hello@despair.cc" class="text-muted">hello@despair.cc</a>
+                before deleting — we'd love to help.
+            </p>
         </div>
-    </div>
 
-    <p class="text-center text-muted small mt-3">
-        Need help? Contact us before deleting — we may be able to resolve any issues.
-    </p>
+    </div>
 </div>
 {% endblock %}
