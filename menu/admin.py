@@ -46,7 +46,7 @@ class MenuItemAdmin(TranslationAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.annotate(_times_ordered=Count("orderitem"))
+        return qs.annotate(_times_ordered=Count("order_items"))
 
     @admin.display(description="Times ordered", ordering="_times_ordered")
     def times_ordered(self, obj):
