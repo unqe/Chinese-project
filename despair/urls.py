@@ -5,6 +5,7 @@ Routes for all apps, authentication, language switching, and admin.
 
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
@@ -22,6 +23,8 @@ urlpatterns += i18n_patterns(
     path("orders/", include("orders.urls", namespace="orders")),
     path("reviews/", include("reviews.urls", namespace="reviews")),
     path("profile/", include("accounts.urls", namespace="accounts")),
+    path("terms/", TemplateView.as_view(template_name="pages/terms.html"), name="terms"),
+    path("privacy/", TemplateView.as_view(template_name="pages/privacy.html"), name="privacy"),
     path("", include("menu.urls_home")),
     prefix_default_language=False,
 )

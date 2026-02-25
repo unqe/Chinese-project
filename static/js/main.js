@@ -166,4 +166,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // -----------------------------------------------------------------------
+    // Cookie / GDPR consent banner
+    // -----------------------------------------------------------------------
+    const cookieBanner  = document.getElementById('cookie-banner');
+    const cookieAccept  = document.getElementById('cookie-accept');
+    const cookieDecline = document.getElementById('cookie-decline');
+
+    if (cookieBanner) {
+        const consent = localStorage.getItem('cookie_consent');
+        if (!consent) {
+            // Show banner after a short delay so it doesn't flash immediately
+            setTimeout(function () { cookieBanner.style.display = 'block'; }, 800);
+        }
+        if (cookieAccept) {
+            cookieAccept.addEventListener('click', function () {
+                localStorage.setItem('cookie_consent', 'accepted');
+                cookieBanner.style.display = 'none';
+            });
+        }
+        if (cookieDecline) {
+            cookieDecline.addEventListener('click', function () {
+                localStorage.setItem('cookie_consent', 'declined');
+                cookieBanner.style.display = 'none';
+            });
+        }
+    }
+
 });
