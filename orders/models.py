@@ -124,7 +124,7 @@ class Order(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Order #{self.reference} by {self.user}"
+        return f"Order #{self.reference} — {self.full_name}"
 
     def save(self, *args, **kwargs):
         """Generate a short unique reference on first save."""
