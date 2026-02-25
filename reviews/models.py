@@ -36,6 +36,14 @@ class Review(models.Model):
         default=False,
         help_text="Tick to make this review visible on the public reviews page."
     )
+    owner_reply = models.TextField(
+        blank=True,
+        help_text="Owner's public response to this review. Leave blank for no reply."
+    )
+    owner_reply_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Automatically set when a reply is saved."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

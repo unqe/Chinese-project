@@ -38,18 +38,29 @@ def _log_admin_action(request, obj, action_flag, message=""):
 def reviews_list(request):
     """
     Public reviews page. Shows all approved reviews, newest first.
-    Calculates average rating in Python to keep the query simple.
+    Calculates average rating and per-star breakdown for the chart.
     """
     reviews = Review.objects.filter(is_approved=True).select_related("user")
+    review_count = reviews.count()
     avg_rating = None
-    if reviews.exists():
+    star_breakdown = []  # [{star, count, pct}, ...]
+
+    if review_count:
         total = sum(r.rating for r in reviews)
-        avg_rating = round(total / reviews.count(), 1)
+        avg_rating = round(total / review_count, 1)
+        counts = {i: 0 for i in range(1, 6)}
+        for r in reviews:
+            counts[r.rating] += 1
+        star_breakdown = [
+            {"star": s, "count": counts[s], "pct": round(counts[s] / review_count * 100)}
+            for s in range(5, 0, -1)
+        ]
 
     return render(request, "reviews/reviews.html", {
         "reviews": reviews,
         "avg_rating": avg_rating,
-        "review_count": reviews.count(),
+        "review_count": review_count,
+        "star_breakdown": star_breakdown,
     })
 
 
@@ -233,4 +244,31 @@ def delete_review(request, pk):
         return redirect("reviews:list")
 
     return render(request, "reviews/delete_review.html", {"review": review})
+
+
+@login_required
+def reply_review(request, pk):
+    """
+    Allows staff/admin to post a public owner reply to a review.
+    Reply is shown publicly under the review on the reviews page.
+    """
+    if not request.user.is_staff:
+        messages.error(request, "You don't have permission to do that.")
+        return redirect("reviews:list")
+
+    review = get_object_or_404(Review, pk=pk)
+
+    if request.method == "POST":
+        from django.utils import timezone
+        reply_text = request.POST.get("owner_reply", "").strip()
+        review.owner_reply = reply_text
+        review.owner_reply_at = timezone.now() if reply_text else None
+        review.save(update_fields=["owner_reply", "owner_reply_at"])
+        if reply_text:
+            messages.success(request, "Reply posted successfully.")
+        else:
+            messages.success(request, "Reply removed.")
+        return redirect("reviews:list")
+
+    return render(request, "reviews/reply_review.html", {"review": review})
 

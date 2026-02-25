@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Reply to Review | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-sm">
+    <div class="container">
+        <h1 class="page-header-title">{% trans "Reply to Review" %}</h1>
+    </div>
+</div>
+
+<div class="container py-5" style="max-width:640px;">
+    <!-- Original review -->
+    <div class="review-card mb-4">
+        <div class="review-stars mb-2">
+            {% for i in "12345" %}
+                {% if forloop.counter <= review.rating %}
+                    <i class="fas fa-star text-warning"></i>
+                {% else %}
+                    <i class="far fa-star text-muted"></i>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <h6 class="review-title">"{{ review.title }}"</h6>
+        <p class="text-muted">{{ review.body }}</p>
+        <small class="text-muted">{{ review.user.username|default:"Guest" }} · {{ review.created_at|date:"j M Y" }}</small>
+    </div>
+
+    <!-- Reply form -->
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold">{% trans "Your response (leave blank to remove reply)" %}</label>
+            <textarea name="owner_reply" class="form-control" rows="5" placeholder="Thank you for your review...">{{ review.owner_reply }}</textarea>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary-custom">
+                <i class="fas fa-paper-plane me-1"></i>{% trans "Post Reply" %}
+            </button>
+            <a href="{% url 'reviews:list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

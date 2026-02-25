@@ -4,6 +4,7 @@ Uses tabular inlines so category items can be managed on the category page.
 """
 
 from django.contrib import admin
+from django.db.models import Count
 from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
 from .models import Category, MenuItem, DealSlot
 
@@ -35,11 +36,19 @@ class CategoryAdmin(TranslationAdmin):
 class MenuItemAdmin(TranslationAdmin):
     list_display = (
         "name", "category", "price", "spice_level",
-        "is_available", "is_popular", "is_vegetarian"
+        "is_available", "is_popular", "is_vegetarian", "times_ordered",
     )
     list_filter = ("category", "is_available", "is_popular", "spice_level", "is_vegetarian")
     list_editable = ("price", "is_available", "is_popular")
     search_fields = ("name", "description")
     ordering = ("category", "order", "name")
     inlines = [DealSlotInline]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(_times_ordered=Count("orderitem"))
+
+    @admin.display(description="Times ordered", ordering="_times_ordered")
+    def times_ordered(self, obj):
+        return obj._times_ordered
 

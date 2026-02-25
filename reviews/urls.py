@@ -14,4 +14,5 @@ urlpatterns = [
     path("from-order/<str:reference>/", views.guest_review_prefill, name="guest_review_prefill"),
     path("edit/<int:pk>/", views.edit_review, name="edit"),
     path("delete/<int:pk>/", views.delete_review, name="delete"),
+    path("reply/<int:pk>/", views.reply_review, name="reply"),
 ]

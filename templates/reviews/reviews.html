@@ -21,6 +21,21 @@
             <span class="avg-rating-text">{{ avg_rating }} / 5 · {{ review_count }} {% trans "reviews" %}</span>
         </div>
         {% endif %}
+
+        <!-- Star breakdown chart -->
+        {% if star_breakdown %}
+        <div class="star-breakdown mt-3" style="max-width:320px;">
+            {% for row in star_breakdown %}
+            <div class="d-flex align-items-center gap-2 mb-1" style="font-size:0.85rem;">
+                <span style="width:30px;text-align:right;">{{ row.star }}★</span>
+                <div class="progress flex-grow-1" style="height:10px;border-radius:6px;">
+                    <div class="progress-bar bg-warning" style="width:{{ row.pct }}%;"></div>
+                </div>
+                <span style="width:24px;color:#aaa;">{{ row.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -46,7 +61,7 @@
     <div class="row g-4">
         {% for review in reviews %}
         <div class="col-md-6 col-lg-4">
-            <div class="review-card h-100">
+            <div class="review-card h-100 d-flex flex-column">
                 <div class="review-stars mb-2">
                     {% for i in "12345" %}
                         {% if forloop.counter <= review.rating %}
@@ -63,13 +78,29 @@
                         <strong class="review-author">{{ review.user.username|default:"Guest" }}</strong>
                         <span class="text-muted small d-block">{{ review.created_at|date:"j M Y" }}</span>
                     </div>
-                    {% if user == review.user and review.user %}
-                    <div class="review-actions">
-                        <a href="{% url 'reviews:edit' review.pk %}" class="btn btn-xs btn-outline-secondary me-1">{% trans "Edit" %}</a>
+                    <div class="d-flex gap-1">
+                        {% if user == review.user and review.user %}
+                        <a href="{% url 'reviews:edit' review.pk %}" class="btn btn-xs btn-outline-secondary">{% trans "Edit" %}</a>
                         <a href="{% url 'reviews:delete' review.pk %}" class="btn btn-xs btn-outline-danger">{% trans "Delete" %}</a>
+                        {% endif %}
+                        {% if user.is_staff %}
+                        <a href="{% url 'reviews:reply' review.pk %}" class="btn btn-xs btn-outline-primary">
+                            {% if review.owner_reply %}<i class="fas fa-edit me-1"></i>{% trans "Edit Reply" %}{% else %}<i class="fas fa-reply me-1"></i>{% trans "Reply" %}{% endif %}
+                        </a>
+                        {% endif %}
                     </div>
+                </div>
+
+                <!-- Owner reply -->
+                {% if review.owner_reply %}
+                <div class="owner-reply mt-3 p-3 rounded-3" style="background:rgba(255,255,255,0.06);border-left:3px solid var(--primary-color);">
+                    <p class="mb-1 small fw-semibold"><i class="fas fa-store me-1"></i>{% trans "Owner response" %}</p>
+                    <p class="mb-0 small text-muted">{{ review.owner_reply }}</p>
+                    {% if review.owner_reply_at %}
+                    <span class="text-muted" style="font-size:0.75rem;">{{ review.owner_reply_at|date:"j M Y" }}</span>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
