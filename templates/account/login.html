@@ -33,10 +33,7 @@
                             <input type="text" name="login" class="form-control" autofocus value="{{ form.login.value|default:'' }}">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label d-flex justify-content-between">
-                                {% trans "Password" %}
-                                <a href="{% url 'account_reset_password' %}" class="text-muted small">{% trans "Forgot password?" %}</a>
-                            </label>
+                            <label class="form-label">{% trans "Password" %}</label>
                             <input type="password" name="password" class="form-control">
                         </div>
                         <div class="mb-3 form-check">
@@ -48,6 +45,9 @@
 
                     <p class="text-center text-muted mt-3 mb-0 small">
                         {% trans "Don't have an account?" %} <a href="{% url 'account_signup' %}">{% trans "Register here" %}</a>
+                    </p>
+                    <p class="text-center mt-2 mb-0" style="font-size:0.7rem;">
+                        <a href="{% url 'staff_login' %}" style="color:rgba(255,255,255,0.18);text-decoration:none;" tabindex="-1">·</a>
                     </p>
                 </div>
             </div>
