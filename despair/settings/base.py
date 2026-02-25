@@ -82,6 +82,8 @@ TEMPLATES = [
                 "django.template.context_processors.i18n",
                 # Custom context processor for basket count & opening hours
                 "orders.context_processors.basket_context",
+                # Site-wide announcement banner
+                "orders.context_processors.announcement_context",
                 # Admin dashboard stats (only active on /kitchen-panel/ pages)
                 "orders.admin_context.admin_stats",
             ],

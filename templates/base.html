@@ -20,6 +20,7 @@
     <link href="{% static 'css/main.css' %}" rel="stylesheet">
 
     {% block extra_css %}{% endblock %}
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
 
@@ -124,6 +125,16 @@
                     </div>
                 {% endfor %}
             </div>
+        </div>
+    {% endif %}
+
+    <!-- ================================================================
+         SITE ANNOUNCEMENT BANNER
+    ================================================================ -->
+    {% if site_announcement %}
+        <div class="alert alert-{{ site_announcement.style }} alert-dismissible fade show mb-0 rounded-0 text-center" role="alert" style="border-left:none;border-right:none;border-top:none;">
+            <i class="fas fa-bullhorn me-2"></i>{{ site_announcement.message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     {% endif %}
 

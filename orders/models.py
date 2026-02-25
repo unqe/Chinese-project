@@ -234,3 +234,38 @@ class PromoCode(models.Model):
         else:
             discount = self.value
         return min(discount, subtotal).quantize(Decimal("0.01"))
+
+
+class SiteAnnouncement(models.Model):
+    """Admin-controlled banner displayed at the top of every public page."""
+
+    STYLE_INFO = "info"
+    STYLE_WARNING = "warning"
+    STYLE_DANGER = "danger"
+    STYLE_SUCCESS = "success"
+    STYLE_CHOICES = [
+        (STYLE_INFO, "Info (blue)"),
+        (STYLE_WARNING, "Warning (yellow)"),
+        (STYLE_DANGER, "Danger (red)"),
+        (STYLE_SUCCESS, "Success (green)"),
+    ]
+
+    message = models.TextField(help_text="Supports plain text. Keep it short.")
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Only one announcement is shown at a time (the most recently created active one).",
+    )
+    style = models.CharField(
+        max_length=10,
+        choices=STYLE_CHOICES,
+        default=STYLE_INFO,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Site Announcement"
+        verbose_name_plural = "Site Announcements"
+
+    def __str__(self):
+        return self.message[:80]

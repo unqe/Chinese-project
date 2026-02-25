@@ -21,3 +21,10 @@ def basket_context(request):
         "basket_count": basket.get_total_quantity(),
         "basket_subtotal": basket.get_subtotal(),
     }
+
+
+def announcement_context(request):
+    """Injects the latest active SiteAnnouncement into every template."""
+    from .models import SiteAnnouncement
+    announcement = SiteAnnouncement.objects.filter(is_active=True).first()
+    return {"site_announcement": announcement}

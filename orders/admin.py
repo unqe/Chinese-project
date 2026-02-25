@@ -7,7 +7,7 @@ visible at a glance. Status can be changed directly from the list view.
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from .models import Order, OrderItem, OpeningHours, PromoCode
+from .models import Order, OrderItem, OpeningHours, PromoCode, SiteAnnouncement
 
 
 class OrderItemInline(admin.TabularInline):
@@ -101,4 +101,17 @@ class PromoCodeAdmin(admin.ModelAdmin):
             "fields": (("max_uses", "uses_count"), ("valid_from", "valid_until"), "created_at"),
         }),
     )
+
+
+@admin.register(SiteAnnouncement)
+class SiteAnnouncementAdmin(admin.ModelAdmin):
+    list_display = ("short_message", "style", "is_active", "created_at")
+    list_editable = ("is_active", "style")
+    list_filter = ("is_active", "style")
+    readonly_fields = ("created_at",)
+    fields = ("message", "style", "is_active", "created_at")
+
+    @admin.display(description="Message")
+    def short_message(self, obj):
+        return obj.message[:80]
 
