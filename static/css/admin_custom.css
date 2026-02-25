@@ -1,0 +1,289 @@
+/*
+ * Despair Chinese — Custom Admin Styles
+ * Overrides Jazzmin "darkly" theme to match the main site's
+ * dark amber / gold palette.
+ *
+ * Loaded via JAZZMIN_SETTINGS["custom_css"] = "css/admin_custom.css"
+ */
+
+/* ── CSS Variables ──────────────────────────────────────────────── */
+:root {
+    --dc-gold:      #c8892a;
+    --dc-gold-lt:   #e8a838;
+    --dc-dark:      #0f0a05;
+    --dc-surface:   #1a1208;
+    --dc-card:      #1e1710;
+    --dc-border:    #2e2415;
+    --dc-text:      #f0ece4;
+    --dc-muted:     #9a8c78;
+    --dc-danger:    #c0392b;
+    --dc-success:   #1e8449;
+}
+
+/* ── Root page background ───────────────────────────────────────── */
+body,
+#main-content,
+.container-fluid,
+.content-wrapper,
+.main-sidebar,
+.main-header {
+    background-color: var(--dc-surface) !important;
+    color: var(--dc-text) !important;
+}
+
+/* ── Top navbar ─────────────────────────────────────────────────── */
+.main-header.navbar {
+    background: linear-gradient(135deg, var(--dc-dark) 0%, #1a0f00 100%) !important;
+    border-bottom: 1px solid var(--dc-gold) !important;
+}
+
+.main-header .navbar-brand,
+.main-header .nav-link,
+.main-header .brand-text {
+    color: var(--dc-gold-lt) !important;
+}
+
+.main-header .nav-link:hover {
+    color: #fff !important;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────── */
+.main-sidebar {
+    background: var(--dc-dark) !important;
+    border-right: 1px solid var(--dc-border) !important;
+}
+
+.sidebar .nav-sidebar .nav-link,
+.sidebar .nav-sidebar .nav-item > .nav-link {
+    color: var(--dc-muted) !important;
+    border-radius: 6px !important;
+    margin: 1px 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.sidebar .nav-sidebar .nav-link:hover,
+.sidebar .nav-sidebar .nav-link.active,
+.sidebar .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background: rgba(200, 137, 42, 0.15) !important;
+    color: var(--dc-gold-lt) !important;
+}
+
+.sidebar .nav-sidebar .nav-link i {
+    color: var(--dc-gold) !important;
+}
+
+/* Brand in sidebar */
+.brand-link {
+    background: var(--dc-dark) !important;
+    border-bottom: 1px solid var(--dc-border) !important;
+}
+
+.brand-link .brand-text,
+.brand-link:hover .brand-text {
+    color: var(--dc-gold-lt) !important;
+}
+
+/* ── Content area ───────────────────────────────────────────────── */
+.content-wrapper {
+    background-color: var(--dc-surface) !important;
+}
+
+/* Page header / breadcrumbs */
+.content-header {
+    background: transparent !important;
+}
+
+.content-header h1,
+.content-header .breadcrumb-item.active {
+    color: var(--dc-text) !important;
+}
+
+.content-header .breadcrumb-item a {
+    color: var(--dc-gold) !important;
+}
+
+/* ── Cards / modules ────────────────────────────────────────────── */
+.card,
+.module,
+.jazzmin-module {
+    background: var(--dc-card) !important;
+    border: 1px solid var(--dc-border) !important;
+    border-radius: 10px !important;
+}
+
+.card-header,
+.module caption {
+    background: rgba(200, 137, 42, 0.12) !important;
+    border-bottom: 1px solid var(--dc-border) !important;
+    color: var(--dc-gold-lt) !important;
+    font-weight: 600 !important;
+}
+
+.card-body {
+    background: var(--dc-card) !important;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────── */
+.table,
+#result_list {
+    color: var(--dc-text) !important;
+}
+
+.table thead th,
+#result_list thead th {
+    background: rgba(200, 137, 42, 0.1) !important;
+    color: var(--dc-gold-lt) !important;
+    border-color: var(--dc-border) !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.table tbody tr,
+#result_list tbody tr {
+    border-color: var(--dc-border) !important;
+    transition: background 0.15s;
+}
+
+.table tbody tr:hover,
+#result_list tbody tr:hover,
+.table tbody tr.selected,
+#result_list tbody tr.selected {
+    background: rgba(200, 137, 42, 0.07) !important;
+}
+
+.table td,
+.table th {
+    border-color: var(--dc-border) !important;
+    color: var(--dc-text) !important;
+}
+
+/* ── Pagination / action bar ────────────────────────────────────── */
+.pagination .page-link {
+    background: var(--dc-card) !important;
+    border-color: var(--dc-border) !important;
+    color: var(--dc-gold) !important;
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--dc-gold) !important;
+    border-color: var(--dc-gold) !important;
+    color: #000 !important;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+.btn-primary,
+input[type="submit"] {
+    background: var(--dc-gold) !important;
+    border-color: var(--dc-gold) !important;
+    color: #000 !important;
+}
+
+.btn-primary:hover,
+input[type="submit"]:hover {
+    background: var(--dc-gold-lt) !important;
+    border-color: var(--dc-gold-lt) !important;
+}
+
+.btn-secondary {
+    background: #2a2018 !important;
+    border-color: var(--dc-border) !important;
+    color: var(--dc-text) !important;
+}
+
+.btn-success {
+    background: var(--dc-success) !important;
+    border-color: var(--dc-success) !important;
+}
+
+.btn-danger {
+    background: var(--dc-danger) !important;
+    border-color: var(--dc-danger) !important;
+}
+
+/* ── Forms / inputs ─────────────────────────────────────────────── */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+    background: #120d07 !important;
+    border: 1px solid var(--dc-border) !important;
+    color: var(--dc-text) !important;
+    border-radius: 6px !important;
+}
+
+.form-control:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--dc-gold) !important;
+    box-shadow: 0 0 0 3px rgba(200, 137, 42, 0.2) !important;
+}
+
+label,
+.form-label,
+.help-block {
+    color: var(--dc-muted) !important;
+}
+
+/* ── Changeform fieldsets ───────────────────────────────────────── */
+fieldset {
+    border: 1px solid var(--dc-border) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+fieldset legend h2,
+fieldset h2 {
+    color: var(--dc-gold-lt) !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ── Status pills ───────────────────────────────────────────────── */
+.badge.bg-success     { background: var(--dc-success) !important; }
+.badge.bg-warning     { background: var(--dc-gold) !important; color: #000 !important; }
+.badge.bg-danger      { background: var(--dc-danger) !important; }
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.main-footer {
+    background: var(--dc-dark) !important;
+    border-top: 1px solid var(--dc-border) !important;
+    color: var(--dc-muted) !important;
+}
+
+/* ── Dashboard stat cards (our custom template) ─────────────────── */
+[class*="stat-card"] {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+[class*="stat-card"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(200, 137, 42, 0.15);
+}
+
+/* ── Links ──────────────────────────────────────────────────────── */
+a {
+    color: var(--dc-gold) !important;
+}
+
+a:hover {
+    color: var(--dc-gold-lt) !important;
+}
+
+/* ── Recent Actions sidebar ─────────────────────────────────────── */
+#recent-actions-module li {
+    border-bottom: 1px solid var(--dc-border) !important;
+    padding: 4px 0 !important;
+}
+
+/* ── Scroll bar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--dc-dark); }
+::-webkit-scrollbar-thumb { background: var(--dc-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dc-gold); }
