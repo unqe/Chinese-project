@@ -8,27 +8,34 @@
 
 /* ── CSS Variables ──────────────────────────────────────────────── */
 :root {
-    --dc-gold:      #c8892a;
-    --dc-gold-lt:   #e8a838;
-    --dc-dark:      #0f0a05;
-    --dc-surface:   #1a1208;
-    --dc-card:      #1e1710;
-    --dc-border:    #2e2415;
-    --dc-text:      #f0ece4;
-    --dc-muted:     #9a8c78;
+    --dc-gold:      #d4a017;
+    --dc-gold-lt:   #f0c040;
+    --dc-dark:      #0d0603;
+    --dc-surface:   #150b04;
+    --dc-card:      #1c1008;
+    --dc-border:    rgba(212,160,23,0.18);
+    --dc-text:      #f5f0e8;
+    --dc-muted:     #9a8870;
     --dc-danger:    #c0392b;
     --dc-success:   #1e8449;
 }
 
 /* ── Root page background ───────────────────────────────────────── */
 body,
+html,
 #main-content,
 .container-fluid,
 .content-wrapper,
 .main-sidebar,
-.main-header {
+.main-header,
+.wrapper {
     background-color: var(--dc-surface) !important;
     color: var(--dc-text) !important;
+}
+
+/* Force white text everywhere */
+p, span, td, th, li, div, h1, h2, h3, h4, h5, h6, label {
+    color: inherit;
 }
 
 /* ── Top navbar ─────────────────────────────────────────────────── */
@@ -287,3 +294,173 @@ a:hover {
 ::-webkit-scrollbar-track { background: var(--dc-dark); }
 ::-webkit-scrollbar-thumb { background: var(--dc-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--dc-gold); }
+
+/* ── Select2 dropdowns ──────────────────────────────────────────── */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    background: #120d07 !important;
+    border: 1px solid var(--dc-border) !important;
+    color: var(--dc-text) !important;
+    border-radius: 6px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--dc-text) !important;
+}
+.select2-container--default .select2-results__option {
+    background: var(--dc-card) !important;
+    color: var(--dc-text) !important;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: rgba(212,160,23,0.2) !important;
+    color: var(--dc-gold-lt) !important;
+}
+.select2-dropdown {
+    background: var(--dc-card) !important;
+    border-color: var(--dc-border) !important;
+}
+.select2-search--dropdown .select2-search__field {
+    background: #120d07 !important;
+    border-color: var(--dc-border) !important;
+    color: var(--dc-text) !important;
+}
+
+/* ── Login page ─────────────────────────────────────────────────── */
+body.login-page,
+.login-page .login-box,
+.login-page .login-card-body {
+    background: var(--dc-dark) !important;
+}
+.login-page .login-box-msg {
+    color: var(--dc-gold-lt) !important;
+}
+.login-page .input-group-text {
+    background: #1a1005 !important;
+    border-color: var(--dc-border) !important;
+    color: var(--dc-muted) !important;
+}
+
+/* ── Inline/Tabular inlines ─────────────────────────────────────── */
+.inline-group,
+.tabular,
+.stacked {
+    border: 1px solid var(--dc-border) !important;
+    border-radius: 8px !important;
+    margin-bottom: 1rem !important;
+    overflow: hidden;
+}
+.inline-related h3 {
+    background: rgba(212,160,23,0.1) !important;
+    color: var(--dc-gold-lt) !important;
+    padding: 0.5rem 1rem !important;
+    margin: 0 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.inline-related .add-row a {
+    color: var(--dc-gold) !important;
+}
+.delete-row a, .inline-deletelink {
+    color: var(--dc-danger) !important;
+}
+
+/* ── Action bar (change_list actions) ───────────────────────────── */
+.actions {
+    background: rgba(212,160,23,0.06) !important;
+    border-bottom: 1px solid var(--dc-border) !important;
+}
+.actions label,
+.actions select {
+    color: var(--dc-text) !important;
+}
+.actions select {
+    background: var(--dc-card) !important;
+    border-color: var(--dc-border) !important;
+}
+
+/* ── Filter sidebar ─────────────────────────────────────────────── */
+#changelist-filter {
+    background: var(--dc-card) !important;
+    border-left: 1px solid var(--dc-border) !important;
+}
+#changelist-filter h2,
+#changelist-filter h3 {
+    background: rgba(212,160,23,0.1) !important;
+    color: var(--dc-gold-lt) !important;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+#changelist-filter li.selected a {
+    color: var(--dc-gold-lt) !important;
+    font-weight: 600;
+}
+
+/* ── Messages (Django messages) ─────────────────────────────────── */
+ul.messagelist li {
+    border-radius: 6px !important;
+    margin-bottom: 6px;
+}
+ul.messagelist li.success {
+    background: rgba(212,160,23,0.12) !important;
+    border-left: 3px solid var(--dc-gold) !important;
+    color: var(--dc-gold-lt) !important;
+}
+ul.messagelist li.error {
+    background: rgba(192,57,43,0.12) !important;
+    border-left: 3px solid var(--dc-danger) !important;
+    color: #e74c3c !important;
+}
+ul.messagelist li.warning {
+    background: rgba(212,160,23,0.08) !important;
+    border-left: 3px solid var(--dc-gold) !important;
+    color: var(--dc-gold) !important;
+}
+
+/* ── Submit row ─────────────────────────────────────────────────── */
+.submit-row {
+    background: var(--dc-card) !important;
+    border-top: 1px solid var(--dc-border) !important;
+}
+.submit-row a.deletelink {
+    background: var(--dc-danger) !important;
+    color: #fff !important;
+}
+.submit-row a.deletelink:hover {
+    background: #a93226 !important;
+}
+
+/* ── Search bar ─────────────────────────────────────────────────── */
+#toolbar,
+#changelist-search {
+    background: transparent !important;
+}
+#searchbar {
+    background: #120d07 !important;
+    border-color: var(--dc-border) !important;
+    color: var(--dc-text) !important;
+}
+
+/* ── Jazzmin nav tabs (top icons) ───────────────────────────────── */
+.nav-tabs .nav-link {
+    color: var(--dc-muted) !important;
+    border-color: transparent;
+}
+.nav-tabs .nav-link.active {
+    background: var(--dc-card) !important;
+    border-color: var(--dc-border) !important;
+    color: var(--dc-gold-lt) !important;
+}
+
+/* ── Table row striping fix ─────────────────────────────────────── */
+#result_list tbody tr:nth-child(even) {
+    background: rgba(0,0,0,0.15) !important;
+}
+
+/* ── Make sure check_column (select all) shows ──────────────────── */
+.action-checkbox input[type="checkbox"],
+#action-toggle {
+    accent-color: var(--dc-gold) !important;
+}
+
