@@ -135,15 +135,47 @@
                 {% if basket.get_subtotal < 20 %}
                 <div class="free-delivery-bar mt-2 mb-3">
                     <div class="free-delivery-progress">
-                        <div class="free-delivery-fill" style="width: {{ basket.get_subtotal|floatformat:2 }}0%;"></div>
+                        <div class="free-delivery-fill" style="width: {% widthratio basket.get_subtotal 20 100 %}%;"></div>
                     </div>
                     <small class="text-muted">
-                        {% trans "Add" %} £{% widthratio 2000 100 1 %} {% trans "more for free delivery" %}
+                        {% blocktrans with remaining=free_delivery_remaining %}Add £{{ remaining }} more for free delivery{% endblocktrans %}
                     </small>
                 </div>
                 {% endif %}
 
+                <!-- Promo code input -->
+                {% if basket.promo_code %}
+                <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2"
+                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);">
+                    <span style="color:var(--gold);font-size:0.85rem;">
+                        <i class="fas fa-tag me-1"></i>
+                        <strong>{{ basket.promo_code }}</strong> applied
+                    </span>
+                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-xs btn-outline-red-custom">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <form method="post" action="{% url 'orders:apply_promo' %}" class="mt-3 d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="promo_code" class="form-control form-control-sm"
+                           placeholder="{% trans 'Promo code' %}" maxlength="30" style="font-size:0.85rem;">
+                    <button type="submit" class="btn btn-sm btn-outline-gold-custom flex-shrink-0">
+                        {% trans "Apply" %}
+                    </button>
+                </form>
+                {% endif %}
+
                 <hr>
+                {% if basket.get_discount %}
+                <div class="summary-row" style="color:var(--gold);">
+                    <span><i class="fas fa-tag me-1"></i>{% trans "Discount" %}</span>
+                    <span>− £{{ basket.get_discount }}</span>
+                </div>
+                {% endif %}
                 <div class="summary-row summary-total">
                     <span>{% trans "Total" %}</span>
                     <span>£{{ basket.get_total }}</span>

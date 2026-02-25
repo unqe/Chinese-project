@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import F
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -19,7 +20,7 @@ from datetime import timedelta
 
 from .basket import Basket, MIN_ORDER_DELIVERY
 from .forms import CheckoutForm
-from .models import Order, OrderItem, OpeningHours
+from .models import Order, OrderItem, OpeningHours, PromoCode
 from menu.models import MenuItem, DealSlot
 
 
@@ -143,6 +144,7 @@ def basket_view(request):
         except MenuItem.DoesNotExist:
             pass
     is_open, next_open_text = _get_opening_status()
+    free_delivery_remaining = max(Decimal("0.00"), Decimal("20.00") - subtotal)
     return render(request, "orders/basket.html", {
         "basket": basket,
         "popular_items": popular_items,
@@ -153,6 +155,7 @@ def basket_view(request):
         "min_order_delivery": MIN_ORDER_DELIVERY,
         "is_open": is_open,
         "next_open_text": next_open_text,
+        "free_delivery_remaining": free_delivery_remaining,
     })
 
 
@@ -227,6 +230,41 @@ def basket_remove(request, item_id):
     return redirect("orders:basket")
 
 
+@require_POST
+def apply_promo(request):
+    """Validate and apply a promo code to the basket session."""
+    basket = Basket(request)
+    code_str = request.POST.get("promo_code", "").strip().upper()
+    if not code_str:
+        messages.error(request, "Please enter a promo code.")
+        return redirect("orders:basket")
+
+    try:
+        promo = PromoCode.objects.get(code__iexact=code_str)
+    except PromoCode.DoesNotExist:
+        messages.error(request, f"'{code_str}' is not a valid promo code.")
+        return redirect("orders:basket")
+
+    valid, err = promo.is_valid(subtotal=basket.get_subtotal())
+    if not valid:
+        messages.error(request, err)
+        return redirect("orders:basket")
+
+    discount = promo.get_discount(basket.get_subtotal())
+    basket.apply_promo(promo.code, discount)
+    messages.success(request, f"Promo code {promo.code} applied — £{discount} off!")
+    return redirect("orders:basket")
+
+
+@require_POST
+def remove_promo(request):
+    """Remove any applied promo code from the basket session."""
+    basket = Basket(request)
+    basket.remove_promo()
+    messages.info(request, "Promo code removed.")
+    return redirect("orders:basket")
+
+
 def checkout(request):
     """
     Checkout page. Pre-fills with saved profile data for logged-in users.
@@ -279,6 +317,8 @@ def checkout(request):
             order.user = request.user if request.user.is_authenticated else None
             order.subtotal = basket.get_subtotal()
             order.delivery_charge = basket.get_delivery_charge(delivery_type)
+            order.discount_amount = basket.get_discount()
+            order.promo_code = basket.promo_code
             order.total = basket.get_total(delivery_type)
 
             if form.cleaned_data.get("payment_method") == Order.PAYMENT_CARD:
@@ -286,6 +326,12 @@ def checkout(request):
                 order.card_last_four = raw_card[-4:] if raw_card else ""
 
             order.save()
+
+            # Increment promo code uses_count
+            if order.promo_code:
+                PromoCode.objects.filter(code=order.promo_code).update(
+                    uses_count=F("uses_count") + 1
+                )
 
             # Log to admin Recent Actions
             _log_admin_action(request, order, ADDITION, "Order placed via website")
