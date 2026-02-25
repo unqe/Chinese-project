@@ -3,6 +3,45 @@
 
 {% block title %}Despair Chinese | Authentic Chinese Takeaway, Hackney London{% endblock %}
 
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Despair Chinese",
+  "url": "https://despair.cc",
+  "telephone": "+44-20-7986-1234",
+  "email": "hello@despair.cc",
+  "priceRange": "££",
+  "servesCuisine": "Chinese",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "47 Mare Street",
+    "addressLocality": "Hackney",
+    "addressRegion": "London",
+    "postalCode": "E8 1HE",
+    "addressCountry": "GB"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 51.5440,
+    "longitude": -0.0553
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      "opens": "16:30",
+      "closes": "23:00"
+    }
+  ],
+  "hasMenu": "https://despair.cc/menu/",
+  "acceptsReservations": "False",
+  "menu": "https://despair.cc/menu/"
+}
+</script>
+{% endblock %}
+
 {% block content %}
 
 <!-- ====================================================================
