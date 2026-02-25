@@ -9,4 +9,5 @@ app_name = "accounts"
 
 urlpatterns = [
     path("", views.profile, name="profile"),
+    path("delete/", views.delete_account, name="delete_account"),
 ]

@@ -4,6 +4,7 @@ Accounts app views — user profile.
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from django.contrib import messages
 
 from .forms import UserForm, UserProfileForm
@@ -32,4 +33,26 @@ def profile(request):
         "user_form": user_form,
         "profile_form": profile_form,
     })
+
+
+@login_required
+def delete_account(request):
+    """GDPR delete-account page. Requires password confirmation.
+    On POST with correct password: logs the user out and deletes the account.
+    """
+    if request.method == "POST":
+        password = request.POST.get("password", "")
+        user = request.user
+        if user.check_password(password):
+            logout(request)
+            user.delete()
+            messages.success(
+                request,
+                "Your account and all associated data have been permanently deleted.",
+            )
+            return redirect("menu:menu")
+        else:
+            messages.error(request, "Incorrect password. Please try again.")
+            return redirect("accounts:delete_account")
+    return render(request, "accounts/delete_account.html")
 
