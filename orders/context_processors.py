@@ -24,7 +24,14 @@ def basket_context(request):
 
 
 def announcement_context(request):
-    """Injects the latest active SiteAnnouncement into every template."""
-    from .models import SiteAnnouncement
-    announcement = SiteAnnouncement.objects.filter(is_active=True).first()
-    return {"site_announcement": announcement}
+    """Injects the latest active SiteAnnouncement into every template.
+    Silently returns empty dict on any error so the site never breaks.
+    """
+    try:
+        if not hasattr(request, 'session'):
+            return {"site_announcement": None}
+        from .models import SiteAnnouncement
+        announcement = SiteAnnouncement.objects.filter(is_active=True).first()
+        return {"site_announcement": announcement}
+    except Exception:
+        return {"site_announcement": None}
