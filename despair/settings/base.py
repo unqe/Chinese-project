@@ -110,6 +110,10 @@ ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
+# Session / Remember-me
+ACCOUNT_SESSION_REMEMBER = None          # None = respect the "remember me" checkbox
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days when remembered
+
 
 # ---------------------------------------------------------------------------
 # Password validation
