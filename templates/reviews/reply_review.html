@@ -31,14 +31,23 @@
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <label class="form-label fw-semibold">{% trans "Your response (leave blank to remove reply)" %}</label>
+            <label class="form-label fw-semibold">{% trans "Your reply" %}</label>
             <textarea name="owner_reply" class="form-control" rows="5" placeholder="Thank you for your review...">{{ review.owner_reply }}</textarea>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             <button type="submit" class="btn btn-primary-custom">
                 <i class="fas fa-paper-plane me-1"></i>{% trans "Post Reply" %}
             </button>
-            <a href="{% url 'reviews:list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+            {% if review.owner_reply %}
+            <form method="post" action="{% url 'reviews:delete_reply' review.pk %}" class="d-inline m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-red-custom"
+                        onclick="return confirm('Remove this reply?')">
+                    <i class="fas fa-times me-1"></i>{% trans "Delete Reply" %}
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'reviews:list' %}" class="btn btn-outline-primary-custom">{% trans "Cancel" %}</a>
         </div>
     </form>
 </div>
