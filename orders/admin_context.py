@@ -22,6 +22,7 @@ def admin_stats(request):
 
     try:
         from orders.models import Order, OrderItem
+        from orders.models import PromoCode
         from reviews.models import Review
         from django.db.models import Sum, Count
 
@@ -65,6 +66,16 @@ def admin_stats(request):
         )
         top_item = top_item_row["item_name"] if top_item_row else None
 
+        # Recent orders (last 6)
+        recent_orders = (
+            Order.objects
+            .select_related("user")
+            .order_by("-created_at")[:6]
+        )
+
+        # Active promo codes
+        active_promos = PromoCode.objects.filter(active=True).order_by("code")
+
         return {
             "stats": {
                 "today_orders":    today_orders,
@@ -74,7 +85,9 @@ def admin_stats(request):
                 "pending_orders":  pending_orders,
                 "pending_reviews": pending_reviews,
                 "top_item":        top_item,
-            }
+            },
+            "recent_orders": recent_orders,
+            "active_promos": active_promos,
         }
     except Exception:
         return {}
