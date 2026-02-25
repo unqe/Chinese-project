@@ -8,8 +8,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
-from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 
 from .models import Review
 from .forms import ReviewForm, ReceiptLookupForm
@@ -253,8 +254,7 @@ def reply_review(request, pk):
     Reply is shown publicly under the review on the reviews page.
     """
     if not request.user.is_staff:
-        messages.error(request, "You don't have permission to do that.")
-        return redirect("reviews:list")
+        raise PermissionDenied
 
     review = get_object_or_404(Review, pk=pk)
 
@@ -271,4 +271,38 @@ def reply_review(request, pk):
         return redirect("reviews:list")
 
     return render(request, "reviews/reply_review.html", {"review": review})
+
+
+@login_required
+def delete_reply(request, pk):
+    """Staff-only: remove (clear) the owner reply from a review."""
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    if request.method == "POST":
+        review = get_object_or_404(Review, pk=pk)
+        review.owner_reply = ""
+        review.owner_reply_at = None
+        review.save(update_fields=["owner_reply", "owner_reply_at"])
+        _log_admin_action(request, review, CHANGE, "Owner reply deleted via website")
+        messages.success(request, "Reply removed.")
+
+    return redirect("reviews:list")
+
+
+@login_required
+def staff_delete_review(request, pk):
+    """Staff-only: permanently delete any review from the public site."""
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    review = get_object_or_404(Review, pk=pk)
+
+    if request.method == "POST":
+        _log_admin_action(request, review, DELETION, "Review deleted by staff via website")
+        review.delete()
+        messages.success(request, "Review deleted.")
+        return redirect("reviews:list")
+
+    return render(request, "reviews/staff_delete_review.html", {"review": review})
 
