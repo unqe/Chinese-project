@@ -4,6 +4,286 @@
 {% block content %}
 <style>
 .dc-stat-grid    { display:grid; gap:1rem; margin-bottom:1.5rem; }
+.dc-stat-primary { grid-template-columns: repeat(4, 1fr); }
+.dc-stat-secondary { grid-template-columns: repeat(4, 1fr); margin-top:0; }
+.dc-card {
+    background: #1c1008;
+    border: 1px solid rgba(212,160,23,0.15);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.dc-card:hover { box-shadow: 0 4px 20px rgba(212,160,23,0.12); transform: translateY(-1px); }
+.dc-card-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.dc-card-body { min-width: 0; }
+.dc-card-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .07em; color: #9a8870; margin-bottom: .15rem; }
+.dc-card-value { font-size: 1.9rem; font-weight: 700; color: #f5f0e8; line-height: 1.1; }
+.dc-card-sub   { font-size: 0.75rem; color: #9a8870; margin-top: .15rem; }
+
+.dc-card-gold   .dc-card-icon { background: rgba(212,160,23,.15); color: #d4a017; }
+.dc-card-green  .dc-card-icon { background: rgba(30,132,73,.18); color: #2ecc71; }
+.dc-card-blue   .dc-card-icon { background: rgba(52,152,219,.15); color: #5dade2; }
+.dc-card-red    .dc-card-icon { background: rgba(192,57,43,.18); color: #e74c3c; }
+.dc-card-purple .dc-card-icon { background: rgba(155,89,182,.18); color: #a569bd; }
+.dc-card-amber  .dc-card-icon { background: rgba(243,156,18,.15); color: #f39c12; }
+.dc-card-teal   .dc-card-icon { background: rgba(26,188,156,.15); color: #1abc9c; }
+.dc-card-pink   .dc-card-icon { background: rgba(231,76,60,.12); color: #e91e8c; }
+
+.dc-quicklinks {
+    display: flex; flex-wrap: wrap; gap: .6rem;
+    padding: 1rem 1.25rem;
+    background: #1c1008;
+    border: 1px solid rgba(212,160,23,0.12);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    align-items: center;
+}
+.dc-quicklinks-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .07em; color: #9a8870; margin-right: .4rem; flex-basis: 100%; }
+.dc-quicklink {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .35rem .85rem;
+    border-radius: 20px;
+    font-size: 0.8rem; font-weight: 600;
+    border: 1.5px solid rgba(212,160,23,.35);
+    color: #d4a017;
+    text-decoration: none;
+    transition: background .15s, color .15s;
+}
+.dc-quicklink:hover { background: rgba(212,160,23,.12); color: #f0c040; text-decoration: none; }
+.dc-quicklink.dc-ql-kitchen { border-color: rgba(231,76,60,.55); color: #e74c3c; }
+.dc-quicklink.dc-ql-kitchen:hover { background: rgba(231,76,60,.1); }
+.dc-quicklink.dc-ql-announce { border-color: rgba(26,188,156,.5); color: #1abc9c; }
+.dc-quicklink.dc-ql-announce:hover { background: rgba(26,188,156,.1); }
+</style>
+
+<!-- ── Current Announcement status ───────────────────────────────── -->
+{% if current_announcement %}
+<div style="margin-bottom:1rem;padding:.65rem 1.1rem;background:rgba(26,188,156,.1);border:1px solid rgba(26,188,156,.3);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+    <span style="color:#1abc9c;font-size:.8rem;">
+        <i class="fas fa-bullhorn me-2"></i><strong>Active Announcement:</strong>
+        <span style="color:#f5f0e8;margin-left:.4rem;">{{ current_announcement.message|truncatechars:80 }}</span>
+    </span>
+    <a href="/kitchen-panel/orders/siteannouncement/{{ current_announcement.pk }}/change/" style="color:#9a8870;font-size:.75rem;text-decoration:none;white-space:nowrap;">Edit →</a>
+</div>
+{% endif %}
+
+<!-- ── Primary stats row ──────────────────────────────────────────── -->
+<div class="dc-stat-grid dc-stat-primary">
+
+    <div class="dc-card dc-card-gold">
+        <div class="dc-card-icon"><i class="fas fa-receipt"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">Today's Orders</div>
+            <div class="dc-card-value">{{ stats.today_orders }}</div>
+            <div class="dc-card-sub">{{ stats.delivery_today }}🛵 {{ stats.collection_today }}🏃</div>
+        </div>
+    </div>
+
+    <div class="dc-card dc-card-green">
+        <div class="dc-card-icon"><i class="fas fa-pound-sign"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">Today's Revenue</div>
+            <div class="dc-card-value">£{{ stats.today_revenue }}</div>
+        </div>
+    </div>
+
+    <div class="dc-card dc-card-blue">
+        <div class="dc-card-icon"><i class="fas fa-calendar-week"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">This Week</div>
+            <div class="dc-card-value">£{{ stats.week_revenue }}</div>
+            <div class="dc-card-sub">{{ stats.week_orders }} orders</div>
+        </div>
+    </div>
+
+    <div class="dc-card dc-card-red">
+        <div class="dc-card-icon"><i class="fas fa-clock"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">Pending Orders</div>
+            <div class="dc-card-value">{{ stats.pending_orders }}</div>
+            <div class="dc-card-sub">awaiting action</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Secondary stats row ───────────────────────────────────────── -->
+<div class="dc-stat-grid dc-stat-secondary">
+
+    <div class="dc-card dc-card-teal">
+        <div class="dc-card-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">This Month</div>
+            <div class="dc-card-value" style="font-size:1.5rem;">£{{ stats.month_revenue }}</div>
+            <div class="dc-card-sub">{{ stats.month_orders }} orders</div>
+        </div>
+    </div>
+
+    <div class="dc-card dc-card-purple">
+        <div class="dc-card-icon"><i class="fas fa-calculator"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">Avg Order Value</div>
+            <div class="dc-card-value" style="font-size:1.5rem;">£{{ stats.avg_order_value }}</div>
+            <div class="dc-card-sub">completed orders</div>
+        </div>
+    </div>
+
+    <div class="dc-card dc-card-amber">
+        <div class="dc-card-icon"><i class="fas fa-fire"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">Top Dish (30 days)</div>
+            <div class="dc-card-value" style="font-size:1rem;line-height:1.3;">{{ stats.top_item|default:"—" }}</div>
+        </div>
+    </div>
+
+    <div class="dc-card dc-card-pink">
+        <div class="dc-card-icon"><i class="fas fa-users"></i></div>
+        <div class="dc-card-body">
+            <div class="dc-card-label">Registered Users</div>
+            <div class="dc-card-value" style="font-size:1.5rem;">{{ stats.total_users }}</div>
+            <div class="dc-card-sub">{{ stats.pending_reviews }} review{{ stats.pending_reviews|pluralize }} pending</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Quick links ────────────────────────────────────────────────── -->
+<div class="dc-quicklinks">
+    <span class="dc-quicklinks-label">Quick access</span>
+    <a href="/orders/kitchen/" class="dc-quicklink dc-ql-kitchen" target="_blank"><i class="fas fa-tv"></i> Kitchen Display</a>
+    <a href="/kitchen-panel/orders/order/" class="dc-quicklink"><i class="fas fa-list-ul"></i> All Orders</a>
+    <a href="/kitchen-panel/orders/order/?status__exact=pending" class="dc-quicklink"><i class="fas fa-hourglass-half"></i> Pending</a>
+    <a href="/kitchen-panel/menu/menuitem/" class="dc-quicklink"><i class="fas fa-utensils"></i> Menu Items</a>
+    <a href="/kitchen-panel/reviews/review/" class="dc-quicklink"><i class="fas fa-comments"></i> Reviews</a>
+    <a href="/kitchen-panel/orders/openinghours/" class="dc-quicklink"><i class="fas fa-door-open"></i> Opening Hours</a>
+    <a href="/kitchen-panel/orders/promocode/add/" class="dc-quicklink" style="border-color:rgba(212,160,23,.6);background:rgba(212,160,23,.07);"><i class="fas fa-plus"></i> New Promo Code</a>
+    <a href="/kitchen-panel/orders/promocode/" class="dc-quicklink"><i class="fas fa-tag"></i> Promo Codes</a>
+    <a href="/kitchen-panel/orders/siteannouncement/add/" class="dc-quicklink dc-ql-announce"><i class="fas fa-bullhorn"></i> New Announcement</a>
+    <a href="/kitchen-panel/orders/siteannouncement/" class="dc-quicklink dc-ql-announce"><i class="fas fa-list"></i> Announcements</a>
+</div>
+
+<!-- ── Three-column lower row ─────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+
+    <!-- Recent Orders -->
+    <div style="background:#1c1008;border:1px solid rgba(212,160,23,0.15);border-radius:12px;padding:1.2rem 1.5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <h6 style="color:#d4a017;font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;margin:0;">
+                <i class="fas fa-receipt me-2"></i>Recent Orders
+            </h6>
+            <a href="/kitchen-panel/orders/order/" style="font-size:.75rem;color:#9a8870;text-decoration:none;">View all →</a>
+        </div>
+        {% if recent_orders %}
+        <table style="width:100%;font-size:.8rem;border-collapse:collapse;">
+            <thead>
+                <tr style="color:#9a8870;border-bottom:1px solid rgba(212,160,23,.1);">
+                    <th style="padding:.3rem .4rem .4rem 0;font-weight:500;text-align:left;">Ref</th>
+                    <th style="padding:.3rem .4rem .4rem 0;font-weight:500;text-align:left;">Customer</th>
+                    <th style="padding:.3rem .4rem .4rem 0;font-weight:500;text-align:right;">Total</th>
+                    <th style="padding:.3rem 0 .4rem .4rem;font-weight:500;text-align:right;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for o in recent_orders %}
+            <tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+                <td style="padding:.4rem .4rem .4rem 0;">
+                    <a href="/kitchen-panel/orders/order/{{ o.pk }}/change/" style="color:#d4a017;text-decoration:none;font-family:monospace;font-size:.75rem;">{{ o.reference|slice:":8" }}</a>
+                </td>
+                <td style="padding:.4rem;color:#f5f0e8;">{{ o.customer_name|default:"Guest"|truncatechars:14 }}</td>
+                <td style="padding:.4rem;text-align:right;color:#f5f0e8;">£{{ o.total }}</td>
+                <td style="padding:.4rem 0 .4rem .4rem;text-align:right;">
+                    <span style="font-size:.65rem;padding:.15rem .5rem;border-radius:10px;
+                        {% if o.status == 'completed' %}background:rgba(46,204,113,.15);color:#2ecc71;
+                        {% elif o.status == 'pending' %}background:rgba(243,156,18,.15);color:#f39c12;
+                        {% elif o.status == 'cancelled' %}background:rgba(192,57,43,.18);color:#e74c3c;
+                        {% else %}background:rgba(93,173,226,.15);color:#5dade2;{% endif %}">
+                        {{ o.get_status_display }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color:#9a8870;font-size:.85rem;margin:0;">No orders yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Top 5 Items -->
+    <div style="background:#1c1008;border:1px solid rgba(212,160,23,0.15);border-radius:12px;padding:1.2rem 1.5rem;">
+        <div style="margin-bottom:1rem;">
+            <h6 style="color:#d4a017;font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;margin:0;">
+                <i class="fas fa-chart-bar me-2"></i>Top Items (30 days)
+            </h6>
+        </div>
+        {% if top_items_30d %}
+        {% with top_items_30d.0.qty as max_qty %}
+        <div style="display:flex;flex-direction:column;gap:.6rem;">
+            {% for item in top_items_30d %}
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.2rem;">
+                    <span style="color:#f5f0e8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:75%;">{{ item.item_name }}</span>
+                    <span style="color:#d4a017;font-weight:700;">{{ item.qty }}</span>
+                </div>
+                <div style="background:rgba(255,255,255,.08);border-radius:4px;height:5px;overflow:hidden;">
+                    <div style="height:100%;background:#d4a017;border-radius:4px;width:{% widthratio item.qty max_qty 100 %}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endwith %}
+        {% else %}
+        <p style="color:#9a8870;font-size:.8rem;margin:0;">No data yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Active Promo Codes -->
+    <div style="background:#1c1008;border:1px solid rgba(212,160,23,0.15);border-radius:12px;padding:1.2rem 1.5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <h6 style="color:#d4a017;font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;margin:0;">
+                <i class="fas fa-tag me-2"></i>Active Promo Codes
+            </h6>
+            <a href="/kitchen-panel/orders/promocode/add/" style="font-size:.75rem;color:#d4a017;text-decoration:none;border:1px solid rgba(212,160,23,.35);padding:.15rem .6rem;border-radius:10px;">+ New</a>
+        </div>
+        {% if active_promos %}
+        <div style="display:flex;flex-direction:column;gap:.5rem;">
+            {% for promo in active_promos %}
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .75rem;background:rgba(212,160,23,.06);border-radius:8px;border:1px solid rgba(212,160,23,.1);">
+                <div>
+                    <span style="font-family:monospace;font-size:.85rem;color:#f0c040;font-weight:600;">{{ promo.code }}</span>
+                    {% if promo.min_order %}
+                    <span style="font-size:.7rem;color:#9a8870;margin-left:.4rem;">min £{{ promo.min_order }}</span>
+                    {% endif %}
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem;">
+                    <span style="font-size:.8rem;color:#2ecc71;font-weight:600;">
+                        {% if promo.discount_type == 'percent' %}{{ promo.value|floatformat:0 }}% off{% else %}£{{ promo.value }} off{% endif %}
+                    </span>
+                    <span style="font-size:.7rem;color:#9a8870;">{{ promo.uses_count }}/{% if promo.max_uses %}{{ promo.max_uses }}{% else %}∞{% endif %}</span>
+                    <a href="/kitchen-panel/orders/promocode/{{ promo.pk }}/change/" style="color:#9a8870;font-size:.75rem;text-decoration:none;" title="Edit">✎</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:#9a8870;font-size:.85rem;margin:0;">No active promo codes. <a href="/kitchen-panel/orders/promocode/add/" style="color:#d4a017;">Create one →</a></p>
+        {% endif %}
+    </div>
+
+</div>
+
+{{ block.super }}
+{% endblock %}
+.dc-stat-grid    { display:grid; gap:1rem; margin-bottom:1.5rem; }
 .dc-stat-primary { grid-template-columns: repeat(2, 1fr); }
 .dc-stat-secondary { grid-template-columns: repeat(2, 1fr); margin-top:0; }
 .dc-card {
