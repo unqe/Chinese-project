@@ -159,7 +159,7 @@
                 <td style="padding:.4rem .4rem .4rem 0;">
                     <a href="/kitchen-panel/orders/order/{{ o.pk }}/change/" style="color:#d4a017;text-decoration:none;font-family:monospace;font-size:.75rem;">{{ o.reference|slice:":8" }}</a>
                 </td>
-                <td style="padding:.4rem;color:#f5f0e8;">{{ o.customer_name|default:o.user.username|default:"Guest"|truncatechars:14 }}</td>
+                <td style="padding:.4rem;color:#f5f0e8;">{{ o.customer_name|default:"Guest"|truncatechars:14 }}</td>
                 <td style="padding:.4rem;text-align:right;color:#f5f0e8;">£{{ o.total }}</td>
                 <td style="padding:.4rem 0 .4rem .4rem;text-align:right;">
                     <span style="font-size:.65rem;padding:.15rem .5rem;border-radius:10px;
