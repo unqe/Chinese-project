@@ -31,6 +31,22 @@
         overflow: hidden;
         max-height: 80px;
     }
+    /* Style variants */
+    .site-announcement-bar[data-style="warning"] {
+        background: linear-gradient(90deg, #1c1400 0%, #2d2200 50%, #1c1400 100%);
+        border-bottom-color: rgba(243,156,18,.6);
+    }
+    .site-announcement-bar[data-style="warning"] .site-announcement-icon { color: #f39c12; }
+    .site-announcement-bar[data-style="danger"] {
+        background: linear-gradient(90deg, #1c0500 0%, #2d0a00 50%, #1c0500 100%);
+        border-bottom-color: rgba(192,57,43,.6);
+    }
+    .site-announcement-bar[data-style="danger"] .site-announcement-icon { color: #e74c3c; }
+    .site-announcement-bar[data-style="success"] {
+        background: linear-gradient(90deg, #001c08 0%, #002d10 50%, #001c08 100%);
+        border-bottom-color: rgba(39,174,96,.6);
+    }
+    .site-announcement-bar[data-style="success"] .site-announcement-icon { color: #2ecc71; }
     .site-announcement-inner {
         display: flex;
         align-items: center;
@@ -169,7 +185,7 @@
          SITE ANNOUNCEMENT BANNER
     ================================================================ -->
     {% if site_announcement %}
-    <div class="site-announcement-bar" id="site-announcement" role="alert">
+    <div class="site-announcement-bar" id="site-announcement" role="alert" data-style="{{ site_announcement.style }}">
         <div class="container">
             <div class="site-announcement-inner">
                 <i class="fas fa-bullhorn site-announcement-icon"></i>

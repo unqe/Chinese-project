@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /kitchen-panel/
+Disallow: /accounts/
+Disallow: /profile/
+Disallow: /orders/basket/
+Disallow: /orders/checkout/
+Disallow: /staff-access/
+
+Sitemap: https://despair.cc/sitemap.xml

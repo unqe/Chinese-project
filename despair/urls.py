@@ -9,6 +9,8 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
+from django.contrib.sitemaps.views import sitemap
+from .sitemaps import sitemaps
 
 # Custom 403 / 404 handlers (must be at module level, NOT inside i18n_patterns)
 handler403 = "despair.views.handler403"
@@ -17,6 +19,12 @@ handler404 = "despair.views.handler404"
 urlpatterns = [
     # Language switching endpoint used by EN/Chinese toggle in the navbar
     path("i18n/", include("django.conf.urls.i18n")),
+    # Robots and sitemap — must be outside i18n_patterns so they're at root
+    path("robots.txt", TemplateView.as_view(
+        template_name="robots.txt", content_type="text/plain"
+    ), name="robots_txt"),
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps},
+         name="django.contrib.sitemaps.views.sitemap"),
 ]
 
 # i18n_patterns adds /en/ or /zh-hans/ prefix automatically

@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.className = 'pw-toggle';
         btn.tabIndex  = -1;
         btn.setAttribute('aria-label', 'Show or hide password');
-        btn.innerHTML = '<i class="fas fa-eye"></i>';
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i>';  // slashed = currently hidden
         btn.style.cssText = [
             'position:absolute',
             'top:50%',
@@ -77,7 +77,8 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             var show = input.type === 'password';
             input.type    = show ? 'text' : 'password';
-            btn.innerHTML = show ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            // eye = visible now; eye-slash = hidden now
+            btn.innerHTML = show ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
             btn.style.color = show ? '#d4a017' : '#9a8870';
         });
 
