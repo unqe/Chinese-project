@@ -1,0 +1,192 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block form_top %}
+{% if original %}
+{# ── Review preview card injected at the top of every review edit form ── #}
+<div class="dc-review-card card mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <span style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dc-gold-lt,#f0c040);">
+            <i class="fas fa-star mr-1"></i> Customer Review
+        </span>
+        <div class="d-flex align-items-center gap-2">
+            {% if original.is_approved %}
+                <span class="dc-badge dc-badge-approved">✓ Approved</span>
+            {% else %}
+                <span class="dc-badge dc-badge-pending">⏳ Pending Approval</span>
+            {% endif %}
+            {% if original.owner_reply %}
+                <span class="dc-badge dc-badge-replied"><i class="fas fa-reply mr-1"></i> Replied</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+
+        {# ── Meta row ────────────────────────────────────────────────── #}
+        <div class="dc-review-meta mb-3">
+            <div class="dc-meta-item">
+                <i class="fas fa-user"></i>
+                <strong>
+                    {% if original.user %}
+                        {{ original.user.get_full_name|default:original.user.username }}
+                        <span style="color:var(--dc-muted,#9a8870);font-weight:400;">({{ original.user.username }})</span>
+                    {% else %}
+                        Guest
+                    {% endif %}
+                </strong>
+            </div>
+            <div class="dc-meta-item">
+                <i class="fas fa-receipt"></i>
+                <a href="/kitchen-panel/orders/order/{{ original.order.pk }}/change/">{{ original.order.reference }}</a>
+            </div>
+            <div class="dc-meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                {{ original.created_at|date:"j M Y, H:i" }}
+            </div>
+        </div>
+
+        {# ── Star rating ─────────────────────────────────────────────── #}
+        <div class="dc-stars mb-3" aria-label="{{ original.rating }} out of 5 stars">
+            {% for i in "12345" %}
+                {% if forloop.counter <= original.rating %}
+                    <i class="fas fa-star dc-star-filled"></i>
+                {% else %}
+                    <i class="far fa-star dc-star-empty"></i>
+                {% endif %}
+            {% endfor %}
+            <span class="dc-star-label">{{ original.rating }} / 5</span>
+        </div>
+
+        {# ── Review content ──────────────────────────────────────────── #}
+        <blockquote class="dc-review-blockquote">
+            <p class="dc-review-title">&ldquo;{{ original.title }}&rdquo;</p>
+            <p class="dc-review-body">{{ original.body }}</p>
+        </blockquote>
+
+        {# ── Existing owner reply (if any) ───────────────────────────── #}
+        {% if original.owner_reply %}
+        <div class="dc-existing-reply mt-3">
+            <div class="dc-reply-header">
+                <i class="fas fa-store mr-1"></i> Your current reply
+                {% if original.owner_reply_at %}
+                    <span class="dc-reply-date">— {{ original.owner_reply_at|date:"j M Y" }}</span>
+                {% endif %}
+            </div>
+            <p class="dc-reply-text">{{ original.owner_reply }}</p>
+        </div>
+        {% else %}
+        <div class="dc-no-reply-hint mt-3">
+            <i class="fas fa-info-circle mr-1"></i>
+            No reply yet — use the <strong>Owner Reply</strong> section below to respond publicly.
+        </div>
+        {% endif %}
+
+    </div>{# /card-body #}
+</div>{# /dc-review-card #}
+
+<style>
+/* ── Review change-form card ──────────────────────────────────────────── */
+.dc-review-card {
+    border: 1px solid rgba(212,160,23,.3) !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+.dc-review-card .card-header {
+    background: rgba(212,160,23,.1) !important;
+    border-bottom: 1px solid rgba(212,160,23,.2) !important;
+    padding: .75rem 1.2rem !important;
+}
+.dc-review-card .card-body {
+    background: #0d0603 !important;
+    padding: 1.4rem 1.6rem !important;
+}
+
+/* Meta row */
+.dc-review-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-size: .82rem;
+    color: #9a8870;
+}
+.dc-meta-item { display: flex; align-items: center; gap: .4rem; }
+.dc-meta-item i { color: #d4a017; font-size: .75rem; }
+.dc-meta-item strong { color: #f5f0e8; }
+.dc-meta-item a { color: #d4a017 !important; font-family: monospace; }
+
+/* Stars */
+.dc-stars { font-size: 1.25rem; display: flex; align-items: center; gap: .25rem; }
+.dc-star-filled { color: #d4a017; }
+.dc-star-empty  { color: #3a3020; }
+.dc-star-label  { font-size: .8rem; color: #9a8870; margin-left: .5rem; }
+
+/* Review text */
+.dc-review-blockquote {
+    border-left: 3px solid rgba(212,160,23,.4);
+    margin: 0;
+    padding: .8rem 1.2rem;
+    background: rgba(255,255,255,.03);
+    border-radius: 0 6px 6px 0;
+}
+.dc-review-title {
+    color: #f5f0e8;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: .5rem;
+    font-style: italic;
+}
+.dc-review-body {
+    color: #c0b89c;
+    font-size: .9rem;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Existing reply */
+.dc-existing-reply {
+    background: rgba(212,160,23,.07);
+    border: 1px solid rgba(212,160,23,.2);
+    border-radius: 6px;
+    padding: .9rem 1.1rem;
+}
+.dc-reply-header {
+    font-size: .78rem;
+    color: #d4a017;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    margin-bottom: .5rem;
+}
+.dc-reply-date { color: #9a8870; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.dc-reply-text  { color: #c8bfb0; font-size: .88rem; margin: 0; white-space: pre-wrap; line-height: 1.55; }
+
+/* "No reply" hint */
+.dc-no-reply-hint {
+    background: rgba(212,160,23,.05);
+    border: 1px dashed rgba(212,160,23,.2);
+    border-radius: 6px;
+    padding: .7rem 1rem;
+    font-size: .82rem;
+    color: #9a8870;
+}
+.dc-no-reply-hint i { color: #d4a017; }
+.dc-no-reply-hint strong { color: #f0c040; }
+
+/* Status badges */
+.dc-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+.dc-badge-approved { background: #1e8449; color: #fff; }
+.dc-badge-pending  { background: rgba(212,160,23,.15); color: #f0c040; border: 1px solid rgba(212,160,23,.3); }
+.dc-badge-replied  { background: rgba(52,152,219,.15); color: #5dade2; border: 1px solid rgba(52,152,219,.25); }
+</style>
+
+{% endif %}{# /if original #}
+{% endblock %}
