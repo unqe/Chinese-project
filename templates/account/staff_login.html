@@ -23,7 +23,7 @@
                     <form method="post" action="{% url 'account_login' %}">
                         {% csrf_token %}
                         <!-- After login, redirect straight to the kitchen panel -->
-                        <input type="hidden" name="next" value="/en/kitchen-panel/">
+                        <input type="hidden" name="next" value="/kitchen-panel/">
 
                         {% if form.errors %}
                             <div class="alert alert-danger small">
