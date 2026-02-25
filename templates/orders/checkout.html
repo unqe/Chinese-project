@@ -110,6 +110,14 @@
                             {% if form.postcode.errors %}<div class="invalid-feedback d-block">{{ form.postcode.errors|join:", " }}</div>{% endif %}
                         </div>
                     </div>
+                    {% if user.is_authenticated %}
+                    <div class="form-check mt-3">
+                        <input type="checkbox" class="form-check-input" name="save_address" id="save_address" value="1" {% if profile_has_address %}checked{% endif %}>
+                        <label class="form-check-label text-muted small" for="save_address">
+                            <i class="fas fa-save me-1"></i>{% trans "Save this address to my profile for next time" %}
+                        </label>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Payment method -->
@@ -165,6 +173,7 @@
                 <div class="checkout-section mt-4">
                     <h5 class="checkout-section-title"><i class="fas fa-comment-dots me-2"></i>{% trans "Special Instructions" %} <span class="text-muted fw-normal">({% trans "optional" %})</span></h5>
                     {{ form.special_instructions }}
+                    <div class="text-end mt-1" style="font-size:0.75rem;color:#9a8870;"><span id="si-count">0</span>/500</div>
                 </div>
 
             </div>
@@ -347,6 +356,16 @@
                 cvvInput.style.outline = '2px solid var(--red)';
             }
         });
+    }
+
+    // Special instructions character counter
+    const siField = document.querySelector('textarea[name="special_instructions"]');
+    const siCount = document.getElementById('si-count');
+    if (siField && siCount) {
+        siField.setAttribute('maxlength', '500');
+        const updateCount = () => { siCount.textContent = siField.value.length; };
+        siField.addEventListener('input', updateCount);
+        updateCount();
     }
 </script>
 {% endblock %}
