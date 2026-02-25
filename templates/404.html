@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}404 – Page Not Found | Despair Chinese{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="font-size:5rem;line-height:1;margin-bottom:1.5rem;">🍜</div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:5rem;font-weight:700;color:var(--primary-color);line-height:1;">404</h1>
+    <h2 class="mb-3" style="font-family:'Playfair Display',serif;">{% trans "Dish Not Found" %}</h2>
+    <p class="text-muted mb-4" style="max-width:420px;">
+        {% trans "Looks like this page is off the menu. It may have been moved, removed, or perhaps it never existed." %}
+    </p>
+    <div class="d-flex gap-3 flex-wrap justify-content-center">
+        <a href="{% url 'home' %}" class="btn btn-primary-custom btn-lg">
+            <i class="fas fa-home me-2"></i>{% trans "Back to Home" %}
+        </a>
+        <a href="{% url 'menu:menu' %}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-utensils me-2"></i>{% trans "View Menu" %}
+        </a>
+    </div>
+</div>
+{% endblock %}
