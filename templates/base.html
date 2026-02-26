@@ -324,12 +324,21 @@
             else document.body.insertBefore(outer, document.body.firstChild);
             inner = cont;
         }
+        // Replace any existing alert so they never stack
+        Array.from(inner.querySelectorAll('.alert')).forEach(function(el) { el.remove(); });
         const div = document.createElement('div');
         div.className = 'alert alert-' + bsType + ' alert-dismissible fade show d-flex align-items-center justify-content-center text-center position-relative';
         div.setAttribute('role', 'alert');
         div.innerHTML = '<i class="fas ' + (icons[bsType] || icons.info) + ' me-2"></i>' + msg +
             '<button type="button" class="btn-close position-absolute end-0 me-2" data-bs-dismiss="alert" aria-label="Close"></button>';
         inner.insertBefore(div, inner.firstChild);
+        // Auto-dismiss after 4 seconds
+        var _autoTimer = setTimeout(function() {
+            div.classList.remove('show');
+            setTimeout(function() { if (div.parentNode) div.remove(); }, 300);
+        }, 4000);
+        // Cancel auto-dismiss if user manually closes it
+        div.querySelector('.btn-close').addEventListener('click', function() { clearTimeout(_autoTimer); });
     }
 
     // ── sessionStorage alert: persists a message across a forced page reload ─
@@ -342,6 +351,15 @@
                 if (d && d.msg) showSiteAlert(d.msg, d.type || 'info');
             } catch (e) {}
         }
+        // Auto-dismiss any server-rendered Django messages after 4 seconds
+        document.querySelectorAll('.alerts-container .alert').forEach(function(alert) {
+            var t = setTimeout(function() {
+                alert.classList.remove('show');
+                setTimeout(function() { if (alert.parentNode) alert.remove(); }, 300);
+            }, 4000);
+            var closeBtn = alert.querySelector('.btn-close');
+            if (closeBtn) closeBtn.addEventListener('click', function() { clearTimeout(t); });
+        });
     });
     </script>
 
