@@ -526,3 +526,87 @@ ul.messagelist li.warning {
     accent-color: var(--dc-gold) !important;
 }
 
+/* ── Image / File upload widget ─────────────────────────────────── */
+input[type="file"] {
+    color: var(--dc-text) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 100%;
+}
+
+input[type="file"]::file-selector-button {
+    background: rgba(212,160,23,0.12) !important;
+    border: 1px solid var(--dc-gold) !important;
+    color: var(--dc-gold-lt) !important;
+    border-radius: 6px !important;
+    padding: 0.35rem 0.9rem !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.2s, color 0.2s !important;
+    margin-right: 0.75rem !important;
+    letter-spacing: 0.03em;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: rgba(212,160,23,0.28) !important;
+    color: #fff !important;
+}
+
+/* Wrapper for the ClearableFileInput widget */
+p.file-upload {
+    background: rgba(212,160,23,0.04) !important;
+    border: 1px dashed var(--dc-border) !important;
+    border-radius: 8px !important;
+    padding: 0.85rem 1rem !important;
+    margin: 0.5rem 0 !important;
+    color: var(--dc-muted) !important;
+    font-size: 0.85rem !important;
+    line-height: 1.8 !important;
+}
+
+p.file-upload a {
+    color: var(--dc-gold) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+}
+
+p.file-upload a:hover {
+    color: var(--dc-gold-lt) !important;
+    text-decoration: underline !important;
+}
+
+/* "Clear" checkbox section */
+.clearable-file-input label {
+    color: var(--dc-muted) !important;
+    font-size: 0.8rem !important;
+    margin-right: 0.4rem !important;
+}
+
+.clearable-file-input input[type="checkbox"] {
+    accent-color: var(--dc-danger) !important;
+    width: 14px !important;
+    height: 14px !important;
+    vertical-align: middle !important;
+}
+
+/* Image fieldset description text */
+.form-row .help,
+.form-row .help-block,
+.help-text,
+.helptext {
+    color: var(--dc-muted) !important;
+    font-size: 0.78rem !important;
+    display: block !important;
+    margin-top: 0.35rem !important;
+}
+
+/* Highlighted image section fieldset */
+.fieldset-image,
+fieldset:has(.field-image) {
+    border-color: rgba(212,160,23,0.35) !important;
+    background: rgba(212,160,23,0.02) !important;
+}
+
+
