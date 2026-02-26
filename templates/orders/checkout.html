@@ -208,22 +208,10 @@
                     {% if basket.get_discount %}
                     <div class="summary-row" style="color:var(--gold);">
                         <span><i class="fas fa-tag me-1"></i>
-                            {% if auto_offer %}
-                                <strong>{{ auto_offer.get_badge }}</strong>
-                                {% if auto_offer.discount_type == 'percent' %}({{ auto_offer.value }}% off){% endif %}
-                            {% else %}
-                                {% trans "Discount" %}
-                                {% if basket.promo_code %}({{ basket.promo_code }}){% endif %}
-                            {% endif %}
+                            {% trans "Discount" %}
+                            {% if basket.promo_code %}({{ basket.promo_code }}){% endif %}
                         </span>
                         <span>− £{{ basket.get_discount }}</span>
-                    </div>
-                    {% endif %}
-                    {% if auto_offer and not basket.get_discount == 0 %}
-                    <div class="auto-offer-banner">
-                        <i class="fas fa-gift me-1"></i>
-                        {{ auto_offer.get_badge }} — automatically applied!
-                        {% if auto_offer.description %}<small class="d-block mt-1 opacity-75">{{ auto_offer.description }}</small>{% endif %}
                     </div>
                     {% endif %}
                     <div class="summary-row summary-total">

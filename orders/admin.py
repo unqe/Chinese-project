@@ -7,7 +7,7 @@ visible at a glance. Status can be changed directly from the list view.
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from .models import Order, OrderItem, OpeningHours, PromoCode, SiteAnnouncement, SpecialOffer
+from .models import Order, OrderItem, OpeningHours, PromoCode, SiteAnnouncement
 
 
 class OrderItemInline(admin.TabularInline):
@@ -114,32 +114,3 @@ class SiteAnnouncementAdmin(admin.ModelAdmin):
     @admin.display(description="Message")
     def short_message(self, obj):
         return obj.message[:80]
-
-
-@admin.register(SpecialOffer)
-class SpecialOfferAdmin(admin.ModelAdmin):
-    list_display = (
-        "name", "badge_text", "discount_type", "value", "min_order",
-        "uses_count", "active", "valid_from", "valid_until",
-    )
-    list_editable = ("active",)
-    list_filter = ("discount_type", "active")
-    search_fields = ("name", "badge_text", "description")
-    readonly_fields = ("uses_count", "created_at")
-    fieldsets = (
-        ("Offer", {
-            "fields": ("name", "badge_text", "description", "active"),
-        }),
-        ("Discount", {
-            "fields": (("discount_type", "value"), "min_order"),
-            "description": (
-                "For <em>Percentage off</em>, value is a percent (e.g. 10 = 10% off). "
-                "For <em>Fixed amount off</em>, value is pounds (e.g. 2.50 = £2.50 off)."
-            ),
-        }),
-        ("Validity", {
-            "fields": (("valid_from", "valid_until"), ("uses_count", "created_at")),
-            "description": "Leave both dates blank to apply the offer indefinitely.",
-        }),
-    )
-
