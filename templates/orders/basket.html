@@ -55,11 +55,11 @@
                           data-remove-url="{% url 'orders:basket_remove' item_data.menu_item.pk %}">
                         {% csrf_token %}
                         <div class="qty-control-sm d-flex align-items-center">
-                            <button type="submit" name="quantity" value="{{ item_data.quantity|add:'-1' }}" class="qty-btn-sm" aria-label="{% trans 'Decrease quantity' %}">−</button>
+                            <button type="button" class="qty-btn-sm qty-dec" aria-label="{% trans 'Decrease quantity' %}">−</button>
                             <input type="number" class="qty-display qty-input-basket" id="basket-qty-{{ item_data.menu_item.pk }}"
                                    value="{{ item_data.quantity }}" min="1" max="20"
                                    style="-moz-appearance:textfield;width:42px;text-align:center;border:none;background:transparent;color:inherit;font-weight:600;">
-                            <button type="submit" name="quantity" value="{{ item_data.quantity|add:'1' }}" class="qty-btn-sm" aria-label="{% trans 'Increase quantity' %}">+</button>
+                            <button type="button" class="qty-btn-sm qty-inc" aria-label="{% trans 'Increase quantity' %}">+</button>
                         </div>
                     </form>
                     <!-- Line total -->
@@ -152,28 +152,49 @@
                 <!-- Promo code input -->
                 {% if basket.promo_code %}
                 <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2"
+                     id="promo-applied-section"
                      style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);">
                     <span style="color:var(--gold);font-size:0.85rem;">
                         <i class="fas fa-tag me-1"></i>
-                        <strong>{{ basket.promo_code }}</strong> applied
+                        <strong id="promo-code-label">{{ basket.promo_code }}</strong> applied
                     </span>
-                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0">
+                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0 ajax-remove-promo">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-xs btn-outline-red-custom">
                             <i class="fas fa-times"></i> Remove
                         </button>
                     </form>
                 </div>
+                <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2"
+                     id="promo-form-section"
+                     style="display:none!important;">
                 {% else %}
-                <form method="post" action="{% url 'orders:apply_promo' %}" class="mt-3 d-flex gap-2">
+                <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2"
+                     id="promo-applied-section"
+                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);display:none;">
+                    <span style="color:var(--gold);font-size:0.85rem;">
+                        <i class="fas fa-tag me-1"></i>
+                        <strong id="promo-code-label"></strong> applied
+                    </span>
+                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0 ajax-remove-promo">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-xs btn-outline-red-custom">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </form>
+                </div>
+                <div id="promo-form-section">
+                {% endif %}
+                <form method="post" action="{% url 'orders:apply_promo' %}" class="mt-3 d-flex gap-2 ajax-apply-promo">
                     {% csrf_token %}
-                    <input type="text" name="promo_code" class="form-control form-control-sm"
+                    <input type="text" name="promo_code" id="promo-input" class="form-control form-control-sm"
                            placeholder="{% trans 'Promo code' %}" maxlength="30" style="font-size:0.85rem;">
                     <button type="submit" class="btn btn-sm btn-outline-gold-custom flex-shrink-0">
                         {% trans "Apply" %}
                     </button>
                 </form>
-                {% endif %}
+                <div id="promo-error" class="small mt-1" style="color:#e74c3c;display:none;"></div>
+                </div>
 
                 <hr>
                 {% if basket.get_discount %}
@@ -279,11 +300,23 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- basket toast -->
+<div id="basket-toast" aria-live="polite" style="
+    position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
+    background:rgba(30,24,16,0.95);
+    border:1px solid rgba(212,160,23,0.4);border-radius:0.6rem;
+    padding:0.7rem 1.1rem;font-size:0.9rem;font-weight:500;
+    box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    transition:opacity 0.3s,transform 0.3s;
+    opacity:0;pointer-events:none;transform:translateY(6px);">
+    <i class="fas fa-info-circle me-2" id="basket-toast-icon" style="color:var(--gold,#d4a017);"></i>
+    <span id="basket-toast-msg"></span>
+</div>
 <script>
     const CSRF = '{{ csrf_token }}';
     const MIN_ORDER = {{ min_order_delivery }};
 
-    // ── Shared helpers ────────────────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     function ajaxPost(url, body, callback) {
         fetch(url, {
@@ -300,14 +333,50 @@
     function fmt(n) { return parseFloat(n).toFixed(2); }
     function el(id) { return document.getElementById(id); }
 
+    function showToast(msg, type) {
+        // type: 'info' (gold), 'success' (green), 'warning' (amber), 'error' (red)
+        const t = el('basket-toast');
+        const icon = el('basket-toast-icon');
+        if (!t) return;
+        const colours = { success: '#4caf50', warning: '#e8a040', error: '#e74c3c', info: 'var(--gold,#d4a017)' };
+        const icons   = { success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle', info: 'fa-info-circle' };
+        if (icon) { icon.style.color = colours[type] || colours.info; icon.className = 'fas ' + (icons[type] || icons.info) + ' me-2'; }
+        el('basket-toast-msg').textContent = msg;
+        t.style.opacity = '1'; t.style.transform = 'translateY(0)';
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(6px)'; }, 2800);
+    }
+
     function updateNavBasket(count, subtotal) {
-        const countEl = document.querySelector('.basket-count');
-        const priceEl = document.querySelector('.basket-price');
-        if (countEl) countEl.textContent = count;
-        if (priceEl) {
-            if (count > 0) { priceEl.textContent = '£' + fmt(subtotal); priceEl.style.display = ''; }
-            else priceEl.style.display = 'none';
+        const navLink = document.querySelector('a.btn-basket');
+        if (!navLink) return;
+        let badge = navLink.querySelector('.basket-badge');
+        let price = navLink.querySelector('.basket-price');
+        if (count > 0) {
+            if (!badge) { badge = document.createElement('span'); badge.className = 'basket-badge'; navLink.appendChild(badge); }
+            badge.textContent = count;
+            if (!price) { price = document.createElement('span'); price.className = 'basket-price'; navLink.appendChild(price); }
+            price.textContent = '\u00a3' + fmt(subtotal);
+        } else {
+            if (badge) badge.remove();
+            if (price) price.remove();
         }
+    }
+
+    function updatePromoUI(data) {
+        const applied = el('promo-applied-section');
+        const formSec = el('promo-form-section');
+        const label   = el('promo-code-label');
+        const errEl   = el('promo-error');
+        if (data.promo_code) {
+            if (label) label.textContent = data.promo_code;
+            if (applied) applied.style.display = '';
+            if (formSec) formSec.style.display = 'none';
+        } else {
+            if (applied) applied.style.display = 'none';
+            if (formSec) { formSec.style.removeProperty('display'); }
+        }
+        if (errEl) errEl.style.display = 'none';
     }
 
     function updateSummary(data) {
@@ -336,6 +405,13 @@
         }
         if (el('min-order-notice')) el('min-order-notice').style.display = sub < MIN_ORDER ? '' : 'none';
         updateNavBasket(data.basket_count, data.subtotal);
+        // Promo removed by server (basket dropped below minimum)
+        if (data.promo_removed) {
+            updatePromoUI({ promo_code: '' });
+            showToast('Promo code removed — basket dropped below the minimum order amount.', 'warning');
+        } else if ('promo_code' in data) {
+            updatePromoUI(data);
+        }
     }
 
     function applyRowUpdate(itemId, data) {
@@ -345,7 +421,11 @@
             const row = el('basket-row-' + itemId);
             if (row) row.remove();
             updateSummary(data);
-            if (data.basket_count === 0) { location.reload(); return; }
+            if (data.basket_count === 0) {
+                showToast('Basket cleared.', 'info');
+                setTimeout(() => location.reload(), 900);
+                return;
+            }
         } else {
             const qtyInput = el('basket-qty-' + itemId);
             if (qtyInput) qtyInput.value = data.item_quantity;
@@ -360,53 +440,97 @@
         }
     }
 
-    // ── Qty +/- form submit (basket update) ──────────────────────────────────
+    // ── Single submit handler (routes by form class) ──────────────────────────
 
     document.addEventListener('submit', function(e) {
-        const form = e.target.closest('.basket-qty-form');
-        if (!form) return;
-        e.preventDefault();
-        const itemId = form.dataset.itemId;
-        let qty;
-        if (e.submitter && e.submitter.name === 'quantity') {
-            qty = parseInt(e.submitter.value);
-        } else {
-            const inp = el('basket-qty-' + itemId);
-            qty = inp ? parseInt(inp.value) : 1;
-        }
-        ajaxPost(form.action, { quantity: qty }, function(data) {
-            if (data.success) applyRowUpdate(itemId, data);
-        });
-    });
+        // Prevent bare Enter-key submit on qty forms (handled by keydown below)
+        const qtyForm = e.target.closest('.basket-qty-form');
+        if (qtyForm) { e.preventDefault(); return; }
 
-    // ── Remove item ───────────────────────────────────────────────────────────
-
-    document.addEventListener('submit', function(e) {
-        const form = e.target.closest('.remove-item-form');
-        if (!form) return;
-        e.preventDefault();
-        const itemId = form.dataset.itemId;
-        ajaxPost(form.action, {}, function(data) {
-            if (!data.success) return;
-            const row = el('basket-row-' + itemId);
-            if (row) row.remove();
-            updateSummary(data);
-            if (data.basket_count === 0) location.reload();
-        });
-    });
-
-    // ── Upsell / prawn crackers add ───────────────────────────────────────────
-
-    document.addEventListener('submit', function(e) {
-        const form = e.target.closest('.basket-upsell-form');
-        if (!form) return;
-        e.preventDefault();
-        ajaxPost(form.action, { from_basket: '1' }, function(data) {
-            if (data.success) {
+        // Remove item
+        const removeForm = e.target.closest('.remove-item-form');
+        if (removeForm) {
+            e.preventDefault();
+            const itemId = removeForm.dataset.itemId;
+            ajaxPost(removeForm.action, {}, function(data) {
+                if (!data.success) return;
+                const row = el('basket-row-' + itemId);
+                if (row) row.remove();
                 updateSummary(data);
-                const nudge = form.closest('.upsell-card, .prawn-crackers-nudge');
-                if (nudge) nudge.remove();
-            }
+                if (data.basket_count === 0) {
+                    showToast('Basket cleared.', 'info');
+                    setTimeout(() => location.reload(), 900);
+                    return;
+                }
+            });
+            return;
+        }
+
+        // Upsell / prawn crackers add
+        const upsellForm = e.target.closest('.basket-upsell-form');
+        if (upsellForm) {
+            e.preventDefault();
+            ajaxPost(upsellForm.action, { from_basket: '1' }, function(data) {
+                if (data.success) {
+                    updateSummary(data);
+                    const nudge = upsellForm.closest('.upsell-card, .prawn-crackers-nudge');
+                    if (nudge) nudge.remove();
+                }
+            });
+            return;
+        }
+
+        // Apply promo code
+        const applyForm = e.target.closest('.ajax-apply-promo');
+        if (applyForm) {
+            e.preventDefault();
+            const code = (el('promo-input') || {}).value || '';
+            ajaxPost(applyForm.action, { promo_code: code }, function(data) {
+                if (data.success) {
+                    updateSummary(data);
+                    updatePromoUI(data);
+                    showToast(data.message || 'Promo code applied!', 'success');
+                } else {
+                    const errEl = el('promo-error');
+                    if (errEl) { errEl.textContent = data.error || 'Invalid code.'; errEl.style.display = ''; }
+                }
+            });
+            return;
+        }
+
+        // Remove promo code
+        const removePromoForm = e.target.closest('.ajax-remove-promo');
+        if (removePromoForm) {
+            e.preventDefault();
+            ajaxPost(removePromoForm.action, {}, function(data) {
+                if (data.success) {
+                    updateSummary(data);
+                    updatePromoUI({ promo_code: '' });
+                    showToast('Promo code removed.', 'info');
+                }
+            });
+            return;
+        }
+    });
+
+    // ── Qty +/- click handlers ────────────────────────────────────────────────
+
+    document.addEventListener('click', function(e) {
+        const decBtn = e.target.closest('.qty-dec');
+        const incBtn = e.target.closest('.qty-inc');
+        const btn = decBtn || incBtn;
+        if (!btn) return;
+        const form = btn.closest('.basket-qty-form');
+        if (!form) return;
+        const itemId = form.dataset.itemId;
+        const inp = el('basket-qty-' + itemId);
+        if (!inp) return;
+        let val = parseInt(inp.value) + (incBtn ? 1 : -1);
+        if (val < 0) val = 0;
+        if (val > 20) val = 20;
+        inp.value = val || '';
+        ajaxPost(form.action, { quantity: val }, function(data) {
+            if (data.success) applyRowUpdate(itemId, data);
         });
     });
 
@@ -414,6 +538,22 @@
 
     document.querySelectorAll('.qty-input-basket').forEach(function(input) {
         input.style.cssText += ';-webkit-appearance:none;';
+        // Enter key: fire AJAX immediately instead of submitting form
+        input.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 20) val = 20;
+            this.value = val;
+            const form = this.closest('.basket-qty-form');
+            if (!form) return;
+            const itemId = form.dataset.itemId;
+            ajaxPost(form.action, { quantity: val }, function(data) {
+                if (data.success) applyRowUpdate(itemId, data);
+            });
+        });
+        // Blur/change: fire AJAX on typed change
         input.addEventListener('change', function() {
             let val = parseInt(this.value);
             if (isNaN(val) || val < 1) val = 1;
