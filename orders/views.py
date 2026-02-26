@@ -3,6 +3,7 @@ Orders app views — basket, checkout, confirmation, and order history.
 """
 
 import datetime
+import time as _time
 from zoneinfo import ZoneInfo
 from decimal import Decimal
 
@@ -46,27 +47,31 @@ def _log_admin_action(request, obj, action_flag, message=""):
     )
 
 
+
+
 def _check_rate_limit(request, key, limit=10, period=60):
     """
     Returns True if the request should proceed, False if it should be blocked.
-    Uses a fixed window keyed by IP.  cache.add() sets TTL only on first call in
-    the window so the window correctly expires after `period` seconds.
+    Stores {count, window_start} in a single cache entry so the 60s window is
+    self-contained — not dependent on cache backend TTL accuracy.
     """
     ip = (
         request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
         or request.META.get("REMOTE_ADDR", "anon")
     )
     cache_key = f"rl:{key}:{ip}"
-    # add() only inserts when the key is absent — preserves the original TTL on
-    # subsequent calls so the window expires cleanly after `period` seconds.
-    cache.add(cache_key, 0, period)
-    try:
-        count = cache.incr(cache_key)
-    except Exception:
-        # Fallback for backends that don't support incr
-        count = cache.get(cache_key, 1)
-        cache.set(cache_key, count, period)
-    return count <= limit
+    now = _time.time()
+    data = cache.get(cache_key)
+    if data is None or (now - data.get("start", 0)) >= period:
+        # New window — reset counter
+        cache.set(cache_key, {"count": 1, "start": now}, period + 10)
+        return True
+    if data["count"] >= limit:
+        return False
+    data["count"] += 1
+    remaining = int(period - (now - data["start"])) + 5
+    cache.set(cache_key, data, remaining)
+    return True
 
 
 LONDON_TZ = ZoneInfo("Europe/London")
@@ -212,7 +217,8 @@ def basket_view(request):
     basket = Basket(request)
     basket_item_ids = set(basket.basket.keys())
 
-    # Category-based "Customers also ordered" upsell
+    # Clear any promo that no longer exists in the DB or no longer qualifies
+    _revalidate_promo(basket)
     basket_cat_ids = set(
         MenuItem.objects.filter(pk__in=[int(k) for k in basket_item_ids])
         .values_list("category_id", flat=True)
