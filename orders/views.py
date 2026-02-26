@@ -227,7 +227,7 @@ def basket_remove(request, item_id):
             "basket_subtotal": str(basket.get_subtotal()),
             "item_quantity": 0,
         })
-    messages.info(request, "Item removed from basket.")
+    messages.warning(request, "Item removed from basket.")
     return redirect("orders:basket")
 
 

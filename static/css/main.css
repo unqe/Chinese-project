@@ -1559,11 +1559,11 @@ p { color: #c8b99a; }
     border: 1px solid rgba(212, 160, 23, 0.35);
     color: var(--gold-light);
 }
-/* Warning — warm amber */
+/* Warning — warm amber/neutral (used for soft info like "item removed") */
 .alert-warning {
-    background: rgba(192, 57, 43, 0.08);
-    border: 1px solid rgba(192, 57, 43, 0.25);
-    color: #e07060;
+    background: rgba(212, 160, 23, 0.10);
+    border: 1px solid rgba(212, 160, 23, 0.28);
+    color: #d4a017;
 }
 /* Info — subtle neutral */
 .alert-info {
@@ -1585,6 +1585,32 @@ p { color: #c8b99a; }
 .empty-state { padding: 3rem; }
 .empty-icon { font-size: 4rem; opacity: 0.6; }
 .empty-state h3 { color: var(--text-light); }
+
+/* ── Error pages (404, 403) ──────────────────────────────────────── */
+.error-page-wrapper {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+}
+.error-page-emoji {
+    font-size: 4.5rem;
+    line-height: 1;
+    margin-bottom: 1.25rem;
+    display: block;
+}
+.error-page-code {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: .5rem;
+}
+.error-page-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--text-light);
+    font-size: 1.6rem;
+}
 
 /* -------------------------------------------------------------------------
    Misc Utilities

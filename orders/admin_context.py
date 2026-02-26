@@ -68,8 +68,18 @@ def admin_stats(request):
             ]
         ).count()
 
+        # Cancelled orders today
+        today_cancelled = today_qs.filter(status=Order.STATUS_CANCELLED).count()
+
         # Unapproved reviews
         pending_reviews = Review.objects.filter(is_approved=False).count()
+
+        # Last 4 unapproved reviews (for the quick-approve panel)
+        pending_review_list = list(
+            Review.objects.filter(is_approved=False)
+            .select_related("user", "order")
+            .order_by("-created_at")[:4]
+        )
 
         # Registered users (total)
         from django.contrib.auth import get_user_model
@@ -114,6 +124,7 @@ def admin_stats(request):
             "stats": {
                 "today_orders":      today_orders,
                 "today_revenue":     f"{today_revenue:.2f}",
+                "today_cancelled":   today_cancelled,
                 "week_orders":       week_orders,
                 "week_revenue":      f"{week_revenue:.2f}",
                 "month_orders":      month_orders,
@@ -126,10 +137,11 @@ def admin_stats(request):
                 "collection_today":  collection_today,
                 "total_users":       total_users,
             },
-            "top_items_30d":       top_items_30d,
-            "recent_orders":       recent_orders,
-            "active_promos":       active_promos,
-            "current_announcement": current_announcement,
+            "top_items_30d":           top_items_30d,
+            "recent_orders":           recent_orders,
+            "active_promos":           active_promos,
+            "current_announcement":    current_announcement,
+            "pending_review_list":     pending_review_list,
         }
     except Exception:
         return {}
