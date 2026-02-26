@@ -45,6 +45,31 @@ def _log_admin_action(request, obj, action_flag, message=""):
 
 LONDON_TZ = ZoneInfo("Europe/London")
 
+
+def _revalidate_promo(basket, request=None):
+    """
+    After any basket mutation, check whether the applied promo code still meets
+    its minimum-order requirement against the new subtotal. If it no longer
+    qualifies, remove it from the session and optionally warn the user.
+    """
+    code = basket.promo_code
+    if not code:
+        return
+    try:
+        promo = PromoCode.objects.get(code=code)
+    except PromoCode.DoesNotExist:
+        basket.remove_promo()
+        return
+    valid, err = promo.is_valid(subtotal=basket.get_subtotal())
+    if not valid:
+        basket.remove_promo()
+        if request is not None:
+            messages.warning(
+                request,
+                f"Promo code {code} has been removed — your basket no longer meets the minimum required.",
+            )
+
+
 # PKs for upsell items (kept as constants so they're easy to change in admin)
 _PRAWN_CRACKERS_PK = 36
 _COKE_PK = 43
@@ -193,6 +218,7 @@ def basket_update(request, item_id):
     basket = Basket(request)
     quantity = int(request.POST.get("quantity", 1))
     basket.update(item_id, quantity)
+    _revalidate_promo(basket, request)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         item_qty = basket.basket.get(str(item_id), {}).get("quantity", 0)
@@ -219,6 +245,7 @@ def basket_remove(request, item_id):
     """Removes an item from the basket entirely. Supports AJAX."""
     basket = Basket(request)
     basket.remove(item_id)
+    _revalidate_promo(basket, request)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({
@@ -323,6 +350,8 @@ def checkout(request):
             order.user = request.user if request.user.is_authenticated else None
             order.subtotal = basket.get_subtotal()
             order.delivery_charge = basket.get_delivery_charge(delivery_type)
+            # Final safety check: ensure the promo still qualifies at checkout subtotal
+            _revalidate_promo(basket)
             order.discount_amount = basket.get_discount()
             order.promo_code = basket.promo_code
             order.total = basket.get_total(delivery_type)

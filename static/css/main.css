@@ -1699,20 +1699,20 @@ p { color: #c8b99a; }
 /* Success — gold toned (matches site's golden accent) */
 .alert-success {
     background: rgba(212, 160, 23, 0.12);
-    border: 1px solid rgba(212, 160, 23, 0.35);
-    color: var(--gold-light);
+    border: 1px solid rgba(212, 160, 23, 0.40);
+    color: #f0c040;
 }
-/* Warning — warm amber/neutral (used for soft info like "item removed") */
+/* Warning — warm amber */
 .alert-warning {
-    background: rgba(212, 160, 23, 0.10);
+    background: rgba(230, 126, 34, 0.12);
+    border: 1px solid rgba(230, 126, 34, 0.35);
+    color: #e8a040;
+}
+/* Info — gold toned (e.g. promo removed, item removed) */
+.alert-info {
+    background: rgba(212, 160, 23, 0.09);
     border: 1px solid rgba(212, 160, 23, 0.28);
     color: #d4a017;
-}
-/* Info — subtle neutral */
-.alert-info {
-    background: rgba(245, 240, 232, 0.06);
-    border: 1px solid rgba(245, 240, 232, 0.15);
-    color: var(--text-muted);
 }
 /* Danger/Error — red */
 .alert-danger, .alert-error {
