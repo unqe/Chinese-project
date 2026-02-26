@@ -157,7 +157,7 @@
 
                     <div class="menu-card-body">
                         <span class="menu-card-category">{{ item.category.name }}</span>
-                        <h5 class="menu-card-title">{{ item.name }}</h5>
+                        <h3 class="menu-card-title">{{ item.name }}</h3>
                         {% if item.description %}
                             <p class="menu-card-desc">{{ item.description|truncatewords:14 }}</p>
                         {% endif %}
@@ -166,7 +166,7 @@
                             <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="add-to-basket-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="btn btn-add-to-basket">
+                                <button type="submit" class="btn btn-add-to-basket" aria-label="{% trans 'Add' %} {{ item.name }}">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </form>
@@ -195,8 +195,9 @@
             <div class="col-lg-6">
                 <div class="about-img-grid">
                     <div class="about-img-main">
-                        <img src="{% static 'images/about-main.jpg' %}" alt="Inside Despair Chinese" loading="lazy" onerror="this.style.display='none'">
-                        <div class="about-img-fallback"><i class="fas fa-bowl-food"></i></div>
+                        <div class="about-img-fallback">
+                            <i class="fas fa-bowl-food"></i>
+                        </div>
                     </div>
                     <div class="about-badge">
                         <span class="about-badge-years">15+</span>

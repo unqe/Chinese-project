@@ -51,7 +51,7 @@
     <!-- Favourite items for returning logged-in customers -->
     {% if favourite_items %}
     <div class="mb-5">
-        <h5 class="mb-3"><i class="fas fa-heart text-danger me-2"></i>{% trans "Your Favourites" %}</h5>
+        <h2 class="mb-3"><i class="fas fa-heart text-danger me-2"></i>{% trans "Your Favourites" %}</h2>
         <div class="row g-3">
             {% for item in favourite_items %}
             <div class="col-6 col-md-4 col-lg-2">
@@ -80,7 +80,7 @@
         ============================================================ -->
         <div class="col-lg-3">
             <div class="category-sidebar">
-                <h6 class="sidebar-heading">{% trans "Categories" %}</h6>
+                <h3 class="sidebar-heading">{% trans "Categories" %}</h3>
                 <nav class="category-nav">
                     {% for category, items in categories %}
                         <a href="#cat-{{ category.pk }}" class="category-nav-link {% if active_category == category.pk|stringformat:'s' %}active{% endif %}">
@@ -133,6 +133,16 @@
                                     {% if item.is_vegetarian %}<span class="tag-veg" title="Vegetarian">V</span>{% endif %}
                                     {% if item.is_vegan %}<span class="tag-vegan" title="Vegan">Ve</span>{% endif %}
                                 </div>
+                                {% if user.is_staff %}
+                                <button class="staff-img-edit-btn" type="button"
+                                        data-item-id="{{ item.pk }}"
+                                        data-item-name="{{ item.name }}"
+                                        data-update-url="{% url 'menu:staff_update_image' item.pk %}"
+                                        data-has-image="{% if item.image %}1{% else %}0{% endif %}"
+                                        aria-label="{% trans 'Edit image for' %} {{ item.name }}">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                                {% endif %}
                             </div>
                             <div class="menu-card-body">
                                 <h5 class="menu-card-title">
@@ -247,6 +257,7 @@
         return `
         <div class="qty-control-card d-flex align-items-center gap-1">
             <button class="qty-btn-card qty-minus-card"
+                    aria-label="Decrease quantity"
                     data-item-id="${itemId}"
                     data-update-url="${updateUrl}"
                     data-remove-url="${removeUrl}"
@@ -257,6 +268,7 @@
                    data-update-url="${updateUrl}"
                    data-remove-url="${removeUrl}">
             <button class="qty-btn-card qty-plus-card"
+                    aria-label="Increase quantity"
                     data-item-id="${itemId}"
                     data-update-url="${updateUrl}"
                     data-qty="${qty}">+</button>
