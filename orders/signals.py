@@ -75,17 +75,17 @@ def restore_basket_on_login(sender, request, user, **kwargs):
         saved_items = raw  # old flat format
         saved_promo = {}
 
-    # Merge items: session wins on conflict (don't overwrite what they added before login)
-    current_items = request.session.get(BASKET_SESSION_KEY, {})
-    for key, val in saved_items.items():
-        if key not in current_items:
-            current_items[key] = val
-    if current_items:
-        request.session[BASKET_SESSION_KEY] = current_items
+    # The account's saved basket fully replaces any guest session items.
+    # Guest items added while logged out are discarded — the account basket wins.
+    if saved_items:
+        request.session[BASKET_SESSION_KEY] = saved_items
 
-    # Restore promo only if no promo already in session
-    if saved_promo and PROMO_SESSION_KEY not in request.session:
+    # Restore promo from account (always replaces guest session promo)
+    if saved_promo:
         request.session[PROMO_SESSION_KEY] = saved_promo
+    elif PROMO_SESSION_KEY in request.session:
+        # No saved promo — clear any guest-session promo so it doesn't linger
+        del request.session[PROMO_SESSION_KEY]
 
     request.session.modified = True
 
