@@ -302,15 +302,18 @@
     }
 
     function updateNavBasket(count, subtotal) {
-        const countEl = document.querySelector('.basket-count');
-        const priceEl = document.querySelector('.basket-price');
-        if (countEl) countEl.textContent = count;
-        if (priceEl) {
+        const navLink = document.querySelector('a.btn-basket');
+        if (navLink) {
+            let badge = navLink.querySelector('.basket-badge');
+            let price = navLink.querySelector('.basket-price');
             if (count > 0) {
-                priceEl.textContent = '£' + parseFloat(subtotal).toFixed(2);
-                priceEl.style.display = '';
+                if (!badge) { badge = document.createElement('span'); badge.className = 'basket-badge'; navLink.appendChild(badge); }
+                badge.textContent = count;
+                if (!price) { price = document.createElement('span'); price.className = 'basket-price'; navLink.appendChild(price); }
+                price.textContent = '\u00a3' + parseFloat(subtotal).toFixed(2);
             } else {
-                priceEl.style.display = 'none';
+                if (badge) badge.remove();
+                if (price) price.remove();
             }
         }
         // Sticky bar
