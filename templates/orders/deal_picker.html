@@ -53,18 +53,18 @@
                     {% csrf_token %}
 
                     {% for slot, choices in slot_choices %}
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold" for="slot_{{ slot.pk }}">
+                    <div class="deal-slot-block">
+                        <label class="deal-slot-label" for="slot_{{ slot.pk }}">
                             {{ slot.label }}
                         </label>
                         <select name="slot_{{ slot.pk }}" id="slot_{{ slot.pk }}"
-                                class="form-select deal-slot-select" required>
+                                class="deal-slot-select" required>
                             <option value="">— {% trans "Please select" %} —</option>
                             {% regroup choices by category as grouped_choices %}
                             {% for group in grouped_choices %}
                                 <optgroup label="{{ group.grouper }}">
                                     {% for item in group.list %}
-                                        <option value="{{ item.pk }}">{{ item.name }}</option>
+                                        <option value="{{ item.pk }}">{{ item.name }} — £{{ item.price }}</option>
                                     {% endfor %}
                                 </optgroup>
                             {% endfor %}

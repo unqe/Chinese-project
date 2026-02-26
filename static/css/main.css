@@ -1063,6 +1063,73 @@ p { color: #c8b99a; }
 
 .form-label { color: #c8b99a; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem; }
 
+/* ── Deal picker slots ───────────────────────────────────────────── */
+.deal-slot-block {
+    background: rgba(212, 160, 23, 0.04);
+    border: 1px solid rgba(212, 160, 23, 0.15);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+    transition: border-color var(--transition);
+}
+.deal-slot-block:focus-within {
+    border-color: rgba(212, 160, 23, 0.45);
+}
+.deal-slot-label {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .6rem;
+}
+.deal-slot-label::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+.deal-slot-select {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1.5px solid rgba(212, 160, 23, 0.25) !important;
+    color: var(--text-light) !important;
+    border-radius: 8px !important;
+    padding: .75rem 2.5rem .75rem 1rem !important;
+    font-size: 0.9rem !important;
+    width: 100%;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d4a017' d='M8 11L2 5h12z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right .85rem center !important;
+    background-size: 12px !important;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.deal-slot-select:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.15) !important;
+    outline: none;
+    background: rgba(212, 160, 23, 0.06) !important;
+}
+.deal-slot-select option {
+    background: #1c1008;
+    color: var(--text-light);
+    padding: .4rem .6rem;
+}
+.deal-slot-select optgroup {
+    background: #120b04;
+    color: var(--gold);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 700;
+}
+
 /* Delivery toggle cards */
 .delivery-option-card {
     display: flex;
