@@ -71,7 +71,7 @@
             {% endif %}
 
             <!-- Add to basket -->
-            <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="add-form mt-4">
+            <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="add-form mt-4" id="detail-add-form">
                 {% csrf_token %}
                 <div class="qty-row d-flex align-items-center gap-3">
                     <div class="qty-control d-flex align-items-center">
@@ -108,7 +108,7 @@
                         </h5>
                         <div class="menu-card-footer">
                             <span class="menu-card-price">£{{ rel.price }}</span>
-                            <form action="{% url 'orders:basket_add' rel.pk %}" method="post">
+                            <form action="{% url 'orders:basket_add' rel.pk %}" method="post" class="rel-add-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="quantity" value="1">
                                 <button type="submit" class="btn btn-add-to-basket" aria-label="{% trans 'Add' %} {{ rel.name }}"><i class="fas fa-plus"></i></button>
@@ -122,16 +122,80 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Add-to-basket toast notification -->
+<div id="add-toast" aria-live="polite" style="
+    position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
+    background:rgba(30,24,16,0.95);color:var(--gold-light,#f0c040);
+    border:1px solid rgba(212,160,23,0.4);border-radius:0.6rem;
+    padding:0.7rem 1.1rem;font-size:0.9rem;font-weight:500;
+    box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    transition:opacity 0.3s,transform 0.3s;
+    opacity:0;pointer-events:none;transform:translateY(6px);"
+    ><i class="fas fa-check-circle me-2" style="color:var(--gold,#d4a017);"></i><span id="add-toast-msg">Added to basket</span></div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    const CSRF_DETAIL = '{{ csrf_token }}';
     const qtyInput = document.getElementById('qty-input');
     document.getElementById('qty-minus').addEventListener('click', () => {
         if (qtyInput.value > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
     });
     document.getElementById('qty-plus').addEventListener('click', () => {
         if (qtyInput.value < 20) qtyInput.value = parseInt(qtyInput.value) + 1;
+    });
+
+    function showToast(msg) {
+        const t = document.getElementById('add-toast');
+        const m = document.getElementById('add-toast-msg');
+        if (!t) return;
+        if (m) m.textContent = msg;
+        t.style.opacity = '1'; t.style.transform = 'translateY(0)';
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(6px)'; }, 2400);
+    }
+
+    function updateNavBasketDetail(count, subtotal) {
+        const countEl = document.querySelector('.basket-count');
+        const priceEl = document.querySelector('.basket-price');
+        if (countEl) countEl.textContent = count;
+        if (priceEl) {
+            if (count > 0) { priceEl.textContent = '£' + parseFloat(subtotal).toFixed(2); priceEl.style.display = ''; }
+            else priceEl.style.display = 'none';
+        }
+    }
+
+    function ajaxAddDetail(form) {
+        const data = new URLSearchParams(new FormData(form));
+        fetch(form.action, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF_DETAIL, 'X-Requested-With': 'XMLHttpRequest' },
+            body: data,
+        }).then(r => r.json()).then(d => {
+            if (d.success) {
+                showToast(d.message || 'Added to basket');
+                updateNavBasketDetail(d.basket_count, d.basket_subtotal);
+            }
+        }).catch(console.error);
+    }
+
+    // Main add form
+    const mainForm = document.getElementById('detail-add-form');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            ajaxAddDetail(this);
+        });
+    }
+
+    // Related item add forms
+    document.querySelectorAll('.rel-add-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            ajaxAddDetail(this);
+        });
     });
 </script>
 {% endblock %}
