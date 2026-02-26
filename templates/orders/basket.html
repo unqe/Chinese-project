@@ -165,13 +165,12 @@
                         </button>
                     </form>
                 </div>
-                <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2"
-                     id="promo-form-section"
-                     style="display:none!important;">
+                <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2 d-none"
+                     id="promo-form-section">
                 {% else %}
-                <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2"
+                <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2 d-none"
                      id="promo-applied-section"
-                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);display:none;">
+                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);">
                     <span style="color:var(--gold);font-size:0.85rem;">
                         <i class="fas fa-tag me-1"></i>
                         <strong id="promo-code-label"></strong> applied
@@ -300,18 +299,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- basket toast -->
-<div id="basket-toast" aria-live="polite" style="
-    position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
-    background:rgba(30,24,16,0.95);
-    border:1px solid rgba(212,160,23,0.4);border-radius:0.6rem;
-    padding:0.7rem 1.1rem;font-size:0.9rem;font-weight:500;
-    box-shadow:0 4px 16px rgba(0,0,0,0.4);
-    transition:opacity 0.3s,transform 0.3s;
-    opacity:0;pointer-events:none;transform:translateY(6px);">
-    <i class="fas fa-info-circle me-2" id="basket-toast-icon" style="color:var(--gold,#d4a017);"></i>
-    <span id="basket-toast-msg"></span>
-</div>
 <script>
     const CSRF = '{{ csrf_token }}';
     const MIN_ORDER = {{ min_order_delivery }};
@@ -334,17 +321,7 @@
     function el(id) { return document.getElementById(id); }
 
     function showToast(msg, type) {
-        // type: 'info' (gold), 'success' (green), 'warning' (amber), 'error' (red)
-        const t = el('basket-toast');
-        const icon = el('basket-toast-icon');
-        if (!t) return;
-        const colours = { success: '#4caf50', warning: '#e8a040', error: '#e74c3c', info: 'var(--gold,#d4a017)' };
-        const icons   = { success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle', info: 'fa-info-circle' };
-        if (icon) { icon.style.color = colours[type] || colours.info; icon.className = 'fas ' + (icons[type] || icons.info) + ' me-2'; }
-        el('basket-toast-msg').textContent = msg;
-        t.style.opacity = '1'; t.style.transform = 'translateY(0)';
-        clearTimeout(t._timer);
-        t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(6px)'; }, 2800);
+        showSiteAlert(msg, type || 'info');
     }
 
     function updateNavBasket(count, subtotal) {
@@ -370,11 +347,11 @@
         const errEl   = el('promo-error');
         if (data.promo_code) {
             if (label) label.textContent = data.promo_code;
-            if (applied) applied.style.display = '';
-            if (formSec) formSec.style.display = 'none';
+            if (applied) applied.classList.remove('d-none');
+            if (formSec) formSec.classList.add('d-none');
         } else {
-            if (applied) applied.style.display = 'none';
-            if (formSec) { formSec.style.removeProperty('display'); }
+            if (applied) applied.classList.add('d-none');
+            if (formSec) formSec.classList.remove('d-none');
         }
         if (errEl) errEl.style.display = 'none';
     }
@@ -422,9 +399,9 @@
             if (row) row.remove();
             updateSummary(data);
             if (data.basket_count === 0) {
-                showToast('Basket cleared.', 'info');
-                setTimeout(() => location.reload(), 900);
-                return;
+                    sessionStorage.setItem('_site_alert', JSON.stringify({ msg: 'Your basket has been cleared.', type: 'info' }));
+                    location.reload();
+                    return;
             }
         } else {
             const qtyInput = el('basket-qty-' + itemId);
@@ -458,8 +435,8 @@
                 if (row) row.remove();
                 updateSummary(data);
                 if (data.basket_count === 0) {
-                    showToast('Basket cleared.', 'info');
-                    setTimeout(() => location.reload(), 900);
+                    sessionStorage.setItem('_site_alert', JSON.stringify({ msg: 'Your basket has been cleared.', type: 'info' }));
+                    location.reload();
                     return;
                 }
             });

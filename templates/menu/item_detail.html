@@ -132,17 +132,6 @@
     {% endif %}
 </div>
 
-<!-- Add-to-basket toast notification -->
-<div id="add-toast" aria-live="polite" style="
-    position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
-    background:rgba(30,24,16,0.95);color:var(--gold-light,#f0c040);
-    border:1px solid rgba(212,160,23,0.4);border-radius:0.6rem;
-    padding:0.7rem 1.1rem;font-size:0.9rem;font-weight:500;
-    box-shadow:0 4px 16px rgba(0,0,0,0.4);
-    transition:opacity 0.3s,transform 0.3s;
-    opacity:0;pointer-events:none;transform:translateY(6px);"
-    ><i class="fas fa-check-circle me-2" style="color:var(--gold,#d4a017);"></i><span id="add-toast-msg">Added to basket</span></div>
-
 {% endblock %}
 
 {% block extra_js %}
@@ -157,13 +146,7 @@
     });
 
     function showToast(msg) {
-        const t = document.getElementById('add-toast');
-        const m = document.getElementById('add-toast-msg');
-        if (!t) return;
-        if (m) m.textContent = msg;
-        t.style.opacity = '1'; t.style.transform = 'translateY(0)';
-        clearTimeout(t._timer);
-        t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(6px)'; }, 2400);
+        showSiteAlert(msg, 'success');
     }
 
     function updateNavBasketDetail(count, subtotal) {
