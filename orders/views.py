@@ -23,6 +23,7 @@ from django.core.cache import cache
 from .basket import Basket, MIN_ORDER_DELIVERY, FREE_DELIVERY_THRESHOLD, DELIVERY_CHARGE
 from .forms import CheckoutForm
 from .models import Order, OrderItem, OpeningHours, PromoCode
+from .signals import sync_basket_to_profile
 from menu.models import MenuItem, DealSlot
 
 
@@ -48,24 +49,24 @@ def _log_admin_action(request, obj, action_flag, message=""):
 def _check_rate_limit(request, key, limit=10, period=60):
     """
     Returns True if the request should proceed, False if it should be blocked.
-    Tracks attempts per remote IP using Django's cache backend.
+    Uses a fixed window keyed by IP.  cache.add() sets TTL only on first call in
+    the window so the window correctly expires after `period` seconds.
     """
     ip = (
         request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
         or request.META.get("REMOTE_ADDR", "anon")
     )
     cache_key = f"rl:{key}:{ip}"
-    count = cache.get(cache_key, 0)
-    if count >= limit:
-        return False
-    if count == 0:
-        cache.set(cache_key, 1, period)
-    else:
-        try:
-            cache.incr(cache_key)
-        except Exception:
-            cache.set(cache_key, count + 1, period)
-    return True
+    # add() only inserts when the key is absent — preserves the original TTL on
+    # subsequent calls so the window expires cleanly after `period` seconds.
+    cache.add(cache_key, 0, period)
+    try:
+        count = cache.incr(cache_key)
+    except Exception:
+        # Fallback for backends that don't support incr
+        count = cache.get(cache_key, 1)
+        cache.set(cache_key, count, period)
+    return count <= limit
 
 
 LONDON_TZ = ZoneInfo("Europe/London")
@@ -291,6 +292,8 @@ def basket_view(request):
             pass
     is_open, next_open_text = _get_opening_status()
     free_delivery_remaining = max(Decimal("0.00"), Decimal("20.00") - subtotal)
+    # Sync basket to profile after any changes (auto-apply, empty-basket reset)
+    sync_basket_to_profile(request)
     return render(request, "orders/basket.html", {
         "basket": basket,
         "popular_items": popular_items,
@@ -317,12 +320,35 @@ def basket_add(request, item_id):
     quantity = int(request.POST.get("quantity", 1))
     basket.add(item, quantity=quantity)
 
+    # Auto-apply first-order promo if conditions are met (mirrors basket_view logic)
+    auto_promo_msg = None
+    if (
+        request.user.is_authenticated
+        and not basket.promo_code
+        and not Order.objects.filter(user=request.user).exists()
+    ):
+        subtotal_now = basket.get_subtotal()
+        first_promo = PromoCode.objects.filter(first_order_only=True, active=True).first()
+        if first_promo:
+            valid, _ = first_promo.is_valid(subtotal=subtotal_now)
+            if valid:
+                discount = first_promo.get_discount(subtotal_now)
+                basket.apply_promo(first_promo.code, discount)
+                auto_promo_msg = f"\U0001f389 First order discount ({first_promo}) applied automatically!"
+
+    # Sync basket to profile for cross-device consistency
+    sync_basket_to_profile(request)
+
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         data = _basket_ajax_summary(basket, item_id)
         data["success"] = True
         data["message"] = f"{item.name} added to basket."
+        if auto_promo_msg:
+            data["auto_promo_msg"] = auto_promo_msg
         return JsonResponse(data)
 
+    if auto_promo_msg:
+        messages.success(request, auto_promo_msg)
     messages.success(request, f"\u2713 {item.name} added to your basket.")
     if request.POST.get("from_basket"):
         return redirect("orders:basket")
@@ -337,6 +363,7 @@ def basket_update(request, item_id):
     basket.update(item_id, quantity)
     promo_removed = _revalidate_promo(basket, request)
 
+    sync_basket_to_profile(request)
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         data = _basket_ajax_summary(basket, item_id)
         data["success"] = True
@@ -361,6 +388,7 @@ def basket_remove(request, item_id):
     basket.remove(item_id)
     promo_removed = _revalidate_promo(basket, request)
 
+    sync_basket_to_profile(request)
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         data = _basket_ajax_summary(basket)
         data["success"] = True
