@@ -112,9 +112,9 @@
                         {% endif %}
                     </div>
                     <div class="menu-card-body">
-                        <h5 class="menu-card-title">
+                        <h3 class="menu-card-title">
                             <a href="{% url 'menu:item_detail' rel.pk %}" class="stretched-link-title">{{ rel.name }}</a>
-                        </h5>
+                        </h3>
                         <div class="menu-card-footer">
                             <span class="menu-card-price">£{{ rel.price }}</span>
                             <form action="{% url 'orders:basket_add' rel.pk %}" method="post" class="rel-add-form">

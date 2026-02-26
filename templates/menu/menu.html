@@ -80,7 +80,7 @@
         ============================================================ -->
         <div class="col-lg-3">
             <div class="category-sidebar">
-                <h3 class="sidebar-heading">{% trans "Categories" %}</h3>
+                <h2 class="sidebar-heading">{% trans "Categories" %}</h2>
                 <nav class="category-nav">
                     {% for category, items in categories %}
                         <a href="#cat-{{ category.pk }}" class="category-nav-link {% if active_category == category.pk|stringformat:'s' %}active{% endif %}">
@@ -155,9 +155,9 @@
                                 </div>                                {% endif %}
                             </div>
                             <div class="menu-card-body">
-                                <h5 class="menu-card-title">
+                                <h3 class="menu-card-title">
                                     <a href="{% url 'menu:item_detail' item.pk %}" class="stretched-link-title">{{ item.name }}</a>
-                                </h5>
+                                </h3>
                                 {% if item.description %}
                                     <p class="menu-card-desc">{{ item.description|truncatewords:16 }}</p>
                                 {% endif %}
