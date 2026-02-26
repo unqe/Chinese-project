@@ -19,7 +19,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from datetime import timedelta
 
-from .basket import Basket, MIN_ORDER_DELIVERY
+from .basket import Basket, MIN_ORDER_DELIVERY, FREE_DELIVERY_THRESHOLD, DELIVERY_CHARGE
 from .forms import CheckoutForm
 from .models import Order, OrderItem, OpeningHours, PromoCode
 from menu.models import MenuItem, DealSlot
@@ -51,15 +51,16 @@ def _revalidate_promo(basket, request=None):
     After any basket mutation, check whether the applied promo code still meets
     its minimum-order requirement against the new subtotal. If it no longer
     qualifies, remove it from the session and optionally warn the user.
+    Returns True if the promo was removed, False otherwise.
     """
     code = basket.promo_code
     if not code:
-        return
+        return False
     try:
         promo = PromoCode.objects.get(code=code)
     except PromoCode.DoesNotExist:
         basket.remove_promo()
-        return
+        return True
     valid, err = promo.is_valid(subtotal=basket.get_subtotal())
     if not valid:
         basket.remove_promo()
@@ -68,6 +69,39 @@ def _revalidate_promo(basket, request=None):
                 request,
                 f"Promo code {code} has been removed — your basket no longer meets the minimum required.",
             )
+        return True
+    return False
+
+
+def _basket_ajax_summary(basket, item_id=None):
+    """Build a rich JSON-serialisable dict with all basket summary data for AJAX responses."""
+    subtotal = basket.get_subtotal()
+    delivery_charge = basket.get_delivery_charge()  # defaults to 'delivery' type
+    discount = basket.get_discount()
+    total = basket.get_total()
+    free_del_remaining = max(Decimal("0.00"), FREE_DELIVERY_THRESHOLD - subtotal)
+    free_del_pct = min(100, int(subtotal / FREE_DELIVERY_THRESHOLD * 100)) if subtotal > 0 else 0
+    result = {
+        "subtotal": str(subtotal),
+        "delivery_charge": str(delivery_charge),
+        "delivery_is_free": delivery_charge == Decimal("0.00"),
+        "discount": str(discount),
+        "has_discount": discount > Decimal("0.00"),
+        "total": str(total),
+        "free_delivery_remaining": str(free_del_remaining),
+        "free_delivery_pct": free_del_pct,
+        "promo_code": basket.promo_code,
+        # Legacy keys kept for compatibility with menu-page AJAX JS
+        "basket_count": basket.get_total_quantity(),
+        "basket_subtotal": str(subtotal),
+    }
+    if item_id is not None:
+        item_data = basket.basket.get(str(item_id), {})
+        qty = item_data.get("quantity", 0)
+        price = Decimal(item_data.get("price", "0")) if item_data else Decimal("0")
+        result["item_quantity"] = qty
+        result["item_line_total"] = str(price * qty)
+    return result
 
 
 # PKs for upsell items (kept as constants so they're easy to change in admin)
@@ -197,14 +231,10 @@ def basket_add(request, item_id):
     basket.add(item, quantity=quantity)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        item_qty = basket.basket.get(str(item_id), {}).get("quantity", 0)
-        return JsonResponse({
-            "success": True,
-            "basket_count": basket.get_total_quantity(),
-            "basket_subtotal": str(basket.get_subtotal()),
-            "item_quantity": item_qty,
-            "message": f"{item.name} added to basket."
-        })
+        data = _basket_ajax_summary(basket, item_id)
+        data["success"] = True
+        data["message"] = f"{item.name} added to basket."
+        return JsonResponse(data)
 
     messages.success(request, f"\u2713 {item.name} added to your basket.")
     if request.POST.get("from_basket"):
@@ -218,16 +248,13 @@ def basket_update(request, item_id):
     basket = Basket(request)
     quantity = int(request.POST.get("quantity", 1))
     basket.update(item_id, quantity)
-    _revalidate_promo(basket, request)
+    promo_removed = _revalidate_promo(basket, request)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        item_qty = basket.basket.get(str(item_id), {}).get("quantity", 0)
-        return JsonResponse({
-            "success": True,
-            "basket_count": basket.get_total_quantity(),
-            "basket_subtotal": str(basket.get_subtotal()),
-            "item_quantity": item_qty,
-        })
+        data = _basket_ajax_summary(basket, item_id)
+        data["success"] = True
+        data["promo_removed"] = promo_removed
+        return JsonResponse(data)
     return redirect("orders:basket")
 
 
@@ -248,12 +275,12 @@ def basket_remove(request, item_id):
     _revalidate_promo(basket, request)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return JsonResponse({
-            "success": True,
-            "basket_count": basket.get_total_quantity(),
-            "basket_subtotal": str(basket.get_subtotal()),
-            "item_quantity": 0,
-        })
+        data = _basket_ajax_summary(basket)
+        data["success"] = True
+        data["item_quantity"] = 0
+        data["item_line_total"] = "0.00"
+        data["promo_removed"] = promo_removed
+        return JsonResponse(data)
     messages.warning(request, "Item removed from basket.")
     return redirect("orders:basket")
 
