@@ -152,6 +152,15 @@ MODELTRANSLATION_LANGUAGES = ("en", "zh-hans")
 
 
 # ---------------------------------------------------------------------------
+# Cache — DatabaseCache is shared across all gunicorn workers/dynos
+# ---------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+    }
+}
+
 # Static & media files
 # ---------------------------------------------------------------------------
 STATIC_URL = "/static/"

@@ -449,9 +449,8 @@
             e.preventDefault();
             ajaxPost(upsellForm.action, { from_basket: '1' }, function(data) {
                 if (data.success) {
-                    updateSummary(data);
-                    const nudge = upsellForm.closest('.upsell-card, .prawn-crackers-nudge');
-                    if (nudge) nudge.remove();
+                    sessionStorage.setItem('_site_alert', JSON.stringify({ msg: (data.message || 'Item added to basket!'), type: 'success' }));
+                    location.reload();
                 }
             });
             return;
