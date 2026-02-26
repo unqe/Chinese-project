@@ -1383,3 +1383,9 @@ All important URLs for the live site. The primary domain is **https://despair.cc
 
 - Code Institute tutors and mentor for guidance and feedback
 - The open-source Django community
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
