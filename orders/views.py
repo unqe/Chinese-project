@@ -18,6 +18,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from datetime import timedelta
+from django.core.cache import cache
 
 from .basket import Basket, MIN_ORDER_DELIVERY, FREE_DELIVERY_THRESHOLD, DELIVERY_CHARGE
 from .forms import CheckoutForm
@@ -42,6 +43,30 @@ def _log_admin_action(request, obj, action_flag, message=""):
         action_flag=action_flag,
         change_message=message,
     )
+
+
+def _check_rate_limit(request, key, limit=10, period=60):
+    """
+    Returns True if the request should proceed, False if it should be blocked.
+    Tracks attempts per remote IP using Django's cache backend.
+    """
+    ip = (
+        request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
+        or request.META.get("REMOTE_ADDR", "anon")
+    )
+    cache_key = f"rl:{key}:{ip}"
+    count = cache.get(cache_key, 0)
+    if count >= limit:
+        return False
+    if count == 0:
+        cache.set(cache_key, 1, period)
+    else:
+        try:
+            cache.incr(cache_key)
+        except Exception:
+            cache.set(cache_key, count + 1, period)
+    return True
+
 
 LONDON_TZ = ZoneInfo("Europe/London")
 
@@ -182,12 +207,54 @@ def basket_view(request):
     """Displays the current basket contents."""
     basket = Basket(request)
     basket_item_ids = set(basket.basket.keys())
-    popular_items = (
-        MenuItem.objects
-        .filter(is_popular=True, is_available=True)
-        .exclude(pk__in=basket_item_ids)[:4]
+
+    # Category-based "Customers also ordered" upsell
+    basket_cat_ids = set(
+        MenuItem.objects.filter(pk__in=[int(k) for k in basket_item_ids])
+        .values_list("category_id", flat=True)
     )
+    if basket_cat_ids:
+        popular_items = (
+            MenuItem.objects
+            .filter(is_available=True, category_id__in=basket_cat_ids)
+            .exclude(pk__in=basket_item_ids)
+            .order_by("-is_popular", "name")[:4]
+        )
+        if not popular_items.exists():
+            popular_items = (
+                MenuItem.objects
+                .filter(is_popular=True, is_available=True)
+                .exclude(pk__in=basket_item_ids)[:4]
+            )
+    else:
+        popular_items = (
+            MenuItem.objects
+            .filter(is_popular=True, is_available=True)
+            .exclude(pk__in=basket_item_ids)[:4]
+        )
+
     subtotal = basket.get_subtotal()
+
+    # Auto-apply first-order discount for new logged-in users
+    if (
+        request.user.is_authenticated
+        and basket
+        and not basket.promo_code
+        and not request.session.get("_first_promo_applied")
+        and not Order.objects.filter(user=request.user).exists()
+    ):
+        first_promo = PromoCode.objects.filter(first_order_only=True, active=True).first()
+        if first_promo:
+            valid, _ = first_promo.is_valid(subtotal=subtotal)
+            if valid:
+                discount = first_promo.get_discount(subtotal)
+                basket.apply_promo(first_promo.code, discount)
+                request.session["_first_promo_applied"] = True
+                messages.success(
+                    request,
+                    f"\U0001f389 First order discount ({first_promo}) applied automatically!",
+                )
+
     # Contextual upsell nudges
     show_prawn_crackers = str(_PRAWN_CRACKERS_PK) not in basket_item_ids
     show_free_drink = subtotal >= _FREE_DRINK_THRESHOLD
@@ -290,6 +357,12 @@ def apply_promo(request):
     """Validate and apply a promo code to the basket session."""
     basket = Basket(request)
     is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    if not _check_rate_limit(request, "apply_promo"):
+        err = "Too many attempts. Please wait a minute and try again."
+        if is_ajax:
+            return JsonResponse({"success": False, "error": err}, status=429)
+        messages.error(request, err)
+        return redirect("orders:basket")
     code_str = request.POST.get("promo_code", "").strip().upper()
     if not code_str:
         if is_ajax:
@@ -311,6 +384,19 @@ def apply_promo(request):
             return JsonResponse({"success": False, "error": err})
         messages.error(request, err)
         return redirect("orders:basket")
+
+    # First-order-only codes are restricted to users who have never placed an order
+    if promo.first_order_only:
+        fo_err = None
+        if not request.user.is_authenticated:
+            fo_err = "This promo code is for first-time customers only. Please sign in to use it."
+        elif Order.objects.filter(user=request.user).exists():
+            fo_err = "This promo code is for new customers only."
+        if fo_err:
+            if is_ajax:
+                return JsonResponse({"success": False, "error": fo_err})
+            messages.error(request, fo_err)
+            return redirect("orders:basket")
 
     discount = promo.get_discount(basket.get_subtotal())
     basket.apply_promo(promo.code, discount)
@@ -366,6 +452,9 @@ def checkout(request):
             }
 
     if request.method == "POST":
+        if not _check_rate_limit(request, "checkout", limit=5, period=60):
+            messages.error(request, "Too many checkout attempts. Please wait a minute and try again.")
+            return redirect("orders:checkout")
         form = CheckoutForm(request.POST)
         if form.is_valid():
             delivery_type = form.cleaned_data["delivery_type"]

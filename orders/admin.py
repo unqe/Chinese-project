@@ -84,15 +84,15 @@ class OpeningHoursAdmin(admin.ModelAdmin):
 class PromoCodeAdmin(admin.ModelAdmin):
     list_display = (
         "code", "discount_type", "value", "min_order",
-        "uses_count", "max_uses", "active", "valid_until",
+        "uses_count", "max_uses", "active", "first_order_only", "valid_until",
     )
-    list_editable = ("active",)
-    list_filter  = ("discount_type", "active")
+    list_editable = ("active", "first_order_only")
+    list_filter  = ("discount_type", "active", "first_order_only")
     search_fields = ("code", "description")
     readonly_fields = ("uses_count", "created_at")
     fieldsets = (
         ("Code", {
-            "fields": ("code", "description", "active"),
+            "fields": ("code", "description", "active", "first_order_only"),
         }),
         ("Discount", {
             "fields": (("discount_type", "value"), "min_order"),

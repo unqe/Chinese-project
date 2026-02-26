@@ -199,6 +199,10 @@ class PromoCode(models.Model):
     max_uses = models.PositiveIntegerField(default=0, help_text="0 = unlimited")
     uses_count = models.PositiveIntegerField(default=0)
     active = models.BooleanField(default=True)
+    first_order_only = models.BooleanField(
+        default=False,
+        help_text="Restrict to new customers who have never placed an order.",
+    )
     valid_from = models.DateTimeField(null=True, blank=True)
     valid_until = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
