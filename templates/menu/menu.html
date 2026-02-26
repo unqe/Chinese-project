@@ -378,6 +378,7 @@
                         wrapper.innerHTML = getQtyHtml(itemId, data.item_quantity, addUrl, updateUrl, removeUrl);
                     }
                     updateNavBasket(data.basket_count, data.basket_subtotal);
+                    if (data.auto_promo_msg) showSiteAlert(data.auto_promo_msg, 'success');
                 }
             });
             return;

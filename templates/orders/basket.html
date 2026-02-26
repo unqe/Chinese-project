@@ -153,20 +153,20 @@
                 {% if basket.promo_code %}
                 <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2"
                      id="promo-applied-section"
-                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);">
-                    <span style="color:var(--gold);font-size:0.85rem;">
+                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);flex-wrap:wrap;gap:0.35rem;">
+                    <span style="color:var(--gold);font-size:0.85rem;min-width:0;flex:1 1 auto;">
                         <i class="fas fa-tag me-1"></i>
                         <strong id="promo-code-label">{{ basket.promo_code }}</strong> applied
                     </span>
                     {% if not promo_is_locked %}
-                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0 ajax-remove-promo">
+                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0 ajax-remove-promo flex-shrink-0">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-xs btn-outline-red-custom">
                             <i class="fas fa-times"></i> Remove
                         </button>
                     </form>
                     {% else %}
-                    <span id="promo-locked-badge" style="color:var(--gold);font-size:0.75rem;opacity:0.75;">
+                    <span id="promo-locked-badge" style="color:var(--gold);font-size:0.75rem;opacity:0.75;flex-shrink:0;">
                         <i class="fas fa-lock me-1"></i>New customer offer
                     </span>
                     {% endif %}
@@ -176,18 +176,18 @@
                 {% else %}
                 <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2 d-none"
                      id="promo-applied-section"
-                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);">
-                    <span style="color:var(--gold);font-size:0.85rem;">
+                     style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);flex-wrap:wrap;gap:0.35rem;">
+                    <span style="color:var(--gold);font-size:0.85rem;min-width:0;flex:1 1 auto;">
                         <i class="fas fa-tag me-1"></i>
                         <strong id="promo-code-label"></strong> applied
                     </span>
-                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0 ajax-remove-promo">
+                    <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0 ajax-remove-promo flex-shrink-0">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-xs btn-outline-red-custom">
                             <i class="fas fa-times"></i> Remove
                         </button>
                     </form>
-                    <span id="promo-locked-badge" style="color:var(--gold);font-size:0.75rem;opacity:0.75;display:none;">
+                    <span id="promo-locked-badge" style="color:var(--gold);font-size:0.75rem;opacity:0.75;display:none;flex-shrink:0;">
                         <i class="fas fa-lock me-1"></i>New customer offer
                     </span>
                 </div>
@@ -468,7 +468,10 @@
             e.preventDefault();
             ajaxPost(upsellForm.action, { from_basket: '1' }, function(data) {
                 if (data.success) {
-                    sessionStorage.setItem('_site_alert', JSON.stringify({ msg: (data.message || 'Item added to basket!'), type: 'success' }));
+                    const alertMsg = data.auto_promo_msg
+                        ? data.auto_promo_msg + ' ' + (data.message || 'Item added!')
+                        : (data.message || 'Item added to basket!');
+                    sessionStorage.setItem('_site_alert', JSON.stringify({ msg: alertMsg, type: 'success' }));
                     location.reload();
                 }
             });
@@ -502,6 +505,8 @@
                     updateSummary(data);
                     updatePromoUI({ promo_code: '' });
                     showToast('Promo code removed.', 'info');
+                } else if (data.error) {
+                    showToast(data.error, 'warning');
                 }
             });
             return;
