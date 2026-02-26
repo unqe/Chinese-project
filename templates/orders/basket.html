@@ -52,11 +52,11 @@
                     <form action="{% url 'orders:basket_update' item_data.menu_item.pk %}" method="post" class="basket-qty-form">
                         {% csrf_token %}
                         <div class="qty-control-sm d-flex align-items-center">
-                            <button type="submit" name="quantity" value="{{ item_data.quantity|add:'-1' }}" class="qty-btn-sm">−</button>
+                            <button type="submit" name="quantity" value="{{ item_data.quantity|add:'-1' }}" class="qty-btn-sm" aria-label="{% trans 'Decrease quantity' %}">−</button>
                             <input type="number" class="qty-display qty-input-basket"
                                    value="{{ item_data.quantity }}" min="1" max="20"
                                    style="-moz-appearance:textfield;width:42px;text-align:center;border:none;background:transparent;color:inherit;font-weight:600;">
-                            <button type="submit" name="quantity" value="{{ item_data.quantity|add:'1' }}" class="qty-btn-sm">+</button>
+                            <button type="submit" name="quantity" value="{{ item_data.quantity|add:'1' }}" class="qty-btn-sm" aria-label="{% trans 'Increase quantity' %}">+</button>
                         </div>
                     </form>
                     <!-- Line total -->
@@ -64,7 +64,7 @@
                     <!-- Remove -->
                     <form action="{% url 'orders:basket_remove' item_data.menu_item.pk %}" method="post">
                         {% csrf_token %}
-                        <button type="submit" class="btn-remove" title="Remove item">
+                        <button type="submit" class="btn-remove" aria-label="{% trans 'Remove item' %}">
                             <i class="fas fa-times"></i>
                         </button>
                     </form>
@@ -101,7 +101,7 @@
                             <form action="{% url 'orders:basket_add' item.pk %}" method="post">
                                 {% csrf_token %}
                                 <input type="hidden" name="from_basket" value="1">
-                                <button type="submit" class="btn-upsell-add" title="Add to basket">
+                                <button type="submit" class="btn-upsell-add" aria-label="{% trans 'Add' %} {{ item.name }} {% trans 'to basket' %}">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </form>
