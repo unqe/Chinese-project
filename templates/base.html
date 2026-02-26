@@ -142,8 +142,8 @@
                     <!-- Auth -->
                     {% if user.is_authenticated %}
                         <div class="dropdown">
-                            <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-1"></i>{{ user.username }}
+                            <button class="btn btn-nav-user dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i>{{ user.username }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end dropdown-dark-custom">
                                 <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user-circle me-2"></i>{% trans "My Profile" %}</a></li>
@@ -153,8 +153,9 @@
                             </ul>
                         </div>
                     {% else %}
-                        <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-sm">{% trans "Sign In" %}</a>
-                        <a href="{% url 'account_signup' %}" class="btn btn-primary-custom btn-sm">{% trans "Register" %}</a>
+                        <a href="{% url 'account_login' %}" class="btn btn-signin-nav">
+                            <i class="fas fa-sign-in-alt me-1"></i>{% trans "Sign In" %}
+                        </a>
                     {% endif %}
                 </div>
             </div>

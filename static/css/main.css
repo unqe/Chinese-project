@@ -129,6 +129,46 @@ p { color: #c8b99a; }
 }
 .btn-basket:hover { border-color: var(--red); color: var(--red); }
 
+/* Sign-in nav button — gold-outlined, branded */
+.btn-signin-nav {
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.4rem 1.1rem;
+    border-radius: 20px;
+    transition: all var(--transition);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+.btn-signin-nav:hover,
+.btn-signin-nav:focus {
+    background: rgba(212, 160, 23, 0.12);
+    border-color: var(--gold-light);
+    color: var(--gold-light);
+}
+
+/* Logged-in user button in navbar */
+.btn-nav-user {
+    background: rgba(212, 160, 23, 0.08);
+    border: 1px solid rgba(212, 160, 23, 0.35);
+    color: var(--gold);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    transition: all var(--transition);
+}
+.btn-nav-user:hover,
+.btn-nav-user:focus,
+.btn-nav-user.show {
+    background: rgba(212, 160, 23, 0.15);
+    border-color: var(--gold);
+    color: var(--gold-light);
+}
+.btn-nav-user::after { border-top-color: var(--gold); }
+
 .basket-price {
     font-size: 0.8rem;
     font-weight: 700;
