@@ -37,6 +37,31 @@
 
 html { scroll-behavior: smooth; }
 
+/* Accessibility: skip-to-main link for keyboard users */
+.skip-to-main {
+    position: absolute;
+    left: -999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: -1;
+}
+.skip-to-main:focus {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    height: auto;
+    background: var(--gold);
+    color: #000;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    z-index: 9999;
+    text-decoration: none;
+}
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-light);
@@ -1780,16 +1805,32 @@ hr { border-color: var(--border); }
 .cookie-banner p { color: rgba(255,255,255,0.85); }
 .cookie-banner a { color: #fff; }
 
-/* ── Special offer auto-applied banner (checkout) ─────────────────────────── */
-.auto-offer-banner {
-    background: rgba(212,160,23,0.10);
-    border: 1px solid rgba(212,160,23,0.35);
-    border-radius: 10px;
-    color: var(--gold);
-    font-size: 0.84rem;
-    font-weight: 600;
-    padding: 0.55rem 0.9rem;
-    margin: 0.6rem 0 0.2rem;
-    text-align: center;
+/* ── Legal pages (terms, privacy) ──────────────────────────────────────────── */
+.alert-legal-demo {
+    background: rgba(200,137,42,0.10);
+    border: 1px solid rgba(200,137,42,0.32);
+    border-radius: 8px;
+    color: var(--primary-color, #c8892a);
+    align-items: flex-start;
+    gap: 0.75rem;
+    line-height: 1.6;
+}
+.alert-legal-demo i { margin-top: 0.1rem; font-size: 1rem; }
+
+.legal-content { color: rgba(255,255,255,0.87); line-height: 1.75; }
+.legal-content h4 {
+    color: var(--gold, #d4a017);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
     letter-spacing: 0.01em;
+}
+.legal-content p,
+.legal-content li { font-size: 0.95rem; }
+.legal-content ul { padding-left: 1.4rem; }
+.legal-content a { color: var(--gold, #d4a017); text-underline-offset: 3px; }
+@media (max-width: 575.98px) {
+    .legal-content h4 { font-size: 1rem; }
+    .legal-content p, .legal-content li { font-size: 0.9rem; }
 }

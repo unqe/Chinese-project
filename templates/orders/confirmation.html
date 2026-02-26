@@ -166,7 +166,7 @@
                 <a href="{% url 'menu:menu' %}" class="btn btn-outline-primary-custom">
                     <i class="fas fa-utensils me-2"></i>{% trans "Order Again" %}
                 </a>
-                <a href="{% url 'orders:history' %}" class="btn btn-outline-secondary">
+                <a href="{% url 'orders:history' %}" class="btn btn-outline-primary-custom">
                     <i class="fas fa-history me-2"></i>{% trans "View All Orders" %}
                 </a>
                 {% if order.status == 'completed' and not order.review %}
