@@ -6,6 +6,7 @@ so the receipt remains accurate even if prices change later.
 """
 
 import uuid
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from menu.models import MenuItem
@@ -269,3 +270,73 @@ class SiteAnnouncement(models.Model):
 
     def __str__(self):
         return self.message[:80]
+
+
+class SpecialOffer(models.Model):
+    """Auto-applied discount that activates at checkout when conditions are met.
+    Unlike PromoCode, the customer never needs to enter a code — it applies automatically.
+    """
+
+    PERCENT = "percent"
+    FIXED = "fixed"
+    DISCOUNT_TYPE_CHOICES = [
+        (PERCENT, "Percentage off (%)"),
+        (FIXED, "Fixed amount off (£)"),
+    ]
+
+    name = models.CharField(max_length=100, help_text="Internal name, e.g. 'Weekend Deal'")
+    badge_text = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Short label shown to customers at checkout, e.g. '🎉 Happy Hour'. Defaults to name if blank.",
+    )
+    description = models.TextField(blank=True, help_text="Optional public description shown at checkout.")
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES, default=PERCENT)
+    value = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        help_text="Percentage (e.g. 10 = 10%) or fixed amount in pounds (e.g. 2.50)",
+    )
+    min_order = models.DecimalField(
+        max_digits=6, decimal_places=2, default=Decimal("0.00"),
+        help_text="Minimum basket subtotal (£) required. Set to 0 for no minimum.",
+    )
+    active = models.BooleanField(default=True)
+    valid_from = models.DateTimeField(null=True, blank=True, help_text="Leave blank to activate immediately.")
+    valid_until = models.DateTimeField(null=True, blank=True, help_text="Leave blank for no expiry.")
+    uses_count = models.PositiveIntegerField(default=0, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Special Offer"
+        verbose_name_plural = "Special Offers"
+
+    def __str__(self):
+        if self.discount_type == self.PERCENT:
+            return f"{self.name} ({self.value}% off)"
+        return f"{self.name} (£{self.value} off)"
+
+    def get_badge(self):
+        """Return the customer-facing badge text."""
+        return self.badge_text or self.name
+
+    def is_applicable(self, subtotal):
+        """Return (True, '') if this offer can be applied to the given subtotal,
+        otherwise (False, reason_string)."""
+        from django.utils import timezone as tz
+        now = tz.now()
+        if not self.active:
+            return False, "Offer is not active"
+        if self.valid_from and now < self.valid_from:
+            return False, "Offer has not started yet"
+        if self.valid_until and now > self.valid_until:
+            return False, "Offer has expired"
+        if subtotal < self.min_order:
+            return False, f"Minimum order £{self.min_order} required"
+        return True, ""
+
+    def calculate_discount(self, subtotal):
+        """Return the discount amount (as Decimal) for the given subtotal."""
+        if self.discount_type == self.PERCENT:
+            return (subtotal * self.value / Decimal("100")).quantize(Decimal("0.01"))
+        return min(self.value, subtotal)

@@ -1779,3 +1779,17 @@ hr { border-color: var(--border); }
 }
 .cookie-banner p { color: rgba(255,255,255,0.85); }
 .cookie-banner a { color: #fff; }
+
+/* ── Special offer auto-applied banner (checkout) ─────────────────────────── */
+.auto-offer-banner {
+    background: rgba(212,160,23,0.10);
+    border: 1px solid rgba(212,160,23,0.35);
+    border-radius: 10px;
+    color: var(--gold);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.55rem 0.9rem;
+    margin: 0.6rem 0 0.2rem;
+    text-align: center;
+    letter-spacing: 0.01em;
+}

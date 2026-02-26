@@ -21,7 +21,7 @@ from datetime import timedelta
 
 from .basket import Basket, MIN_ORDER_DELIVERY
 from .forms import CheckoutForm
-from .models import Order, OrderItem, OpeningHours, PromoCode
+from .models import Order, OrderItem, OpeningHours, PromoCode, SpecialOffer
 from menu.models import MenuItem, DealSlot
 
 
@@ -266,6 +266,40 @@ def remove_promo(request):
     return redirect("orders:basket")
 
 
+def _apply_special_offer(basket):
+    """Check for active SpecialOffers and auto-apply the best one to the basket.
+
+    Only applies if there is no existing manually-entered PromoCode.
+    If the basket already has an auto-offer applied (promo_code starts with '★ '),
+    it is removed first so we can re-evaluate with the current subtotal.
+    Returns the SpecialOffer instance that was applied, or None.
+    """
+    existing = basket.promo_code
+    # Never override a manually-entered PromoCode (those don't start with '★ ')
+    if existing and not existing.startswith("★ "):
+        return None
+
+    subtotal = basket.get_subtotal()
+    best_offer = None
+    best_discount = Decimal("0.00")
+
+    for offer in SpecialOffer.objects.filter(active=True).order_by("-value"):
+        ok, _ = offer.is_applicable(subtotal)
+        if ok:
+            disc = offer.calculate_discount(subtotal)
+            if disc > best_discount:
+                best_discount = disc
+                best_offer = offer
+
+    if best_offer:
+        basket.apply_promo(f"★ {best_offer.get_badge()}", best_discount)
+    elif existing and existing.startswith("★ "):
+        # Previously auto-applied offer no longer qualifies — remove it
+        basket.remove_promo()
+
+    return best_offer
+
+
 def checkout(request):
     """
     Checkout page. Pre-fills with saved profile data for logged-in users.
@@ -279,6 +313,9 @@ def checkout(request):
     if not basket:
         messages.warning(request, "Your basket is empty.")
         return redirect("menu:menu")
+
+    # Auto-apply the best active SpecialOffer when no manual promo is in use
+    auto_offer = _apply_special_offer(basket)
 
     initial = {}
     if request.user.is_authenticated:
@@ -318,6 +355,7 @@ def checkout(request):
                     "is_open": is_open,
                     "next_open_text": next_open_text,
                     "profile_has_address": profile_has_address_err,
+                    "auto_offer": auto_offer,
                 })
             order = form.save(commit=False)
             order.user = request.user if request.user.is_authenticated else None
@@ -333,11 +371,18 @@ def checkout(request):
 
             order.save()
 
-            # Increment promo code uses_count
+            # Increment promo code / special offer uses_count
             if order.promo_code:
-                PromoCode.objects.filter(code=order.promo_code).update(
-                    uses_count=F("uses_count") + 1
-                )
+                if order.promo_code.startswith("★ "):
+                    # Auto-applied special offer — increment its counter
+                    if auto_offer:
+                        SpecialOffer.objects.filter(pk=auto_offer.pk).update(
+                            uses_count=F("uses_count") + 1
+                        )
+                else:
+                    PromoCode.objects.filter(code=order.promo_code).update(
+                        uses_count=F("uses_count") + 1
+                    )
 
             # Log to admin Recent Actions
             _log_admin_action(request, order, ADDITION, "Order placed via website")
@@ -386,6 +431,7 @@ def checkout(request):
         "is_open": is_open,
         "next_open_text": next_open_text,
         "profile_has_address": profile_has_address,
+        "auto_offer": auto_offer,
     })
 
 
