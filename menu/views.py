@@ -116,10 +116,12 @@ def item_detail(request, pk):
     related_items = MenuItem.objects.filter(
         category=item.category, is_available=True
     ).exclude(pk=pk)[:4]
+    is_deal = DealSlot.objects.filter(deal=item).exists()
 
     return render(request, "menu/item_detail.html", {
         "item": item,
         "related_items": related_items,
+        "is_deal": is_deal,
     })
 
 

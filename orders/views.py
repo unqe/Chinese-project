@@ -272,7 +272,7 @@ def basket_remove(request, item_id):
     """Removes an item from the basket entirely. Supports AJAX."""
     basket = Basket(request)
     basket.remove(item_id)
-    _revalidate_promo(basket, request)
+    promo_removed = _revalidate_promo(basket, request)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         data = _basket_ajax_summary(basket)
@@ -289,24 +289,37 @@ def basket_remove(request, item_id):
 def apply_promo(request):
     """Validate and apply a promo code to the basket session."""
     basket = Basket(request)
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
     code_str = request.POST.get("promo_code", "").strip().upper()
     if not code_str:
+        if is_ajax:
+            return JsonResponse({"success": False, "error": "Please enter a promo code."})
         messages.error(request, "Please enter a promo code.")
         return redirect("orders:basket")
 
     try:
         promo = PromoCode.objects.get(code__iexact=code_str)
     except PromoCode.DoesNotExist:
+        if is_ajax:
+            return JsonResponse({"success": False, "error": f"'{code_str}' is not a valid promo code."})
         messages.error(request, f"'{code_str}' is not a valid promo code.")
         return redirect("orders:basket")
 
     valid, err = promo.is_valid(subtotal=basket.get_subtotal())
     if not valid:
+        if is_ajax:
+            return JsonResponse({"success": False, "error": err})
         messages.error(request, err)
         return redirect("orders:basket")
 
     discount = promo.get_discount(basket.get_subtotal())
     basket.apply_promo(promo.code, discount)
+    if is_ajax:
+        data = _basket_ajax_summary(basket)
+        data["success"] = True
+        data["promo_code"] = promo.code
+        data["message"] = f"Promo code {promo.code} applied — £{discount} off!"
+        return JsonResponse(data)
     messages.success(request, f"Promo code {promo.code} applied — £{discount} off!")
     return redirect("orders:basket")
 
@@ -316,6 +329,10 @@ def remove_promo(request):
     """Remove any applied promo code from the basket session."""
     basket = Basket(request)
     basket.remove_promo()
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        data = _basket_ajax_summary(basket)
+        data["success"] = True
+        return JsonResponse(data)
     messages.info(request, "Promo code removed.")
     return redirect("orders:basket")
 
