@@ -589,6 +589,18 @@ def kitchen_update_status(request, reference):
 
 
 @staff_member_required
+@require_POST
+def kitchen_cancel_order(request, reference):
+    """AJAX endpoint — cancel an order from the kitchen display."""
+    order = get_object_or_404(Order, reference=reference)
+    if order.status not in (Order.STATUS_COMPLETED, Order.STATUS_CANCELLED):
+        order.status = Order.STATUS_CANCELLED
+        order.save(update_fields=["status"])
+        return JsonResponse({"ok": True})
+    return JsonResponse({"ok": False, "error": "Order cannot be cancelled"}, status=400)
+
+
+@staff_member_required
 def kitchen_orders_partial(request):
     """Returns only the order-cards HTML fragment for AJAX polling.
     Called every 5 s by the kitchen display JS to update the grid

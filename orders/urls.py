@@ -25,4 +25,5 @@ urlpatterns = [
     path("kitchen/", views.kitchen_display, name="kitchen_display"),
     path("kitchen/partial/", views.kitchen_orders_partial, name="kitchen_partial"),
     path("kitchen/update/<str:reference>/", views.kitchen_update_status, name="kitchen_update_status"),
+    path("kitchen/cancel/<str:reference>/", views.kitchen_cancel_order, name="kitchen_cancel_order"),
 ]

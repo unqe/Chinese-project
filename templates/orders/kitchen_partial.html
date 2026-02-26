@@ -44,11 +44,13 @@ via AJAX to update the order grid without a full page reload.
         {% if order.special_instructions %}
         <div class="order-special">
             <i class="fas fa-comment-alt me-1" style="color:#f0c040;"></i>
+            <strong style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.04em;color:#f0c040;">Note:</strong>
             {{ order.special_instructions }}
         </div>
         {% endif %}
 
         <div class="order-card-footer">
+            <div style="display:flex;gap:.5rem;flex-direction:column;">
             {% if order.status == 'pending' %}
                 <button class="btn-advance btn-confirm" onclick="advanceOrder('{{ order.reference }}', this)">
                     <i class="fas fa-check me-1"></i> Confirm Order
@@ -66,6 +68,10 @@ via AJAX to update the order grid without a full page reload.
                     <i class="fas fa-flag-checkered me-1"></i> Complete
                 </button>
             {% endif %}
+            <button class="btn-advance btn-cancel-order" onclick="cancelOrder('{{ order.reference }}', this)">
+                <i class="fas fa-times me-1"></i> Cancel Order
+            </button>
+            </div>
         </div>
     </div>
     {% endfor %}
