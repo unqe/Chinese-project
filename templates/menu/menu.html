@@ -119,7 +119,7 @@
                 <div class="row g-3">
                     {% for item in items %}
                     <div class="col-md-6 col-xl-4">
-                        <div class="menu-card h-100">
+                        <div class="menu-card h-100{% if not item.is_available %} sold-out{% endif %}">
                             <div class="menu-card-img-wrap">
                                 {% if item.image %}
                                     <img src="{{ item.image.url }}" alt="{{ item.name }}" class="menu-card-img" loading="lazy">
@@ -141,8 +141,18 @@
                                         data-has-image="{% if item.image %}1{% else %}0{% endif %}"
                                         aria-label="{% trans 'Edit image for' %} {{ item.name }}">
                                     <i class="fas fa-camera"></i>
+                                </button>                                <button class="staff-avail-toggle-btn" type="button"
+                                        title="{% if item.is_available %}Mark as Sold Out{% else %}Mark as Available{% endif %}"
+                                        data-item-id="{{ item.pk }}"
+                                        data-toggle-url="{% url 'menu:staff_toggle_availability' item.pk %}">
+                                    {% if item.is_available %}<i class="fas fa-ban me-1"></i>Sold Out
+                                    {% else %}<i class="fas fa-check-circle me-1"></i>Restore{% endif %}
                                 </button>
                                 {% endif %}
+                                {% if not item.is_available %}
+                                <div class="sold-out-overlay">
+                                    <span class="sold-out-badge"><i class="fas fa-ban me-1"></i>{% trans "Sold Out" %}</span>
+                                </div>                                {% endif %}
                             </div>
                             <div class="menu-card-body">
                                 <h5 class="menu-card-title">
@@ -179,7 +189,11 @@
                                 <div class="menu-card-footer">
                                     <span class="menu-card-price">£{{ item.price }}</span>
                                     <div class="item-qty-wrapper" id="qty-wrap-{{ item.pk }}" data-item-id="{{ item.pk }}">
-                                        {% if item.pk in deal_item_pks %}
+                                        {% if not item.is_available %}
+                                            <button class="btn btn-add-to-basket" disabled>
+                                                <i class="fas fa-ban me-1"></i>{% trans "Sold Out" %}
+                                            </button>
+                                        {% elif item.pk in deal_item_pks %}
                                             <a href="{% url 'orders:deal_picker' item.pk %}"
                                                class="btn btn-add-to-basket">
                                                 <i class="fas fa-list-ul"></i> {% trans "Choose" %}
@@ -452,14 +466,70 @@
     // ---- Allergen toggle ----
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.allergen-toggle');
-        if (!btn) return;
-        const targetId = btn.dataset.target;
-        const panel = document.getElementById(targetId);
-        if (!panel) return;
-        const open = !panel.hidden;
-        panel.hidden = open;
-        btn.setAttribute('aria-expanded', String(!open));
-        btn.querySelector('.allergen-chevron').style.transform = open ? '' : 'rotate(180deg)';
+        if (btn) {
+            const targetId = btn.dataset.target;
+            const panel = document.getElementById(targetId);
+            if (!panel) return;
+            const open = !panel.hidden;
+            panel.hidden = open;
+            btn.setAttribute('aria-expanded', String(!open));
+            btn.querySelector('.allergen-chevron').style.transform = open ? '' : 'rotate(180deg)';
+            return;
+        }
+
+        // ---- Staff availability toggle ----
+        const toggleBtn = e.target.closest('.staff-avail-toggle-btn');
+        if (!toggleBtn) return;
+        const url = toggleBtn.dataset.toggleUrl;
+        const card = toggleBtn.closest('.menu-card');
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
+        }).then(r => r.json()).then(data => {
+            if (!data.ok) return;
+            if (data.is_available) {
+                card.classList.remove('sold-out');
+                const overlay = card.querySelector('.sold-out-overlay');
+                if (overlay) overlay.remove();
+                const addArea = card.querySelector('.item-qty-wrapper');
+                if (addArea) {
+                    const disabledBtn = addArea.querySelector('button[disabled]');
+                    if (disabledBtn) {
+                        const newBtn = document.createElement('button');
+                        newBtn.className = 'btn btn-add-to-basket ajax-add-btn';
+                        newBtn.dataset.itemId = data.pk;
+                        newBtn.dataset.addUrl = addArea.closest('[data-item-id]')?.dataset?.addUrl || '';
+                        newBtn.innerHTML = '<i class="fas fa-plus"></i> Add';
+                        disabledBtn.replaceWith(newBtn);
+                    }
+                }
+                toggleBtn.innerHTML = '<i class="fas fa-ban me-1"></i>Sold Out';
+                toggleBtn.title = 'Mark as Sold Out';
+                toggleBtn.classList.remove('available');
+            } else {
+                card.classList.add('sold-out');
+                if (!card.querySelector('.sold-out-overlay')) {
+                    const ov = document.createElement('div');
+                    ov.className = 'sold-out-overlay';
+                    ov.innerHTML = '<span class="sold-out-badge"><i class="fas fa-ban me-1"></i>Sold Out</span>';
+                    card.querySelector('.menu-card-img-wrap').appendChild(ov);
+                }
+                const addArea = card.querySelector('.item-qty-wrapper');
+                if (addArea) {
+                    const activeBtn = addArea.querySelector('button:not([disabled]), a.btn');
+                    if (activeBtn) {
+                        const disBtn = document.createElement('button');
+                        disBtn.className = 'btn btn-add-to-basket';
+                        disBtn.disabled = true;
+                        disBtn.innerHTML = '<i class="fas fa-ban me-1"></i>Sold Out';
+                        activeBtn.replaceWith(disBtn);
+                    }
+                }
+                toggleBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i>Restore';
+                toggleBtn.title = 'Mark as Available';
+            }
+            showSiteAlert(data.is_available ? 'Item marked as available.' : 'Item marked as sold out.', data.is_available ? 'success' : 'warning');
+        }).catch(console.error);
     });
 </script>
 {% endblock %}

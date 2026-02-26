@@ -506,6 +506,60 @@ p { color: #c8b99a; }
     overflow: hidden;
     background: #180a03;
 }
+/* ── Sold Out overlay & badge ─────────────────────────────────────── */
+.menu-card.sold-out { opacity: 0.70; }
+.sold-out-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 5, 2, 0.52);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 4;
+}
+.sold-out-badge {
+    background: rgba(192, 57, 43, 0.92);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.3rem 0.85rem;
+    border-radius: 2rem;
+}
+.menu-card.sold-out .btn-add-to-basket[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+/* Staff "Sold Out / Restore" toggle button on card image */
+.staff-avail-toggle-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 64px;
+    background: rgba(13, 6, 3, 0.82);
+    border: 1px solid rgba(192, 57, 43, 0.6);
+    color: #e74c3c;
+    border-radius: 6px;
+    padding: 0.28rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+.menu-card.sold-out .staff-avail-toggle-btn {
+    border-color: rgba(76, 175, 80, 0.6);
+    color: #4caf50;
+}
+.menu-card-img-wrap:hover .staff-avail-toggle-btn { opacity: 1; }
+.staff-avail-toggle-btn:hover { background: rgba(192, 57, 43, 0.2); }
+.menu-card.sold-out .staff-avail-toggle-btn:hover { background: rgba(76, 175, 80, 0.2); }
 
 .menu-card-img {
     width: 100%;

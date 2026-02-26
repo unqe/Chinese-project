@@ -62,9 +62,11 @@ def menu_page(request):
 
     filtered_categories = []
     for cat in categories:
-        available_items = cat.items.filter(is_available=True)
-        if available_items.exists():
-            filtered_categories.append((cat, available_items))
+        all_items = cat.items.all()
+        # Show section only if at least one item is available;
+        # unavailable items are included so they display with a "Sold Out" badge.
+        if all_items.filter(is_available=True).exists():
+            filtered_categories.append((cat, all_items))
 
     active_category = request.GET.get("category", None)
 
@@ -146,4 +148,14 @@ def staff_update_image(request, pk):
             url = ""
         return JsonResponse({"ok": True, "image_url": url})
     return JsonResponse({"ok": False, "error": "No file uploaded."}, status=400)
+
+
+@staff_member_required
+@require_POST
+def staff_toggle_availability(request, pk):
+    """Toggle a menu item's is_available flag (sold out ↔ available) via AJAX."""
+    item = get_object_or_404(MenuItem, pk=pk)
+    item.is_available = not item.is_available
+    item.save(update_fields=["is_available"])
+    return JsonResponse({"ok": True, "is_available": item.is_available, "pk": item.pk})
 
