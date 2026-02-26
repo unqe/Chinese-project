@@ -415,6 +415,8 @@ def remove_promo(request):
     """Remove any applied promo code from the basket session."""
     basket = Basket(request)
     basket.remove_promo()
+    # Prevent auto-apply from re-applying a first-order code the user just removed
+    request.session["_first_promo_applied"] = True
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         data = _basket_ajax_summary(basket)
         data["success"] = True

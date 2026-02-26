@@ -25,6 +25,12 @@ class Basket:
         basket = self.session.get(BASKET_SESSION_KEY)
         if basket is None:
             basket = self.session[BASKET_SESSION_KEY] = {}
+        # Sanitize: prices must always be strings — a previous bug could leave
+        # Decimal objects in the session, causing JSON serialization errors.
+        for item_data in basket.values():
+            if not isinstance(item_data.get("price", ""), str):
+                item_data["price"] = str(item_data["price"])
+                self.session.modified = True
         self.basket = basket
 
     # ------------------------------------------------------------------
@@ -114,21 +120,23 @@ class Basket:
         Iterate over basket items, resolving each item_id to its
         MenuItem object and attaching the line total.
         Only yields items that still exist in the database.
+        Never mutates the session basket dict.
         """
         item_ids = self.basket.keys()
         items = MenuItem.objects.filter(pk__in=item_ids)
-        basket_copy = self.basket.copy()
+        item_map = {str(item.pk): item for item in items}
 
-        for item in items:
-            basket_copy[str(item.pk)]["menu_item"] = item
-
-        for item_data in basket_copy.values():
-            if "menu_item" not in item_data:
-                continue   # item was deleted from the menu
-            item_data["price"] = Decimal(item_data["price"])
-            item_data["total_price"] = item_data["price"] * item_data["quantity"]
-            item_data["notes"] = item_data.get("notes", "")
-            yield item_data
+        for item_id, raw in self.basket.items():
+            menu_item = item_map.get(item_id)
+            if menu_item is None:
+                continue  # item was deleted from the menu
+            # Work with a fresh copy — never mutate the session dict
+            entry = dict(raw)
+            entry["menu_item"] = menu_item
+            entry["price"] = Decimal(raw["price"])
+            entry["total_price"] = entry["price"] * entry["quantity"]
+            entry["notes"] = raw.get("notes", "")
+            yield entry
 
     def get_total_quantity(self):
         """Total number of individual items (sum of all quantities)."""
