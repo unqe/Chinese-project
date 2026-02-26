@@ -236,7 +236,7 @@ JAZZMIN_SETTINGS = {
         "menu.Category":      "fas fa-list",
         "menu.MenuItem":      "fas fa-utensils",
         "orders.Order":       "fas fa-shopping-bag",
-        "orders.OpeningHours":"fas fa-clock",
+        "orders.OpeningHours": "fas fa-clock",
         "reviews.Review":     "fas fa-star",
         "account.EmailAddress": "fas fa-envelope",
     },

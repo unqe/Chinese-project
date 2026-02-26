@@ -21,11 +21,11 @@ from django.utils import timezone
 from datetime import timedelta
 from django.core.cache import cache
 
-from .basket import Basket, MIN_ORDER_DELIVERY, FREE_DELIVERY_THRESHOLD, DELIVERY_CHARGE
+from .basket import Basket, MIN_ORDER_DELIVERY, FREE_DELIVERY_THRESHOLD
 from .forms import CheckoutForm
 from .models import Order, OrderItem, OpeningHours, PromoCode
 from .signals import sync_basket_to_profile
-from menu.models import MenuItem, DealSlot
+from menu.models import MenuItem
 
 
 def _log_admin_action(request, obj, action_flag, message=""):
@@ -45,8 +45,6 @@ def _log_admin_action(request, obj, action_flag, message=""):
         action_flag=action_flag,
         change_message=message,
     )
-
-
 
 
 def _check_rate_limit(request, key, limit=10, period=60):
@@ -249,7 +247,7 @@ def basket_view(request):
     # clear it so the auto-apply recalculates on the next visit with items.
     if not basket and basket.promo_code:
         try:
-            _fo_check = PromoCode.objects.get(code=basket.promo_code, first_order_only=True)
+            _ = PromoCode.objects.get(code=basket.promo_code, first_order_only=True)
             basket.remove_promo()
             request.session.pop("_first_promo_applied", None)
         except PromoCode.DoesNotExist:
@@ -471,7 +469,7 @@ def remove_promo(request):
     # Block removal of first-order-only promos — they are auto-applied and locked.
     if basket.promo_code:
         try:
-            _locked = PromoCode.objects.get(code=basket.promo_code, first_order_only=True)
+            _ = PromoCode.objects.get(code=basket.promo_code, first_order_only=True)
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "error": "This discount cannot be removed."}, status=403)
             messages.warning(request, "This discount cannot be removed.")

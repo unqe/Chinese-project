@@ -97,8 +97,8 @@ class ReviewAdmin(admin.ModelAdmin):
     def review_preview(self, obj):
         """Rich read-only preview shown at the top of the change form fieldset."""
         stars_html = (
-            ''.join(f'<i class="fas fa-star" style="color:#d4a017;"></i>' for _ in range(obj.rating)) +
-            ''.join(f'<i class="far fa-star" style="color:#555;"></i>' for _ in range(5 - obj.rating))
+            ''.join('<i class="fas fa-star" style="color:#d4a017;"></i>' for _ in range(obj.rating)) +
+            ''.join('<i class="far fa-star" style="color:#555;"></i>' for _ in range(5 - obj.rating))
         )
         return format_html(
             '<div style="background:#0d0603;border:1px solid rgba(212,160,23,.25);border-radius:8px;'

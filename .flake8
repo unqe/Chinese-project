@@ -1,0 +1,25 @@
+[flake8]
+max-line-length = 120
+exclude =
+    venv,
+    .git,
+    __pycache__,
+    */migrations/*,
+    manage.py
+extend-ignore =
+    # Aligned assignments (used intentionally in admin_context, basket etc.)
+    E221,
+    # Trailing blank lines — cosmetic
+    W391
+per-file-ignores =
+    # Settings files use star imports and long lines by Django convention
+    despair/settings/*.py: F401, F403, E501
+    # Management commands are internal utilities
+    menu/management/commands/*.py: E302, E221
+    # Admin files: long help_text strings are acceptable
+    orders/admin.py: E501
+    reviews/admin.py: E501
+    # Form field keyword args often exceed line length
+    accounts/forms.py: E501
+    orders/forms.py: E501
+    orders/views.py: E501
