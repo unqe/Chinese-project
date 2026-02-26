@@ -25,7 +25,7 @@
                 </div>
 
                 {% for item_data in basket %}
-                <div class="basket-item d-flex align-items-center gap-3">
+                <div class="basket-item d-flex align-items-center gap-3" id="basket-row-{{ item_data.menu_item.pk }}">
                     <!-- Image -->
                     <div class="basket-item-img">
                         {% if item_data.menu_item.image %}
@@ -49,20 +49,24 @@
                         </div>
                     </div>
                     <!-- Quantity controls -->
-                    <form action="{% url 'orders:basket_update' item_data.menu_item.pk %}" method="post" class="basket-qty-form">
+                    <form action="{% url 'orders:basket_update' item_data.menu_item.pk %}" method="post" class="basket-qty-form"
+                          data-item-id="{{ item_data.menu_item.pk }}"
+                          data-price="{{ item_data.price }}"
+                          data-remove-url="{% url 'orders:basket_remove' item_data.menu_item.pk %}">
                         {% csrf_token %}
                         <div class="qty-control-sm d-flex align-items-center">
                             <button type="submit" name="quantity" value="{{ item_data.quantity|add:'-1' }}" class="qty-btn-sm" aria-label="{% trans 'Decrease quantity' %}">−</button>
-                            <input type="number" class="qty-display qty-input-basket"
+                            <input type="number" class="qty-display qty-input-basket" id="basket-qty-{{ item_data.menu_item.pk }}"
                                    value="{{ item_data.quantity }}" min="1" max="20"
                                    style="-moz-appearance:textfield;width:42px;text-align:center;border:none;background:transparent;color:inherit;font-weight:600;">
                             <button type="submit" name="quantity" value="{{ item_data.quantity|add:'1' }}" class="qty-btn-sm" aria-label="{% trans 'Increase quantity' %}">+</button>
                         </div>
                     </form>
                     <!-- Line total -->
-                    <span class="basket-item-total">£{{ item_data.total_price }}</span>
+                    <span class="basket-item-total" id="line-total-{{ item_data.menu_item.pk }}">£{{ item_data.total_price }}</span>
                     <!-- Remove -->
-                    <form action="{% url 'orders:basket_remove' item_data.menu_item.pk %}" method="post">
+                    <form action="{% url 'orders:basket_remove' item_data.menu_item.pk %}" method="post"
+                          class="remove-item-form" data-item-id="{{ item_data.menu_item.pk }}">
                         {% csrf_token %}
                         <button type="submit" class="btn-remove" aria-label="{% trans 'Remove item' %}">
                             <i class="fas fa-times"></i>
@@ -98,7 +102,7 @@
                                 <div class="upsell-name">{{ item.name }}</div>
                                 <div class="upsell-price">£{{ item.price }}</div>
                             </div>
-                            <form action="{% url 'orders:basket_add' item.pk %}" method="post">
+                            <form action="{% url 'orders:basket_add' item.pk %}" method="post" class="basket-upsell-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="from_basket" value="1">
                                 <button type="submit" class="btn-upsell-add" aria-label="{% trans 'Add' %} {{ item.name }} {% trans 'to basket' %}">
@@ -120,11 +124,11 @@
 
                 <div class="summary-row">
                     <span>{% trans "Subtotal" %}</span>
-                    <span>£{{ basket.get_subtotal }}</span>
+                    <span id="sum-subtotal">£{{ basket.get_subtotal }}</span>
                 </div>
                 <div class="summary-row">
                     <span>{% trans "Delivery" %}</span>
-                    <span>
+                    <span id="sum-delivery">
                         {% if basket.get_subtotal >= 20 %}
                             <span class="text-success">{% trans "Free" %}</span>
                         {% else %}
@@ -135,11 +139,11 @@
                 </div>
 
                 {% if basket.get_subtotal < 20 %}
-                <div class="free-delivery-bar mt-2 mb-3">
+                <div class="free-delivery-bar mt-2 mb-3" id="free-del-bar-wrap">
                     <div class="free-delivery-progress">
-                        <div class="free-delivery-fill" style="width: {% widthratio basket.get_subtotal 20 100 %}%;"></div>
+                        <div class="free-delivery-fill" id="free-del-fill" style="width: {% widthratio basket.get_subtotal 20 100 %}%;"></div>
                     </div>
-                    <small class="text-muted">
+                    <small class="text-muted" id="free-del-remaining">
                         {% blocktrans with remaining=free_delivery_remaining %}Add £{{ remaining }} more for free delivery{% endblocktrans %}
                     </small>
                 </div>
@@ -173,14 +177,19 @@
 
                 <hr>
                 {% if basket.get_discount %}
-                <div class="summary-row" style="color:var(--gold);">
+                <div class="summary-row" id="sum-discount-row" style="color:var(--gold);">
                     <span><i class="fas fa-tag me-1"></i>{% trans "Discount" %}</span>
-                    <span>− £{{ basket.get_discount }}</span>
+                    <span>− £<span id="sum-discount-val">{{ basket.get_discount }}</span></span>
+                </div>
+                {% else %}
+                <div class="summary-row" id="sum-discount-row" style="color:var(--gold);display:none;">
+                    <span><i class="fas fa-tag me-1"></i>{% trans "Discount" %}</span>
+                    <span>− £<span id="sum-discount-val">0.00</span></span>
                 </div>
                 {% endif %}
                 <div class="summary-row summary-total">
                     <span>{% trans "Total" %}</span>
-                    <span>£{{ basket.get_total }}</span>
+                    <span id="sum-total">£{{ basket.get_total }}</span>
                 </div>
 
                 {% if show_free_drink %}
@@ -198,7 +207,7 @@
                         <strong>{% trans "Add Prawn Crackers?" %}</strong>
                         <span class="text-muted ms-1">£{{ prawn_crackers.price }}</span>
                     </div>
-                    <form action="{% url 'orders:basket_add' prawn_crackers.pk %}" method="post" class="mb-0">
+                    <form action="{% url 'orders:basket_add' prawn_crackers.pk %}" method="post" class="basket-upsell-form mb-0">
                         {% csrf_token %}
                         <input type="hidden" name="from_basket" value="1">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">{% trans "Add" %}</button>
@@ -207,7 +216,12 @@
                 {% endif %}
 
                 {% if basket.get_subtotal < min_order_delivery %}
-                <div class="alert alert-info py-2 px-3 mt-3 mb-0 rounded-3">
+                <div class="alert alert-info py-2 px-3 mt-3 mb-0 rounded-3" id="min-order-notice">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {% blocktrans with min=min_order_delivery %}Minimum order for delivery is £{{ min }}. No minimum for collection.{% endblocktrans %}
+                </div>
+                {% else %}
+                <div class="alert alert-info py-2 px-3 mt-3 mb-0 rounded-3" id="min-order-notice" style="display:none">
                     <i class="fas fa-info-circle me-1"></i>
                     {% blocktrans with min=min_order_delivery %}Minimum order for delivery is £{{ min }}. No minimum for collection.{% endblocktrans %}
                 </div>
@@ -266,46 +280,170 @@
 
 {% block extra_js %}
 <script>
-    // Save per-item notes on blur via AJAX
+    const CSRF = '{{ csrf_token }}';
+    const MIN_ORDER = {{ min_order_delivery }};
+
+    // ── Shared helpers ────────────────────────────────────────────────────────
+
+    function ajaxPost(url, body, callback) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRF,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams(body),
+        }).then(r => r.json()).then(callback).catch(console.error);
+    }
+
+    function fmt(n) { return parseFloat(n).toFixed(2); }
+    function el(id) { return document.getElementById(id); }
+
+    function updateNavBasket(count, subtotal) {
+        const countEl = document.querySelector('.basket-count');
+        const priceEl = document.querySelector('.basket-price');
+        if (countEl) countEl.textContent = count;
+        if (priceEl) {
+            if (count > 0) { priceEl.textContent = '£' + fmt(subtotal); priceEl.style.display = ''; }
+            else priceEl.style.display = 'none';
+        }
+    }
+
+    function updateSummary(data) {
+        const sub = parseFloat(data.subtotal);
+        if (el('sum-subtotal')) el('sum-subtotal').textContent = '£' + fmt(sub);
+        if (el('sum-delivery')) {
+            if (data.delivery_is_free) el('sum-delivery').innerHTML = '<span class="text-success">Free</span>';
+            else el('sum-delivery').innerHTML = '£' + fmt(data.delivery_charge) + '<small class="d-block text-muted">Free delivery over £20</small>';
+        }
+        if (el('sum-discount-row')) {
+            if (data.has_discount) {
+                el('sum-discount-row').style.display = '';
+                if (el('sum-discount-val')) el('sum-discount-val').textContent = fmt(data.discount);
+            } else {
+                el('sum-discount-row').style.display = 'none';
+            }
+        }
+        if (el('sum-total')) el('sum-total').textContent = '£' + fmt(data.total);
+        const barWrap = el('free-del-bar-wrap');
+        if (barWrap) {
+            if (!data.delivery_is_free) {
+                barWrap.style.display = '';
+                if (el('free-del-fill')) el('free-del-fill').style.width = data.free_delivery_pct + '%';
+                if (el('free-del-remaining')) el('free-del-remaining').textContent = 'Add £' + fmt(data.free_delivery_remaining) + ' more for free delivery';
+            } else { barWrap.style.display = 'none'; }
+        }
+        if (el('min-order-notice')) el('min-order-notice').style.display = sub < MIN_ORDER ? '' : 'none';
+        updateNavBasket(data.basket_count, data.subtotal);
+    }
+
+    function applyRowUpdate(itemId, data) {
+        const form = document.querySelector('.basket-qty-form[data-item-id="' + itemId + '"]');
+        const price = form ? parseFloat(form.dataset.price) : 0;
+        if (data.item_quantity === 0) {
+            const row = el('basket-row-' + itemId);
+            if (row) row.remove();
+            updateSummary(data);
+            if (data.basket_count === 0) { location.reload(); return; }
+        } else {
+            const qtyInput = el('basket-qty-' + itemId);
+            if (qtyInput) qtyInput.value = data.item_quantity;
+            if (form) {
+                const btns = form.querySelectorAll('.qty-btn-sm');
+                if (btns[0]) btns[0].value = data.item_quantity - 1;
+                if (btns[1]) btns[1].value = data.item_quantity + 1;
+            }
+            const lt = el('line-total-' + itemId);
+            if (lt) lt.textContent = '£' + fmt(price * data.item_quantity);
+            updateSummary(data);
+        }
+    }
+
+    // ── Qty +/- form submit (basket update) ──────────────────────────────────
+
+    document.addEventListener('submit', function(e) {
+        const form = e.target.closest('.basket-qty-form');
+        if (!form) return;
+        e.preventDefault();
+        const itemId = form.dataset.itemId;
+        let qty;
+        if (e.submitter && e.submitter.name === 'quantity') {
+            qty = parseInt(e.submitter.value);
+        } else {
+            const inp = el('basket-qty-' + itemId);
+            qty = inp ? parseInt(inp.value) : 1;
+        }
+        ajaxPost(form.action, { quantity: qty }, function(data) {
+            if (data.success) applyRowUpdate(itemId, data);
+        });
+    });
+
+    // ── Remove item ───────────────────────────────────────────────────────────
+
+    document.addEventListener('submit', function(e) {
+        const form = e.target.closest('.remove-item-form');
+        if (!form) return;
+        e.preventDefault();
+        const itemId = form.dataset.itemId;
+        ajaxPost(form.action, {}, function(data) {
+            if (!data.success) return;
+            const row = el('basket-row-' + itemId);
+            if (row) row.remove();
+            updateSummary(data);
+            if (data.basket_count === 0) location.reload();
+        });
+    });
+
+    // ── Upsell / prawn crackers add ───────────────────────────────────────────
+
+    document.addEventListener('submit', function(e) {
+        const form = e.target.closest('.basket-upsell-form');
+        if (!form) return;
+        e.preventDefault();
+        ajaxPost(form.action, { from_basket: '1' }, function(data) {
+            if (data.success) {
+                updateSummary(data);
+                const nudge = form.closest('.upsell-card, .prawn-crackers-nudge');
+                if (nudge) nudge.remove();
+            }
+        });
+    });
+
+    // ── Typeable qty input ────────────────────────────────────────────────────
+
+    document.querySelectorAll('.qty-input-basket').forEach(function(input) {
+        input.style.cssText += ';-webkit-appearance:none;';
+        input.addEventListener('change', function() {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 20) val = 20;
+            this.value = val;
+            const form = this.closest('.basket-qty-form');
+            if (!form) return;
+            const itemId = form.dataset.itemId;
+            ajaxPost(form.action, { quantity: val }, function(data) {
+                if (data.success) applyRowUpdate(itemId, data);
+            });
+        });
+    });
+
+    // ── Per-item notes (save on blur) ─────────────────────────────────────────
+
     document.querySelectorAll('.basket-item-note').forEach(function(input) {
         var lastVal = input.value;
         input.addEventListener('blur', function() {
             if (this.value === lastVal) return;
             lastVal = this.value;
-            const noteUrl = this.dataset.noteUrl;
-            const csrf = this.dataset.csrf;
-            fetch(noteUrl, {
+            fetch(this.dataset.noteUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrf,
+                    'X-CSRFToken': this.dataset.csrf,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: new URLSearchParams({ note: this.value }),
             });
-        });
-    });
-
-    // Typeable qty — submit form with typed value on change
-    document.querySelectorAll('.qty-input-basket').forEach(function(input) {
-        // hide native spinner arrows
-        input.style.cssText += ';-webkit-appearance:none;';
-        input.addEventListener('change', function() {
-            var val = parseInt(this.value);
-            if (isNaN(val) || val < 1) val = 1;
-            if (val > 20) val = 20;
-            this.value = val;
-            var form = this.closest('.basket-qty-form');
-            var hidden = form.querySelector('input.qty-hidden-submit');
-            if (!hidden) {
-                hidden = document.createElement('input');
-                hidden.type = 'hidden';
-                hidden.name = 'quantity';
-                hidden.className = 'qty-hidden-submit';
-                form.appendChild(hidden);
-            }
-            hidden.value = val;
-            form.submit();
         });
     });
 </script>
