@@ -33,6 +33,18 @@ class CategoryAdmin(TranslationAdmin):
     inlines = [MenuItemInline]
 
 
+@admin.action(description="Mark selected items as Sold Out")
+def mark_sold_out(modeladmin, request, queryset):
+    updated = queryset.update(is_available=False)
+    modeladmin.message_user(request, f"{updated} item(s) marked as sold out.")
+
+
+@admin.action(description="Mark selected items as Available")
+def mark_available(modeladmin, request, queryset):
+    updated = queryset.update(is_available=True)
+    modeladmin.message_user(request, f"{updated} item(s) marked as available.")
+
+
 @admin.register(MenuItem)
 class MenuItemAdmin(TranslationAdmin):
     list_display = (
@@ -52,6 +64,7 @@ class MenuItemAdmin(TranslationAdmin):
     ordering = ("category", "order", "name")
     readonly_fields = ("image_preview", "times_ordered")
     inlines = [DealSlotInline]
+    actions = [mark_sold_out, mark_available]
     fieldsets = (
         (
             "🍜 Item Details",

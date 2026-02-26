@@ -158,12 +158,18 @@
                         <i class="fas fa-tag me-1"></i>
                         <strong id="promo-code-label">{{ basket.promo_code }}</strong> applied
                     </span>
+                    {% if not promo_is_locked %}
                     <form method="post" action="{% url 'orders:remove_promo' %}" class="mb-0 ajax-remove-promo">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-xs btn-outline-red-custom">
                             <i class="fas fa-times"></i> Remove
                         </button>
                     </form>
+                    {% else %}
+                    <span id="promo-locked-badge" style="color:var(--gold);font-size:0.75rem;opacity:0.75;">
+                        <i class="fas fa-lock me-1"></i>New customer offer
+                    </span>
+                    {% endif %}
                 </div>
                 <div class="d-flex align-items-center justify-content-between mt-3 p-2 rounded-2 d-none"
                      id="promo-form-section">
@@ -181,6 +187,9 @@
                             <i class="fas fa-times"></i> Remove
                         </button>
                     </form>
+                    <span id="promo-locked-badge" style="color:var(--gold);font-size:0.75rem;opacity:0.75;display:none;">
+                        <i class="fas fa-lock me-1"></i>New customer offer
+                    </span>
                 </div>
                 <div id="promo-form-section">
                 {% endif %}
@@ -349,6 +358,16 @@
             if (label) label.textContent = data.promo_code;
             if (applied) applied.classList.remove('d-none');
             if (formSec) formSec.classList.add('d-none');
+            // Show/hide remove button & locked badge based on promo_locked
+            const removeForm = applied ? applied.querySelector('.ajax-remove-promo') : null;
+            const lockedBadge = el('promo-locked-badge');
+            if (data.promo_locked) {
+                if (removeForm) removeForm.style.display = 'none';
+                if (lockedBadge) lockedBadge.style.display = '';
+            } else {
+                if (removeForm) removeForm.style.display = '';
+                if (lockedBadge) lockedBadge.style.display = 'none';
+            }
         } else {
             if (applied) applied.classList.add('d-none');
             if (formSec) formSec.classList.remove('d-none');

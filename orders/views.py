@@ -116,6 +116,9 @@ def _basket_ajax_summary(basket, item_id=None):
         "free_delivery_remaining": str(free_del_remaining),
         "free_delivery_pct": free_del_pct,
         "promo_code": basket.promo_code,
+        "promo_locked": PromoCode.objects.filter(
+            code=basket.promo_code, first_order_only=True
+        ).exists() if basket.promo_code else False,
         # Legacy keys kept for compatibility with menu-page AJAX JS
         "basket_count": basket.get_total_quantity(),
         "basket_subtotal": str(subtotal),
@@ -235,12 +238,22 @@ def basket_view(request):
 
     subtotal = basket.get_subtotal()
 
+    # If basket is emptied (without ordering) and a first-order promo is still set,
+    # clear it so the auto-apply recalculates on the next visit with items.
+    if not basket and basket.promo_code:
+        try:
+            _fo_check = PromoCode.objects.get(code=basket.promo_code, first_order_only=True)
+            basket.remove_promo()
+            request.session.pop("_first_promo_applied", None)
+        except PromoCode.DoesNotExist:
+            pass
+        subtotal = basket.get_subtotal()
+
     # Auto-apply first-order discount for new logged-in users
     if (
         request.user.is_authenticated
         and basket
         and not basket.promo_code
-        and not request.session.get("_first_promo_applied")
         and not Order.objects.filter(user=request.user).exists()
     ):
         first_promo = PromoCode.objects.filter(first_order_only=True, active=True).first()
@@ -249,11 +262,17 @@ def basket_view(request):
             if valid:
                 discount = first_promo.get_discount(subtotal)
                 basket.apply_promo(first_promo.code, discount)
-                request.session["_first_promo_applied"] = True
                 messages.success(
                     request,
                     f"\U0001f389 First order discount ({first_promo}) applied automatically!",
                 )
+
+    # Is the current promo locked (first-order only — customer cannot remove it)?
+    promo_is_locked = (
+        PromoCode.objects.filter(code=basket.promo_code, first_order_only=True).exists()
+        if basket.promo_code
+        else False
+    )
 
     # Contextual upsell nudges
     show_prawn_crackers = str(_PRAWN_CRACKERS_PK) not in basket_item_ids
@@ -283,6 +302,7 @@ def basket_view(request):
         "is_open": is_open,
         "next_open_text": next_open_text,
         "free_delivery_remaining": free_delivery_remaining,
+        "promo_is_locked": promo_is_locked,
     })
 
 
@@ -414,9 +434,17 @@ def apply_promo(request):
 def remove_promo(request):
     """Remove any applied promo code from the basket session."""
     basket = Basket(request)
+    # Block removal of first-order-only promos — they are auto-applied and locked.
+    if basket.promo_code:
+        try:
+            _locked = PromoCode.objects.get(code=basket.promo_code, first_order_only=True)
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": False, "error": "This discount cannot be removed."}, status=403)
+            messages.warning(request, "This discount cannot be removed.")
+            return redirect("orders:basket")
+        except PromoCode.DoesNotExist:
+            pass
     basket.remove_promo()
-    # Prevent auto-apply from re-applying a first-order code the user just removed
-    request.session["_first_promo_applied"] = True
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         data = _basket_ajax_summary(basket)
         data["success"] = True
