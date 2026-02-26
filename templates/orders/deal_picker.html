@@ -23,8 +23,7 @@
                 <!-- Deal header -->
                 <div class="d-flex align-items-start gap-4 mb-4">
                     {% if deal.image %}
-                        <img src="{{ deal.image.url }}" alt="{{ deal.name }}"
-                             class="rounded-3" style="width:90px;height:90px;object-fit:cover;flex-shrink:0;">
+                        <img src="{{ deal.image.url }}" alt="{{ deal.name }}" class="rounded-3" style="width:90px;height:90px;object-fit:cover;flex-shrink:0;" loading="eager" fetchpriority="high">
                     {% endif %}
                     <div>
                         <h2 class="detail-title mb-1">{{ deal.name }}</h2>
