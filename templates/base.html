@@ -144,7 +144,7 @@
                     </form>
 
                     <!-- Basket -->
-                    <a href="{% url 'orders:basket' %}" class="btn btn-basket position-relative d-flex align-items-center gap-2">
+                    <a href="{% url 'orders:basket' %}" class="btn btn-basket position-relative d-flex align-items-center gap-2" aria-label="{% trans 'View basket' %}">
                         <i class="fas fa-shopping-bag"></i>
                         {% if basket_count > 0 %}
                             <span class="basket-badge">{{ basket_count }}</span>
@@ -307,6 +307,148 @@
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}
+
+{% if user.is_staff %}
+<!-- Staff: Image Edit Modal -->
+<div class="modal fade" id="staffImgModal" tabindex="-1" aria-labelledby="staffImgModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content staff-img-modal-content">
+            <div class="modal-header staff-img-modal-header">
+                <h5 class="modal-title" id="staffImgModalLabel">
+                    <i class="fas fa-camera me-2"></i><span id="staffImgModalItemName">Edit Image</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body staff-img-modal-body">
+                <!-- Current preview -->
+                <div id="staffImgPreviewWrap" class="staff-img-preview-wrap mb-3 d-none">
+                    <img id="staffImgPreview" src="" alt="Current image" class="staff-img-preview">
+                    <button type="button" class="btn btn-sm btn-outline-danger mt-2 w-100" id="staffImgRemoveBtn">
+                        <i class="fas fa-trash me-1"></i>{% trans "Remove image" %}
+                    </button>
+                </div>
+                <div id="staffImgNoImgNote" class="staff-img-no-img-note mb-3 d-none">
+                    <i class="fas fa-image me-2"></i>{% trans "No image currently set." %}
+                </div>
+                <!-- Upload form -->
+                <label class="staff-img-upload-label" for="staffImgFileInput">
+                    <i class="fas fa-upload me-2"></i>{% trans "Upload new image" %}
+                    <span class="staff-img-upload-hint">{% trans "JPEG or WebP · max 5 MB" %}</span>
+                </label>
+                <input type="file" id="staffImgFileInput" class="staff-img-file-input" accept="image/*">
+                <div id="staffImgFeedback" class="staff-img-feedback mt-2 d-none"></div>
+            </div>
+            <div class="modal-footer staff-img-modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-staff-save" id="staffImgSaveBtn" disabled>
+                    <i class="fas fa-save me-1"></i>{% trans "Save Image" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    'use strict';
+    const CSRF = '{{ csrf_token }}';
+    let currentItemId = null;
+    let currentUpdateUrl = null;
+
+    // Open modal on any staff-img-edit-btn click
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.staff-img-edit-btn');
+        if (!btn) return;
+        currentItemId = btn.dataset.itemId;
+        currentUpdateUrl = btn.dataset.updateUrl;
+        const hasImage = btn.dataset.hasImage === '1';
+        const imgEl = btn.closest('.menu-card-img-wrap, .detail-img-wrap')
+                       ?.querySelector('img, .detail-hero-img, #detail-hero-img');
+        const currentSrc = imgEl ? imgEl.src : '';
+
+        document.getElementById('staffImgModalItemName').textContent = btn.dataset.itemName;
+
+        const previewWrap = document.getElementById('staffImgPreviewWrap');
+        const noImgNote  = document.getElementById('staffImgNoImgNote');
+        const preview    = document.getElementById('staffImgPreview');
+        const fileInput  = document.getElementById('staffImgFileInput');
+        const feedback   = document.getElementById('staffImgFeedback');
+        const saveBtn    = document.getElementById('staffImgSaveBtn');
+
+        fileInput.value = '';
+        feedback.classList.add('d-none');
+        saveBtn.disabled = true;
+
+        if (hasImage && currentSrc) {
+            preview.src = currentSrc;
+            previewWrap.classList.remove('d-none');
+            noImgNote.classList.add('d-none');
+        } else {
+            previewWrap.classList.add('d-none');
+            noImgNote.classList.remove('d-none');
+        }
+
+        new bootstrap.Modal(document.getElementById('staffImgModal')).show();
+    });
+
+    // Enable save when file is chosen
+    document.getElementById('staffImgFileInput').addEventListener('change', function () {
+        document.getElementById('staffImgSaveBtn').disabled = !this.files.length;
+    });
+
+    // Save image
+    document.getElementById('staffImgSaveBtn').addEventListener('click', function () {
+        const file = document.getElementById('staffImgFileInput').files[0];
+        if (!file || !currentUpdateUrl) return;
+        const fd = new FormData();
+        fd.append('image', file);
+        fd.append('csrfmiddlewaretoken', CSRF);
+        setFeedback('info', '{% trans "Uploading..." %}');
+        this.disabled = true;
+        fetch(currentUpdateUrl, { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    setFeedback('success', '{% trans "Image updated — refreshing..." %}');
+                    setTimeout(() => location.reload(), 900);
+                } else {
+                    setFeedback('danger', data.error || '{% trans "Upload failed." %}');
+                    document.getElementById('staffImgSaveBtn').disabled = false;
+                }
+            })
+            .catch(() => {
+                setFeedback('danger', '{% trans "Network error — please try again." %}');
+                document.getElementById('staffImgSaveBtn').disabled = false;
+            });
+    });
+
+    // Remove image
+    document.getElementById('staffImgRemoveBtn').addEventListener('click', function () {
+        if (!confirm('{% trans "Remove this image? This cannot be undone." %}') || !currentUpdateUrl) return;
+        const fd = new FormData();
+        fd.append('remove_image', '1');
+        fd.append('csrfmiddlewaretoken', CSRF);
+        setFeedback('info', '{% trans "Removing..." %}');
+        fetch(currentUpdateUrl, { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    setFeedback('success', '{% trans "Image removed — refreshing..." %}');
+                    setTimeout(() => location.reload(), 900);
+                } else {
+                    setFeedback('danger', '{% trans "Failed to remove image." %}');
+                }
+            });
+    });
+
+    function setFeedback(type, msg) {
+        const el = document.getElementById('staffImgFeedback');
+        el.className = `staff-img-feedback mt-2 alert alert-${type} py-1 px-2`;
+        el.textContent = msg;
+        el.classList.remove('d-none');
+    }
+})();
+</script>
+{% endif %}
 
 </body>
 </html>

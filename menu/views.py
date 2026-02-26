@@ -4,6 +4,9 @@ Menu app views — homepage and full menu page.
 
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count
+from django.http import JsonResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
 from .models import Category, MenuItem, DealSlot
 from orders.models import OpeningHours, OrderItem
 from orders.basket import Basket
@@ -118,4 +121,27 @@ def item_detail(request, pk):
         "item": item,
         "related_items": related_items,
     })
+
+
+@staff_member_required
+@require_POST
+def staff_update_image(request, pk):
+    """
+    Staff-only AJAX endpoint to update or remove a MenuItem image.
+    POST: multipart form with 'image' file, or 'remove_image'=1 to clear.
+    Returns JSON {ok, image_url}.
+    """
+    item = get_object_or_404(MenuItem, pk=pk)
+    if request.POST.get("remove_image") == "1":
+        item.image.delete(save=True)
+        return JsonResponse({"ok": True, "image_url": ""})
+    if "image" in request.FILES:
+        item.image = request.FILES["image"]
+        item.save(update_fields=["image"])
+        try:
+            url = item.image.url
+        except Exception:
+            url = ""
+        return JsonResponse({"ok": True, "image_url": url})
+    return JsonResponse({"ok": False, "error": "No file uploaded."}, status=400)
 
