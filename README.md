@@ -110,16 +110,16 @@ All user stories are tracked on the [GitHub Project Board](https://github.com/us
 | [US05](https://github.com/unqe/Chinese-project/issues/5) | As a registered user, I want to log in and out | Must Have | ✅ Done |
 | [US06](https://github.com/unqe/Chinese-project/issues/6) | As a logged-in customer, I want to view my order history and reorder | Should Have | ✅ Done |
 | [US07](https://github.com/unqe/Chinese-project/issues/7) | As a customer, I want to apply a promo/discount code at the basket | Should Have | ✅ Done |
-| [US08](https://github.com/unqe/Chinese-project/issues/8) | As a new customer, I want a first-order discount automatically applied | Should Have | 🔄 In Progress |
+| [US08](https://github.com/unqe/Chinese-project/issues/8) | As a new customer, I want a first-order discount automatically applied | Should Have | ✅ Done |
 | [US09](https://github.com/unqe/Chinese-project/issues/9) | As a customer who placed an order, I want to leave a review | Should Have | ✅ Done |
 | [US10](https://github.com/unqe/Chinese-project/issues/10) | As a customer, I want to edit or delete my review | Should Have | ✅ Done |
 | [US11](https://github.com/unqe/Chinese-project/issues/11) | As a logged-in user, I want to manage my profile and saved address | Should Have | ✅ Done |
 | [US12](https://github.com/unqe/Chinese-project/issues/12) | As a user, I want to permanently delete my account (GDPR) | Could Have | ✅ Done |
 | [US13](https://github.com/unqe/Chinese-project/issues/13) | As staff, I want to mark items as sold out from the live menu | Must Have | ✅ Done |
 | [US14](https://github.com/unqe/Chinese-project/issues/14) | As kitchen staff, I want a live order display with status updates | Must Have | ✅ Done |
-| [US15](https://github.com/unqe/Chinese-project/issues/15) | As a customer, I want to see live order status tracking | Could Have | 🔄 In Progress |
-| [US16](https://github.com/unqe/Chinese-project/issues/16) | As a customer, I want to choose items from a set-menu deal | Could Have | 📋 Todo |
-| [US17](https://github.com/unqe/Chinese-project/issues/17) | As a Chinese-speaking customer, I want to browse the menu in Chinese | Could Have | 📋 Todo |
+| [US15](https://github.com/unqe/Chinese-project/issues/15) | As a customer, I want to see live order status tracking | Could Have | ✅ Done |
+| [US16](https://github.com/unqe/Chinese-project/issues/16) | As a customer, I want to choose items from a set-menu deal | Could Have | ✅ Done |
+| [US17](https://github.com/unqe/Chinese-project/issues/17) | As a Chinese-speaking customer, I want to browse the menu in Chinese | Could Have | ✅ Done |
 
 ---
 
@@ -1108,8 +1108,7 @@ Features planned for future releases that were out of scope for this submission:
 
 | Feature | User Story | Priority |
 |---|---|---|
-| Set-menu / deal builder | US16 | Could Have |
-| Populate Chinese item names & descriptions in DB | US17 | Could Have |
+| UK postcode and phone number format validation on checkout | — | Should Have |
 | Email order confirmation | — | Should Have |
 | Loyalty points system | — | Could Have |
 | Online payment integration (Stripe) | — | Could Have |
