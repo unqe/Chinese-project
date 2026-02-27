@@ -1046,11 +1046,20 @@ All pages were checked using the [WAVE Web Accessibility Evaluation Tool](https:
 
 #### Lighthouse Scores
 
+![Lighthouse scores — Performance 86, Accessibility 96, Best Practices 96, SEO 100](docs/screenshots/lighthouse.png)
+
 | Page | Performance | Accessibility | Best Practices | SEO |
 |---|---|---|---|---|
-| Home | 92 | 97 | 100 | 100 |
+| Home | 86 | 96 | 96 | 100 |
 | Menu | 88 | 96 | 100 | 100 |
 | Basket | 94 | 98 | 100 | 95 |
+
+**Performance note:** The 86 performance score is expected for a Heroku-hosted Django application. The two main contributing factors are outside scope for this project:
+
+- **Server response time (TTFB):** Heroku free-tier dynos spin down after inactivity. The first request triggers a cold start (~1–2 s delay) that Lighthouse reports as a slow server response. This is a hosting infrastructure constraint, not a code issue.
+- **Render-blocking CSS:** Bootstrap 5 and Font Awesome are loaded via CDN in `<head>`. Deferring them would cause a flash of unstyled content (FOUC), so they are intentionally left blocking.
+
+All other categories (Accessibility 96, Best Practices 96, SEO 100) score green.
 
 ---
 
